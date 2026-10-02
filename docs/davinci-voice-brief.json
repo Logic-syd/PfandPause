@@ -1,0 +1,69 @@
+{
+  "project": "Pfand Pause",
+  "provider": "DaVinci AI",
+  "sourceUrl": "https://davinci.ai/app/home",
+  "status": "one_english_win_clip_supplied_and_integrated",
+  "character": "An original friendly cartoon bear who runs a cozy little drinks shop.",
+  "voiceDirection": "Warm, rounded, slightly husky mid-low voice with a gentle smile. Clearly a friendly cartoon bear: playful and reassuring, never booming or growling. Clear words and short, lightly expressive sentences. Keep the same character identity in English and German. Natural conversational pace, no music, no sound effects, no added words. Clean isolated voice, very short leading and trailing silence.",
+  "generationNotes": [
+    "Use voiceDirection in a voice-design or direction field if available. Do not paste it into a text-only speech field that would read it aloud.",
+    "Generate the first English and German cue as a voice test before producing the remaining clips.",
+    "Choose the same saved voice for both languages if the account supports it.",
+    "Export separate audio files. Preserve original downloads and record the selected model, voice, settings and revisions after actual generation."
+  ],
+  "cues": [
+    {
+      "id": "intro",
+      "trigger": "Tutorial step 0, after opening by user interaction",
+      "en": "Tap the glowing bottle. No need to drag.",
+      "de": "Tippe auf die leuchtende Flasche. Du musst nicht ziehen."
+    },
+    {
+      "id": "waiting",
+      "trigger": "Tutorial step 1, before the first unmatched berry bottle",
+      "en": "No matching crate? This bottle can wait here.",
+      "de": "Keine passende Kiste? Hier kann die Flasche warten."
+    },
+    {
+      "id": "undo",
+      "trigger": "Tutorial step 4, after the deliberately full buffer finishes settling",
+      "en": "Oops, all three spots are full. Let’s undo that.",
+      "de": "Oh, alle drei Plätze sind voll. Einen Zug zurück!"
+    },
+    {
+      "id": "crate",
+      "trigger": "Tutorial step 6, before completing the water crate",
+      "en": "Three matching bottles make a full crate.",
+      "de": "Drei gleiche Flaschen, und die Kiste ist voll."
+    },
+    {
+      "id": "automatic",
+      "trigger": "Tutorial step 7, after the two waiting berry bottles transfer",
+      "en": "Look! The waiting bottles move in on their own.",
+      "de": "Schau! Die wartenden Flaschen rutschen von selbst hinein."
+    },
+    {
+      "id": "win",
+      "trigger": "Tutorial completed or a real level won, after the short victory sound",
+      "en": "All sorted! Time for a little pause.",
+      "de": "Alles aufgeräumt! Zeit für eine kleine Pause."
+    }
+  ],
+  "integrationRequirements": [
+    "Only one voice clip plays at a time.",
+    "Stop narration when leaving or skipping practice, changing language, restarting, or turning sound off.",
+    "Do not repeat narration on every bottle pick.",
+    "Audio failure must never block play.",
+    "Keep short captions and the existing visual instructions."
+  ],
+  "productionRecord": {
+    "selectedModel": null,
+    "selectedVoice": null,
+    "generatedAssets": [
+      "src/assets/voice/win-en.mp3"
+    ],
+    "integrated": true,
+    "note": "Original English win recording supplied by the user from DaVinci. Other cue texts remain a plan, not generated assets."
+  },
+  "scopeUpdate": "User chose one available English voice and supplied one generated clip after encountering a paywall. No bear voice, remaining narration, or German recordings are claimed."
+}

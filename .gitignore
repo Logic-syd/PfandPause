@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+artifacts/
+
+# Local credentials and environment overrides
+.env
+.env.*
+!.env.example

@@ -1,0 +1,23 @@
+{
+  "url": "http://localhost:4173",
+  "results": [
+    "English mobile win decodes and plays the real recording once (2.508s, peak 0.667) after the chime",
+    "Entering the next level cancels the previous voice, including scheduled playback",
+    "Sound off: English victory stays silent",
+    "German mode keeps existing chimes without playing an English voice",
+    "Practice completion plays the same clip once; leaving practice stops it",
+    "Invalid audio does not block victory, progress or moving to the next level",
+    "No browser runtime errors or unhandled audio rejections"
+  ],
+  "errors": [],
+  "recording": {
+    "startAt": 2.08,
+    "clock": 1.6,
+    "duration": 2.50775,
+    "peak": 0.6667443513870239,
+    "rms": 0.12876718040056226,
+    "state": "running",
+    "stopped": false,
+    "ended": true
+  }
+}

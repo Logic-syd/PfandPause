@@ -1,0 +1,33 @@
+{
+  "url": "http://localhost:4173",
+  "results": [
+    "Fresh save unlocks only level 1",
+    "Guided practice teaches matching, deliberate failure, undo, automatic transfers and winning without changing the real game",
+    "30 simultaneous clicks produce exactly one move during animation",
+    "Undo restores full visible state after animation",
+    "Restart resets the full board and skipped tutorial stays dismissed",
+    "Replay and skip during an animation preserve the current level and its undo history",
+    "Reduced-motion mode also locks simultaneous clicks until the UI updates",
+    "Level 1 completed in the browser (6 moves)",
+    "Real failure screen and undo recover the entire pre-loss state",
+    "Undo restores waiting bottles, old crate and order queue after auto-transfer",
+    "Level 2 completed in the browser (12 moves)",
+    "Level 3 completed in the browser (18 moves)",
+    "Level 4 completed in the browser (18 moves)",
+    "Level 5 completed in the browser (24 moves)",
+    "Level 6 completed in the browser (27 moves)",
+    "Level 7 completed in the browser (30 moves)",
+    "Level 8 completed in the browser (30 moves)",
+    "Level 9 completed in the browser (33 moves)",
+    "Level 10 completed in the browser (36 moves)",
+    "All progress, language, sound and motion settings survive reload",
+    "No horizontal overflow at 320, 360, 390, 768 and 1280px (deepest German level)",
+    "German browser default and desktop layout",
+    "Desktop mouse play completes a full level with animation",
+    "Unavailable localStorage is nonfatal; unsupported language falls back to English",
+    "Corrupt save recovers safely",
+    "Old saves see the new tutorial once; home replay and Escape keep saved progress",
+    "No browser console or runtime errors"
+  ],
+  "errors": []
+}

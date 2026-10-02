@@ -1,0 +1,31 @@
+{
+  "provider": "DaVinci AI",
+  "providerUrl": "https://davinci.ai/app/home",
+  "generatedBy": "User in the DaVinci web app",
+  "scope": "One English victory clip; no German voice assets or paid subscription purchased",
+  "assets": [
+    {
+      "id": "win-en",
+      "file": "src/assets/voice/win-en.mp3",
+      "originalFilename": "davinci_all_sorted__time_for_a_little_pause_.mp3",
+      "language": "en",
+      "text": "All sorted! Time for a little pause.",
+      "selectedVoice": null,
+      "selectedModel": null,
+      "note": "Voice and model names were not provided; do not infer them from earlier suggestions.",
+      "bytes": 40169,
+      "sha256": "08787e4bef1e2f79097e5cc5f5c7b7a1d538b4e5d2baf0f5a2b9061cd6f64708",
+      "channels": 1,
+      "sampleRateHz": 44100,
+      "estimatedDurationSeconds": 2.50775,
+      "modifications": "None; original file copied byte for byte.",
+      "triggers": [
+        "Formal level won in English",
+        "Practice completed in English"
+      ],
+      "playback": "Existing sound toggle; starts after the victory chime; cancelled on navigation, restart, practice exit or language/sound changes.",
+      "decodedDurationSeconds": 2.50775,
+      "verifiedPlayback": true
+    }
+  ]
+}

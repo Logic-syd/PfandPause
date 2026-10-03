@@ -204,8 +204,12 @@ export default function Tutorial({
               }
             >
               <div className="crate-heading">
-                {crate ? t.bottleNames[crate.type] : t.crateDone}
-                <span>{crate ? `${crate.count}/3` : "✓"}</span>
+                <span className="crate-name">
+                  {crate ? t.bottleNames[crate.type] : t.crateDone}
+                </span>
+                <span className="crate-amount">
+                  {crate ? `${crate.count}/3` : "✓"}
+                </span>
               </div>
               <div className="practice-crate-slots">
                 {[0, 1, 2].map((j) => (

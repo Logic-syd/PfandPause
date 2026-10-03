@@ -2,7 +2,7 @@ import type { BottleType } from "./game/types";
 export type Language = "en" | "de";
 const en = {
   brand: "Pfand Pause",
-  shop: "YOUR LITTLE CORNER DRINKS SHOP",
+  shop: "YOUR NEIGHBOURHOOD DRINKS SHOP",
   tagline: "A little order.\nA little pause.",
   intro:
     "Find a home for every bottle. A cozy sorting puzzle, one crate at a time.",
@@ -88,16 +88,16 @@ const en = {
     "Pack every bottle",
   ],
   practiceSteps: [
-    "Tap the glowing water bottle at the top of stack 1. It goes straight into the water crate.",
-    "Now tap the berry bottle in stack 2. There’s no berry crate yet, so it waits in a spare spot.",
-    "Tap the berry bottle in stack 3. Two spare spots will be full. Keep an eye on the last one.",
-    "This is only practice: tap the last berry bottle to fill the third spare spot and see what happens.",
+    "Tap the glowing water bottle in stack 1. It goes straight into the sparkling water crate.",
+    "Tap the currant spritzer in stack 2. There’s no matching crate yet, so it waits in a spare spot.",
+    "Tap the currant bottle in stack 3. Two spare spots will be full. Keep an eye on the last one.",
+    "This is only practice: tap the last currant bottle to fill the third spare spot and see what happens.",
     "All three spare spots stayed full, so the round ended. Tap Undo to take back that last bottle.",
     "A spare spot is free again. Tap a water bottle — a crate needs three matching bottles.",
-    "Tap the last water bottle. The full crate will leave and the next order — Berry — will arrive.",
-    "See? Both waiting berry bottles moved into the new crate automatically. Tap the last berry bottle to fill it.",
-    "Now only the lemon bottles are left. Tap the highlighted one to start filling the last crate.",
-    "One lemon is packed. Tap the next one. Only the top bottle in a stack can be picked.",
+    "Tap the last water bottle. The full crate will leave and the next order — Currant spritzer — will arrive.",
+    "Both waiting bottles moved into the new crate automatically. Tap the last currant bottle to fill it.",
+    "Now only the lemon soda bottles are left. Tap the highlighted one to start filling the last crate.",
+    "One lemon soda is packed. Tap the next one. Only the top bottle in a stack can be picked.",
     "One last bottle! Tap it to pack every bottle and finish the puzzle.",
   ],
   practiceComplete: "You’ve got it!",
@@ -127,12 +127,12 @@ const en = {
   guideText:
     "A spare spot is a little freedom. Keep one open, and peek at the next orders.",
   shopOpen: "OPEN FOR A LITTLE PAUSE",
-  returnCorner: "BOTTLE RETURN CORNER",
+  returnCorner: "BOTTLE RETURNS",
   done: "Done",
   round: "Round",
   levelNames: [
     "First things first",
-    "A berry small detour",
+    "A little Schorle detour",
     "Room to breathe",
     "A little sunshine",
     "The afternoon delivery",
@@ -143,17 +143,17 @@ const en = {
     "Everything in its place",
   ],
   bottleNames: {
-    water: "Water",
-    lemon: "Lemon",
-    berry: "Berry",
-    orange: "Orange",
-    cola: "Cola",
-    mint: "Mint",
+    water: "Sparkling water",
+    lemon: "Lemon soda",
+    currant: "Currant spritzer",
+    apple: "Apple spritzer",
+    malt: "Malt drink",
+    kola: "Cola-orange",
   } as Record<BottleType, string>,
 };
 const de: typeof en = {
   brand: "Pfand Pause",
-  shop: "DEIN KLEINER GETRÄNKELADEN",
+  shop: "DEIN GETRÄNKELADEN UM DIE ECKE",
   tagline: "Ein bisschen Ordnung.\nEin bisschen Pause.",
   intro:
     "Für jede Flasche den richtigen Platz. Ein gemütliches Sortierpuzzle, Kiste für Kiste.",
@@ -238,16 +238,16 @@ const de: typeof en = {
     "Alle Flaschen einpacken",
   ],
   practiceSteps: [
-    "Tippe auf die leuchtende Wasserflasche ganz oben in Stapel 1. Sie kommt direkt in die Wasserkiste.",
-    "Tippe jetzt auf die Beerenflasche in Stapel 2. Es gibt noch keine Beerenkiste, also wartet sie auf einem freien Platz.",
-    "Tippe auf die Beerenflasche in Stapel 3. Dann sind zwei Warteplätze belegt. Behalte den letzten im Blick.",
-    "Das ist nur eine Übung: Tippe auf die letzte Beerenflasche, um den dritten Warteplatz zu belegen. Was passiert wohl?",
+    "Tippe auf die leuchtende Sprudelflasche ganz oben in Stapel 1. Sie kommt direkt in die Sprudelkiste.",
+    "Tippe auf die Johannisbeer-Schorle in Stapel 2. Ohne passende Kiste wartet sie auf einem freien Platz.",
+    "Tippe auf die Johannisbeerflasche in Stapel 3. Dann sind zwei Warteplätze belegt. Behalte den letzten im Blick.",
+    "Das ist nur eine Übung: Tippe auf die letzte Johannisbeerflasche, um den dritten Warteplatz zu belegen. Was passiert wohl?",
     "Alle drei Warteplätze bleiben voll, also endet die Runde. Tippe auf Zurück, um die letzte Flasche zurückzunehmen.",
-    "Ein Warteplatz ist wieder frei. Tippe auf eine Wasserflasche — drei gleiche Flaschen füllen eine Kiste.",
-    "Tippe auf die letzte Wasserflasche. Die volle Kiste geht, und die nächste Bestellung — Beere — kommt.",
-    "Siehst du? Beide wartenden Beerenflaschen sind automatisch in die neue Kiste gewandert. Tippe auf die letzte Beerenflasche.",
-    "Jetzt sind nur noch Zitronenflaschen übrig. Tippe auf die leuchtende Flasche, um die letzte Kiste zu füllen.",
-    "Eine Zitronenflasche ist eingepackt. Tippe auf die nächste. Nur die oberste Flasche im Stapel lässt sich nehmen.",
+    "Ein Warteplatz ist wieder frei. Tippe auf eine Sprudelflasche — drei gleiche Flaschen füllen eine Kiste.",
+    "Tippe auf die letzte Sprudelflasche. Die volle Kiste geht, und die nächste Bestellung — Johannisbeer-Schorle — kommt.",
+    "Beide wartenden Flaschen sind automatisch in die neue Kiste gewandert. Tippe auf die letzte Johannisbeerflasche.",
+    "Jetzt sind nur noch Zitronenlimos übrig. Tippe auf die leuchtende Flasche, um die letzte Kiste zu füllen.",
+    "Eine Zitronenlimo ist eingepackt. Tippe auf die nächste. Nur die oberste Flasche im Stapel lässt sich nehmen.",
     "Die letzte Flasche! Tippe darauf, um alle Flaschen einzupacken und das Rätsel zu lösen.",
   ],
   practiceComplete: "Jetzt hast du’s raus!",
@@ -258,7 +258,7 @@ const de: typeof en = {
   practicePacked: "Flaschen eingepackt",
   welcome: "Der erste kleine Schritt",
   tutorial1:
-    "Tippe auf die leuchtende Wasserflasche. Sie findet ihre passende Kiste.",
+    "Tippe auf die leuchtende Sprudelflasche. Sie findet ihre passende Kiste.",
   tutorial2:
     "Schön! Drei gleiche Flaschen füllen eine Kiste. Ohne passende Kiste wartet eine Flasche auf einem freien Platz unten.",
   skip: "Überspringen",
@@ -279,12 +279,12 @@ const de: typeof en = {
   guideText:
     "Ein freier Warteplatz gibt dir Spielraum. Lass einen frei und schau auf die nächsten Bestellungen.",
   shopOpen: "OFFEN FÜR EINE KLEINE PAUSE",
-  returnCorner: "DIE LEERGUTECKE",
+  returnCorner: "LEERGUTANNAHME",
   done: "Fertig",
   round: "Runde",
   levelNames: [
     "Immer der Reihe nach",
-    "Ein kleiner Beerenumweg",
+    "Ein kleiner Schorlenumweg",
     "Luft zum Atmen",
     "Ein bisschen Sonne",
     "Die Nachmittagslieferung",
@@ -295,12 +295,29 @@ const de: typeof en = {
     "Alles an seinem Platz",
   ],
   bottleNames: {
-    water: "Wasser",
-    lemon: "Zitrone",
-    berry: "Beere",
-    orange: "Orange",
-    cola: "Cola",
-    mint: "Minze",
+    water: "Sprudel",
+    lemon: "Zitronenlimo",
+    currant: "Johannisbeer-Schorle",
+    apple: "Apfelschorle",
+    malt: "Malz",
+    kola: "Kola-Mix",
   },
 };
 export const translations = { en, de };
+
+// Original packaging stays German when the interface language changes.
+export const bottlePackaging: Record<
+  BottleType,
+  { label: string; volume: string }
+> = {
+  water: { label: "SPRUDEL", volume: "0,7 l" },
+  lemon: { label: "ZITRONE", volume: "0,5 l" },
+  currant: { label: "JOHANNIS", volume: "0,5 l" },
+  apple: { label: "APFEL", volume: "0,5 l" },
+  malt: { label: "MALZ", volume: "0,33 l" },
+  kola: { label: "KOLA-MIX", volume: "0,5 l" },
+};
+export const packagingText = {
+  returnable: "MEHRWEG",
+  shopName: "PFAND PAUSE",
+};

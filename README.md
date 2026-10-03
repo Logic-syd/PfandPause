@@ -34,6 +34,25 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 - localStorage 自动保存已通关关卡、教程状态、语言、音效和减少动态效果设置。首次使用优先跟随浏览器德语，否则使用英语。存储被禁用或损坏时仍可游玩。
 - 这是一款虚构的益智游戏，不模拟真实押金政策。
 
+## 社区饮料店的视觉设计
+
+六种饮料取材于德国日常饮料店：
+
+| 类型 token | 德语名称 | 英语名称 | 包装容量 |
+| --- | --- | --- | --- |
+| `water` | Sprudel | Sparkling water | 0,7 l |
+| `lemon` | Zitronenlimo | Lemon soda | 0,5 l |
+| `currant` | Johannisbeer-Schorle | Currant spritzer | 0,5 l |
+| `apple` | Apfelschorle | Apple spritzer | 0,5 l |
+| `malt` | Malz | Malt drink | 0,33 l |
+| `kola` | Kola-Mix | Cola-orange | 0,5 l |
+
+瓶型、玻璃质感、饮料图案与德语实物标签共同营造社区饮料店的感觉；包装保留德语，界面名称随英语／德语切换。`MEHRWEG` 与容量文字属于场景设计，不引入真实押金规则。全部包装与插画均为原创，无真实品牌、商标或外部游戏素材。
+
+参考了 [GDB 的回收瓶型](https://www.gdb.de/mehrweg/flaschen-und-kaesten/)、[RAPP 的日常饮料品类](https://www.rapp.de/shop/alkoholfreie-rapp-getraenke/)和 [Karamalz 的麦芽饮料规格](https://www.karamalz.de/produkte/karamalz-classic)，仅用作生活背景研究，没有使用这些品牌的名称、标志或包装素材。
+
+类型由 `berry / orange / cola / mint` 一一改为 `currant / apple / malt / kola`，关卡排列、订单顺序和规则保持相同，因此不改变难度与既有解路径。存档只保存已完成关卡 id 和设置，原有进度继续有效。
+
 ## 文件位置与设计
 
 | 文件                          | 用途                                                     |
@@ -49,7 +68,7 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 | `src/components/Dialog.tsx`   | 原生 modal dialog、焦点恢复和 Escape 支持                |
 | `src/App.tsx`                 | 页面、操作历史、动画事件播放、同步输入锁                 |
 | `src/styles.css`              | 原创店铺插画、工作台、瓶箱与响应式布局                   |
-| `src/i18n.ts`                 | 德英游戏文案和关卡名                                     |
+| `src/i18n.ts`                 | 德英游戏文案、关卡名与固定德语包装标签                                     |
 | `src/storage.ts`              | 有容错的版本化本地存储                                   |
 | `src/audio.ts`                | 用户交互后启用的 Web Audio 音效及英语通关配音                        |
 | `tests/engine.test.ts`        | 规则与关卡验证                                           |
@@ -116,10 +135,10 @@ BASE_URL=http://localhost:4173 BROWSER_CHANNEL=chrome npm run test:browser
 
 ## 新增瓶子
 
-1. 在 `src/game/types.ts` 的 `bottleTypes` 中增加类型。
+1. 在 `src/game/types.ts` 的 `bottleTypes` 中增加类型。现有类型为 `water / lemon / currant / apple / malt / kola`；新增时使用独立 token（例如 `rhubarb`），不要复用已有类型。
 2. 在 `src/data/bottles.ts` 中补齐颜色、浅色、SVG 瓶身路径、瓶盖位置；采用相同的 `68 × 124` 坐标系。
 3. 在 `src/components/Bottle.tsx` 的 `Pattern` 中画一个独立标签图案。务必同时保持颜色、瓶型、图案的辨识度。
-4. 在德英 `bottleNames` 中加上名称，然后用新类型配置关卡并运行全部验证。
+4. 在 `src/i18n.ts` 的德英 `bottleNames` 中加上名称，并在 `bottlePackaging` 中配置固定德语标签与容量。然后用新类型配置关卡并运行全部验证。
 
 瓶箱和规则使用类型数据，不需要为每种新瓶子增加规则分支。
 

@@ -1,10 +1,10 @@
 export const bottleTypes = [
   "water",
   "lemon",
-  "berry",
-  "orange",
-  "cola",
-  "mint",
+  "currant",
+  "apple",
+  "malt",
+  "kola",
 ] as const;
 export type BottleType = (typeof bottleTypes)[number];
 export interface Level {

@@ -19,11 +19,11 @@ import {
 const sample: Level = {
   id: 1,
   columns: [
-    ["water", "berry", "lemon"],
-    ["water", "berry", "lemon"],
-    ["water", "berry", "lemon"],
+    ["water", "currant", "lemon"],
+    ["water", "currant", "lemon"],
+    ["water", "currant", "lemon"],
   ],
-  orders: ["water", "lemon", "berry"],
+  orders: ["water", "lemon", "currant"],
 };
 function moves(state: GameState, path: number[]) {
   return path.reduce((s, i) => takeBottle(s, i).state, state);
@@ -34,7 +34,7 @@ test("only the top bottle is removed and the input state remains immutable", () 
   const snapshot = cloneState(initial);
   const result = takeBottle(initial, 0);
   assert.deepEqual(initial, snapshot);
-  assert.deepEqual(result.state.columns[0], ["berry", "lemon"]);
+  assert.deepEqual(result.state.columns[0], ["currant", "lemon"]);
   assert.equal(result.state.crates[0]?.count, 1);
   assert.equal(result.state.moves, 1);
   assert.equal(result.frames[0].event.kind, "move");
@@ -42,12 +42,12 @@ test("only the top bottle is removed and the input state remains immutable", () 
 test("unmatched bottles go to the buffer, then transfer when a matching crate arrives", () => {
   const initial = createGame(sample);
   const waiting = moves(initial, [0, 0, 1, 1]);
-  assert.deepEqual(waiting.buffer, ["berry", "berry"]);
+  assert.deepEqual(waiting.buffer, ["currant", "currant"]);
   const result = takeBottle(waiting, 2);
   assert.deepEqual(result.state.buffer, []);
   assert.equal(result.state.completed, 1);
   assert.deepEqual(result.state.crates[0], {
-    type: "berry",
+    type: "currant",
     count: 2,
     order: 2,
   });
@@ -74,11 +74,11 @@ test("a third unmatched bottle loses only after settling; undo restores the comp
   const level: Level = {
     id: 1,
     columns: [
-      ["berry", "berry", "berry"],
+      ["currant", "currant", "currant"],
       ["water", "water", "water"],
       ["lemon", "lemon", "lemon"],
     ],
-    orders: ["water", "lemon", "berry"],
+    orders: ["water", "lemon", "currant"],
   };
   const initial = createGame(level);
   const before = moves(initial, [0, 0]);
@@ -99,14 +99,14 @@ test("full buffer in an intermediate state is drained and successive full crates
     id: 1,
     columns: [
       ["water", "water", "water"],
-      ["berry", "berry", "berry"],
+      ["currant", "currant", "currant"],
       ["lemon", "lemon", "lemon"],
     ],
-    orders: ["water", "lemon", "berry"],
+    orders: ["water", "lemon", "currant"],
   });
   state.columns = [["water"], [], ["lemon", "lemon", "lemon"]];
   state.crates[0]!.count = 2;
-  state.buffer = ["berry", "berry", "berry"];
+  state.buffer = ["currant", "currant", "currant"];
   const result = takeBottle(state, 0);
   assert.equal(result.state.status, "playing");
   assert.equal(result.state.completed, 2);
@@ -119,17 +119,17 @@ test("replacing a full crate respects the shared queue, regardless of left/right
   const initial = createGame(sample);
   const rightFirst = moves(initial, [0, 0, 0, 1, 1, 1]);
   const result = takeBottle(rightFirst, 2); // water completes left after both temporary berries drain
-  assert.equal(result.state.crates[0]?.type, "berry");
+  assert.equal(result.state.crates[0]?.type, "currant");
   assert.equal(result.state.crates[0]?.order, 2);
   const right = createGame(sample);
   right.columns = [
     ["lemon"],
     ["water", "water", "water"],
-    ["berry", "berry", "berry"],
+    ["currant", "currant", "currant"],
   ];
   right.crates[1]!.count = 2;
   const after = takeBottle(right, 0).state;
-  assert.equal(after.crates[1]?.type, "berry");
+  assert.equal(after.crates[1]?.type, "currant");
   assert.equal(after.crates[1]?.order, 2);
 });
 test("final bottle wins, empty slots remain empty, and finished games reject extra input", () => {
@@ -168,9 +168,9 @@ test("the solver identifies a genuinely unsolvable balanced level", () => {
     id: 1,
     columns: [
       [
-        "berry",
-        "berry",
-        "berry",
+        "currant",
+        "currant",
+        "currant",
         "water",
         "water",
         "water",
@@ -179,7 +179,7 @@ test("the solver identifies a genuinely unsolvable balanced level", () => {
         "lemon",
       ],
     ],
-    orders: ["water", "lemon", "berry"],
+    orders: ["water", "lemon", "currant"],
   };
   assert.equal(solveLevel(impossible).path, null);
 });
@@ -252,7 +252,7 @@ test("guided practice uses real rules, recovers its deliberate failure and finis
     }
     if (step === 6) {
       assert.equal(state.buffer.length, 0);
-      assert.deepEqual(state.crates[0], { type: "berry", count: 2, order: 2 });
+      assert.deepEqual(state.crates[0], { type: "currant", count: 2, order: 2 });
     }
   }
   assert.equal(state.status, "won");

@@ -6,11 +6,11 @@ export const tutorialLevel: Level = {
   id: 1,
   columns: [
     ["water", "water", "water"],
-    ["berry", "lemon", "lemon", "lemon"],
-    ["berry"],
-    ["berry"],
+    ["currant", "lemon", "lemon", "lemon"],
+    ["currant"],
+    ["currant"],
   ],
-  orders: ["water", "lemon", "berry"],
+  orders: ["water", "lemon", "currant"],
 };
 export const tutorialSteps: { column: number | null; lesson: number }[] = [
   { column: 0, lesson: 0 },

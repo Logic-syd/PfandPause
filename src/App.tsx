@@ -407,9 +407,9 @@ export default function App() {
                   <Icon name="heart" size={16} />
                 </div>
                 <div className="shop-shelf">
-                  <Bottle type="cola" />
-                  <Bottle type="orange" />
-                  <Bottle type="mint" />
+                  <Bottle type="malt" />
+                  <Bottle type="apple" />
+                  <Bottle type="kola" />
                   <span className="shelf-plant">
                     <i />
                     <i />
@@ -420,7 +420,7 @@ export default function App() {
                 <div className="hero-bottles">
                   <Bottle type="lemon" />
                   <Bottle type="water" />
-                  <Bottle type="berry" />
+                  <Bottle type="currant" />
                 </div>
                 <div className="hero-crate">
                   <span>pfandpause.</span>
@@ -675,7 +675,9 @@ export default function App() {
                           {crate ? (
                             <>
                               <span className="type-dot" />
-                              {t.bottleNames[crate.type]}
+                              <span className="crate-name">
+                                {t.bottleNames[crate.type]}
+                              </span>
                               <span className="crate-amount">
                                 {crate.count}
                                 <small> / 3</small>
@@ -886,7 +888,7 @@ export default function App() {
           >
             <div className="result-art" aria-hidden="true">
               <span>✧</span>
-              <Bottle type={game.status === "won" ? "mint" : "berry"} />
+              <Bottle type={game.status === "won" ? "kola" : "currant"} />
               <span>{game.status === "won" ? "✦" : "♡"}</span>
               <i>
                 <Icon

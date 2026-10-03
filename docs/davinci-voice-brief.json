@@ -20,7 +20,7 @@
     },
     {
       "id": "waiting",
-      "trigger": "Tutorial step 1, before the first unmatched berry bottle",
+      "trigger": "Tutorial step 1, before the first unmatched currant spritzer bottle",
       "en": "No matching crate? This bottle can wait here.",
       "de": "Keine passende Kiste? Hier kann die Flasche warten."
     },
@@ -38,7 +38,7 @@
     },
     {
       "id": "automatic",
-      "trigger": "Tutorial step 7, after the two waiting berry bottles transfer",
+      "trigger": "Tutorial step 7, after the two waiting currant spritzer bottles transfer",
       "en": "Look! The waiting bottles move in on their own.",
       "de": "Schau! Die wartenden Flaschen rutschen von selbst hinein."
     },

@@ -113,7 +113,7 @@ try {
           .locator(".practice-crate")
           .first()
           .getAttribute("aria-label"))!,
-        /Water, 1\/3/,
+        /Sparkling water, 1\/3/,
       );
     if (step === 3) {
       assert.equal(await page.locator(".practice-buffer .occupied").count(), 3);
@@ -131,7 +131,7 @@ try {
           .locator(".practice-crate")
           .first()
           .getAttribute("aria-label"))!,
-        /Berry, 2\/3/,
+        /Currant spritzer, 2\/3/,
       );
       await page.screenshot({
         path: "artifacts/tutorial-auto-transfer-mobile.png",
@@ -230,7 +230,7 @@ try {
         .getByRole("button", { name: "Start again", exact: true })
         .click();
       assert.deepEqual(await boardSnapshot(page), baseline);
-      // Water, Berry, Water, Berry, Water: replacement drains two waiting berries.
+      // Water, currant, water, currant, water: replacement drains two waiting spritzers.
       const before = await boardSnapshot(page);
       for (const c of [0, 0, 1, 1]) await pick(page, c);
       assert.equal(await page.locator(".buffer-slot.occupied").count(), 2);

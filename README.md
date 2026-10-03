@@ -160,3 +160,68 @@ BASE_URL=http://localhost:4173 BROWSER_CHANNEL=chrome npm run test:browser
 - `BROWSER_CHANNEL=chrome npm run test:voice`：对已启动的生产预览验证实际 MP3 解码、播放时序、英语/德语与静音分支、退出取消和错误恢复。
 
 项目经历可如实描述为：**使用 DaVinci 生成英语通关配音，并将音频接入 React 浏览器游戏，实现用户交互后播放、静音控制和页面切换时的播放取消。**
+
+## 版本管理
+
+采用两个长期分支，较大的功能使用临时分支：
+
+| 分支或标签 | 用途 | 何时更新 |
+| --- | --- | --- |
+| `main` | 已验证、可交付的稳定代码 | 开发分支测试通过后，通过 PR 合入 |
+| `codex/develop` | 日常开发和功能整合 | 小修改直接提交；较大功能从独立分支合入 |
+| `codex/功能名` | 单个功能或实验，例如 `codex/add-levels` | 从开发分支创建，完成后通过 PR 合回开发分支 |
+| `v1.0.0` 等标签 | 某次稳定版本的固定快照 | 在 `main` 对应发布提交上创建一次，不随开发移动 |
+
+已验证的社区饮料店版本 `df4e945` 标记为 `v1.0.0`，与当前 `package.json` 的 `1.0.0` 一致。标签表示代码版本，不表示网站已经上线。部署仍需单独安排。
+
+### 平时如何修改
+
+小调整在 `codex/develop` 上进行；新功能先更新开发分支，再创建独立分支：
+
+```sh
+git switch codex/develop
+git pull --ff-only
+git switch -c codex/add-levels
+```
+
+一个分支只处理一个主题。每完成一块可以解释的改动，就用 `git status` / `git diff` 检查，暂存本次相关文件后提交。提交消息说明结果，例如 `feat: add three afternoon levels` 或 `fix: keep crate count visible on narrow screens`。无需为了每次保存文件创建分支或版本号。
+
+```sh
+npm test
+npm run build
+git push -u origin codex/add-levels
+```
+
+在 GitHub 创建 PR，选择 **base: `codex/develop`，compare: 当前功能分支**。写清改了什么、怎么验证；检查通过并完成审阅后合并。临时功能分支可以使用 Squash and merge，合并后在 GitHub 删除该临时分支。保留 `main` 和 `codex/develop`。
+
+### 何时进入稳定版本
+
+1. 在 `codex/develop` 整合此次版本的功能和修复。
+2. 运行 `npm test` 与 `npm run build`；关卡有变化时运行 `npm run solve`，并检查生成的解路径差异；界面或音频有变化时运行对应浏览器验证。
+3. 发布准备时升版本并更新说明。修复用 `1.0.1`，新增关卡或功能用 `1.1.0`，较大的不兼容变化再用 `2.0.0`。例如 `npm version minor --no-git-tag-version` 会同时更新包文件和锁文件；检查并提交这些改动。
+4. 创建 **`codex/develop` → `main`** 的 PR。长期分支之间使用 **Create a merge commit**，保留分支共同历史；测试通过、内容确认后合并。
+5. 更新本地 `main`，对这个发布提交创建与包版本相同的注释标签，再推送该标签。例如发布包版本 `1.1.0` 时：
+
+```sh
+git switch main
+git pull --ff-only
+git tag -a v1.1.0 -m "Release 1.1.0"
+git push origin v1.1.0
+```
+
+最后把稳定分支的合并记录同步回开发分支，再开始下一轮：
+
+```sh
+git switch codex/develop
+git pull --ff-only
+git merge origin/main
+git push
+```
+
+如需紧急修复稳定版本，从 `main` 创建 `codex/fix-具体问题`，通过 PR 合回 `main`，随后同步到 `codex/develop`。出现错误优先使用 `git revert` 创建撤销提交，保留已共享的历史。查阅旧版本可运行 `git show v1.0.0:package.json`；需要继续修改旧版本时，从对应标签建立新分支。
+
+### 自动检查的范围
+
+`.github/workflows/ci.yml` 在推送到 `main` / `codex/**` 或向 `main` / `codex/develop` 创建 PR 时执行 `npm ci`、`npm test` 和 `npm run build`。它使用 `.nvmrc` 中的 Node 版本及已锁定提交的 [checkout](https://github.com/actions/checkout) / [setup-node](https://github.com/actions/setup-node) 官方 Actions。检查仅验证代码，不发布网站。
+
+工作流配置首先位于开发分支，首次合入 `main` 后，主分支也会具备该检查。当前未启用强制 PR 审批或分支保护，合并前确认检查通过是项目约定。浏览器完整通关与声音测试仍按上面的验证章节手动运行。

@@ -3,16 +3,17 @@ import Bottle from "./components/Bottle";
 import Icon from "./components/Icon";
 import Dialog from "./components/Dialog";
 import Tutorial from "./components/Tutorial";
+import RecyclingPractice from "./components/RecyclingPractice";
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
 import { bottles } from "./data/bottles";
 import { cloneState, createGame, takeBottle } from "./game/engine";
 import type { BottleType, GameState, Place } from "./game/types";
-import { translations } from "./i18n";
+import { LANGUAGE_OPTIONS, translations } from "./i18n";
 import { loadPreferences, savePreferences } from "./storage";
 import { playSound, playWinVoice, stopVoice, unlockAudio } from "./audio";
 
-type Screen = "start" | "play" | "levels";
+type Screen = "start" | "play" | "levels" | "recycling";
 type Flight = {
   source: string;
   bottle: BottleType;
@@ -81,7 +82,10 @@ export default function App() {
     setSaveError(!savePreferences(preferences));
     document.documentElement.lang = preferences.language;
     document.title = `${t.brand} · ${t.noRush}`;
-  }, [preferences, t.brand, t.noRush]);
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", t.metaDescription);
+  }, [preferences, t.brand, t.noRush, t.metaDescription]);
   useEffect(
     () => () => {
       epoch.current++;
@@ -215,13 +219,13 @@ export default function App() {
       <div className="setting-row">
         <span>{t.language}</span>
         <div className="language-options">
-          {(["en", "de"] as const).map((lang) => (
+          {LANGUAGE_OPTIONS.map(({ code: lang, label }) => (
             <button
               key={lang}
               aria-pressed={preferences.language === lang}
               onClick={() => setPreferences((p) => ({ ...p, language: lang }))}
             >
-              {lang === "en" ? "English" : "Deutsch"}
+              {label}
             </button>
           ))}
         </div>
@@ -286,16 +290,14 @@ export default function App() {
         <nav>
           <button
             className="language-button"
-            onClick={() =>
-              setPreferences((p) => ({
-                ...p,
-                language: p.language === "en" ? "de" : "en",
-              }))
-            }
-            aria-label={`${t.language}: ${preferences.language.toUpperCase()}`}
+            onClick={() => setModal("settings")}
+            aria-haspopup="dialog"
+            aria-label={`${t.language}: ${LANGUAGE_OPTIONS.find((option) => option.code === preferences.language)?.label}`}
             disabled={busy}
           >
-            {preferences.language.toUpperCase()}
+            {preferences.language === "zh"
+              ? "中文"
+              : preferences.language.toUpperCase()}
             <Icon name="chevron" size={13} />
           </button>
           <button
@@ -326,6 +328,12 @@ export default function App() {
         </p>
       )}
       <main>
+        {screen === "recycling" && (
+          <RecyclingPractice
+            language={preferences.language}
+            onClose={() => navigate("start")}
+          />
+        )}
         {screen === "start" && (
           <section className="landing">
             <div className="landing-copy">
@@ -341,6 +349,12 @@ export default function App() {
                 ))}
               </h1>
               <p className="intro">{t.intro}</p>
+              <button
+                className="primary recycling-entry"
+                onClick={() => navigate("recycling")}
+              >
+                {t.recyclingEntry}
+              </button>
               <div className="landing-actions">
                 <button
                   className="primary"

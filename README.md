@@ -1,6 +1,14 @@
 # Pfand Pause
 
-一个完整可玩的、以德国小饮料店退瓶区为背景的 2D 分拣解谜游戏。原创 SVG / CSS 美术，德语与英语，十个经过同一规则引擎求解验证的关卡。手机竖屏优先，也支持电脑鼠标和键盘。
+一个完整可玩的、以德国小饮料店退瓶区为背景的 2D 分拣解谜游戏。原创 SVG / CSS 美术，中文、英语与德语，十个经过同一规则引擎求解验证的关卡。手机竖屏优先，也支持电脑鼠标和键盘。
+
+## 德国回收练习（中英德三语）
+
+首页的「德国回收练习」提供八个包装示例，让新来德国的玩家依据包装信息选择商店退瓶或白／棕／绿玻璃回收箱。每题展示材料和标签，回答后说明正确去向和依据；结束时显示首次答对数与模拟退回金额，可重新练习。
+
+内容包括一次性押金 0.25 €、常见可重复使用瓶押金 0.15 € / 0.08 €、无押金玻璃按颜色分类，以及蓝色等其他颜色通常进入绿玻璃箱。示例押金明确写在包装信息中，不根据饮料种类或瓶子颜色推断。可重复使用瓶金额不统一，商店接收瓶型及当地分类要求也可能不同；真实投放应查看实际包装、购买凭证和当地说明。无押金塑料、金属及纸盒包装不属于本练习的玻璃箱范围。
+
+原十关分拣解谜仍是独立的虚构玩法。教学数据位于 `src/data/recycling.ts`，界面位于 `src/components/RecyclingPractice.tsx`。`npm test` 包含教学去向与押金统计测试。规则参考入口：[DPG](https://dpg-pfandsystem.de/) 与 [德国消费者中心](https://www.verbraucherzentrale.de/wissen/umwelt-haushalt/abfall)。
 
 ## 启动
 
@@ -31,7 +39,7 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 - **撤销**恢复上次点击前的全部状态，包括自动转移、已完成箱、订单位置；可以连续撤销。**重开**恢复该关初始状态。
 - 首次开始前有可跳过的独立互动练习（匹配、暂存、失败、撤销、自动换箱和通关），首页及「How to play / So geht’s」可随时重看；练习不影响正式关卡或进度；后续关卡逐步解锁。没有计时，也没有步数惩罚。
 - 订单入口显示尚未发出的箱数，展开后可看到已完成、当前使用中和后续订单。两个当前箱不计入「queued / warten」。
-- localStorage 自动保存已通关关卡、教程状态、语言、音效和减少动态效果设置。首次使用优先跟随浏览器德语，否则使用英语。存储被禁用或损坏时仍可游玩。
+- localStorage 自动保存已通关关卡、教程状态、语言、音效和减少动态效果设置。首次使用跟随浏览器的中文或德语设置，其他语言默认使用英语。点击顶部语言按钮或设置，可选择中文、English、Deutsch；选择会持久保存。存储被禁用或损坏时仍可游玩。
 - 这是一款虚构的益智游戏，不模拟真实押金政策。
 
 ## 社区饮料店的视觉设计
@@ -47,7 +55,7 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 | `malt` | Malz | Malt drink | 0,33 l |
 | `kola` | Kola-Mix | Cola-orange | 0,5 l |
 
-瓶型、玻璃质感、饮料图案与德语实物标签共同营造社区饮料店的感觉；包装保留德语，界面名称随英语／德语切换。`MEHRWEG` 与容量文字属于场景设计，不引入真实押金规则。全部包装与插画均为原创，无真实品牌、商标或外部游戏素材。
+瓶型、玻璃质感、饮料图案与德语实物标签共同营造社区饮料店的感觉；包装保留德语，界面名称随中文／英语／德语切换。`MEHRWEG` 与容量文字属于场景设计，不引入真实押金规则。全部包装与插画均为原创，无真实品牌、商标或外部游戏素材。
 
 参考了 [GDB 的回收瓶型](https://www.gdb.de/mehrweg/flaschen-und-kaesten/)、[RAPP 的日常饮料品类](https://www.rapp.de/shop/alkoholfreie-rapp-getraenke/)和 [Karamalz 的麦芽饮料规格](https://www.karamalz.de/produkte/karamalz-classic)，仅用作生活背景研究，没有使用这些品牌的名称、标志或包装素材。
 
@@ -68,7 +76,7 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 | `src/components/Dialog.tsx`   | 原生 modal dialog、焦点恢复和 Escape 支持                |
 | `src/App.tsx`                 | 页面、操作历史、动画事件播放、同步输入锁                 |
 | `src/styles.css`              | 原创店铺插画、工作台、瓶箱与响应式布局                   |
-| `src/i18n.ts`                 | 德英游戏文案、关卡名与固定德语包装标签                                     |
+| `src/i18n.ts`                 | 中英德游戏文案、关卡名与固定德语包装标签                                     |
 | `src/storage.ts`              | 有容错的版本化本地存储                                   |
 | `src/audio.ts`                | 用户交互后启用的 Web Audio 音效及英语通关配音                        |
 | `tests/engine.test.ts`        | 规则与关卡验证                                           |
@@ -106,6 +114,16 @@ BASE_URL=http://localhost:4173 BROWSER_CHANNEL=chrome npm run test:browser
 
 脚本会实际点击通关全部十关，并检查 30 次同时点击只产生一步、失败后撤销、自动转移后撤销、重开、关卡解锁、刷新保存、德英语言、被禁用/损坏的存储、桌面通关，以及 320 / 360 / 390 / 768 / 1280px 的横向溢出。截图与回归报告写入 `artifacts/`。
 
+三语回归覆盖浏览器语言识别、八个回收示例、练习中切换语言、设置持久化、教程、帮助和窄屏布局：
+
+```sh
+npm run test:languages
+# 使用环境已有的 Chromium 时：
+BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:languages
+```
+
+包装上的德语标识保留，题目、材料说明、选项和反馈跟随所选语言；切换语言保留当前题目和得分。
+
 测试中的「连续满箱」用刻意构造的中间状态检验结算循环：正常可继续游玩的回合末临时区至多只有两瓶，新空箱只能吸收两瓶，所以多个连续满箱在普通合法存档中通常不会出现。引擎仍完整支持连续结算，且始终在结算结束后才判负。
 
 ## 修改或新增关卡
@@ -138,7 +156,7 @@ BASE_URL=http://localhost:4173 BROWSER_CHANNEL=chrome npm run test:browser
 1. 在 `src/game/types.ts` 的 `bottleTypes` 中增加类型。现有类型为 `water / lemon / currant / apple / malt / kola`；新增时使用独立 token（例如 `rhubarb`），不要复用已有类型。
 2. 在 `src/data/bottles.ts` 中补齐颜色、浅色、SVG 瓶身路径、瓶盖位置；采用相同的 `68 × 124` 坐标系。
 3. 在 `src/components/Bottle.tsx` 的 `Pattern` 中画一个独立标签图案。务必同时保持颜色、瓶型、图案的辨识度。
-4. 在 `src/i18n.ts` 的德英 `bottleNames` 中加上名称，并在 `bottlePackaging` 中配置固定德语标签与容量。然后用新类型配置关卡并运行全部验证。
+4. 在 `src/i18n.ts` 的中英德 `bottleNames` 中加上名称，并在 `bottlePackaging` 中配置固定德语标签与容量。然后用新类型配置关卡并运行全部验证。
 
 瓶箱和规则使用类型数据，不需要为每种新瓶子增加规则分支。
 
@@ -146,13 +164,13 @@ BASE_URL=http://localhost:4173 BROWSER_CHANNEL=chrome npm run test:browser
 
 本版本支持现代 Chrome / Edge / Firefox / Safari；实际自动回归使用桌面 Chrome 的鼠标与手机触屏模拟，没有替代实体 iPhone / Android 测试。没有后端、跨设备同步或 PWA 离线安装。保存的是通关进度和设置，刷新会回到开始页，**不会恢复正在进行的半局**。深层关卡在矮屏上需要纵向滚动；不会横向滚动。
 
-已提供生产构建，但没有部署到公网。
+已提供生产构建和 GitHub Pages 自动部署流程。首次开启、上线验证与后续更新见 [发布说明](docs/DEPLOYMENT.md)；实际发布状态以 GitHub 的部署记录为准。
 
 ## DaVinci 英语配音
 
 用户在 DaVinci 网页中生成并提供了一条英语配音：**“All sorted! Time for a little pause.”**。原始 MP3 原样保存在 `src/assets/voice/win-en.mp3`，约 40 KB、2.5 秒。声线与模型名称未提供，因此不在项目记录中猜测；未生成卡通熊声音、德语配音或其他教学台词，也没有购买付费套餐。
 
-英语模式下，正式关卡或独立练习完成后会在通关音效之后播放一次。已有声音开关同时控制语音。德语模式继续使用原来的短音效。进入下一关、重开、离开页面、退出练习、切换语言或关闭声音都会取消待播或正在播放的语音。异步加载或解码失败不会妨碍游戏。音频随构建打包，本地加载；玩家无需访问 DaVinci。
+英语模式下，正式关卡或独立练习完成后会在通关音效之后播放一次。已有声音开关同时控制语音。中文和德语模式继续使用原来的短音效；当前录音仅有英语。进入下一关、重开、离开页面、退出练习、切换语言或关闭声音都会取消待播或正在播放的语音。异步加载或解码失败不会妨碍游戏。音频随构建打包，本地加载；玩家无需访问 DaVinci。
 
 - `docs/voice-assets.json`：实际素材来源、原始文件名、校验值、触发点。
 - `docs/davinci-voice-brief.json`：最初的多语言制作计划以及明确标注的最终缩减范围。

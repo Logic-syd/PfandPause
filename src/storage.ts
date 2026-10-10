@@ -8,9 +8,13 @@ export interface Preferences {
   tutorialVersion: number;
 }
 export const STORAGE_KEY = "pfand-pause:v1";
+export function languageFromLocale(locale: string): Language {
+  const primary = locale.toLowerCase().split(/[-_]/)[0];
+  return primary === "zh" || primary === "de" ? primary : "en";
+}
 export function loadPreferences(): Preferences {
   const defaults: Preferences = {
-    language: navigator.language.toLowerCase().startsWith("de") ? "de" : "en",
+    language: languageFromLocale(navigator.language),
     sound: true,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches,
@@ -26,7 +30,7 @@ export function loadPreferences(): Preferences {
     const p = parsed as Partial<Preferences>;
     return {
       language:
-        p.language === "de" || p.language === "en"
+        p.language === "zh" || p.language === "de" || p.language === "en"
           ? p.language
           : defaults.language,
       sound: typeof p.sound === "boolean" ? p.sound : true,

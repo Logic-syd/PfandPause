@@ -96,9 +96,10 @@ test("English voice starts after the victory chime, with one source and controll
   assert.equal(f.nodes[0].disconnected, true);
   assert.equal(f.gains[0].disconnected, true);
 });
-test("German, muted, and unavailable audio contexts never load or play the English recording", async () => {
+test("Chinese, German, muted, and unavailable audio contexts never load or play the English recording", async () => {
   const f = fixture();
   assert.equal(await f.player.play("de", true), false);
+  assert.equal(await f.player.play("zh", true), false);
   assert.equal(await f.player.play("en", false), false);
   assert.equal(f.loads, 0);
   assert.equal(f.nodes.length, 0);

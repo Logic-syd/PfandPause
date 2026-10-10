@@ -2517,3 +2517,27 @@ main {
     width: 51px;
   }
 }
+
+/* Recycling lessons keep packaging clues readable on narrow screens. */
+.recycling-entry { margin-bottom: 16px; }
+.recycling-practice { max-width: 850px; margin: 0 auto; padding: 24px 16px 48px; line-height: 1.7; }
+.recycling-practice h1 { font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.3; margin: 20px 0; }
+.recycling-practice h2 { font-size: 1.2rem; }
+.recycling-progress { padding: 12px; background: #e3eddc; border-radius: 12px; }
+.recycling-item { display: flex; align-items: center; gap: 20px; padding: 20px; margin: 20px 0; background: #fffbed; border: 1px solid #d6ddcd; border-radius: 18px; }
+.recycling-item svg { flex-shrink: 0; }
+.recycling-item p { margin: 8px 0; }
+.recycling-label { font-weight: 700; }
+.recycling-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.recycling-choices button { text-align: left; padding: 16px; border: 2px solid #bacab5; border-radius: 12px; background: #fffbed; color: #304c3e; }
+.recycling-choices button span { display: block; font-size: .85rem; margin-top: 5px; }
+.recycling-choices button:disabled { opacity: .7; cursor: default; }
+.recycling-choices button.is-correct { border-color: #316a3c; background: #e3eddc; opacity: 1; }
+.recycling-feedback, .recycling-result { padding: 20px; margin: 20px 0; border: 2px solid #55764a; border-radius: 16px; background: #f0f5e9; }
+.recycling-practice .fine-print { margin-top: 24px; }
+.recycling-practice a { text-decoration: underline; }
+@media (max-width: 480px) { .recycling-choices { grid-template-columns: 1fr; } .recycling-item { padding: 12px; gap: 10px; } .recycling-entry { white-space: normal; } }
+
+.language-options { flex-wrap: wrap; justify-content: flex-end; }
+.recycling-choices button, .recycling-label { overflow-wrap: anywhere; }
+.recycling-item > div { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }

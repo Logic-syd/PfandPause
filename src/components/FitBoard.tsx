@@ -1,18 +1,20 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
 
 // Keep the entire round visible even inside a short game-portal frame.
-// Expand the layout width before scaling so the columns still fill the screen.
-export default function FitBoard({ children }: { children: ReactNode }) {
+// Reflow before scaling; game boards can grow, with unscaled controls kept outside.
+export default function FitBoard({ children, grow = false }: { children: ReactNode; grow?: boolean }) {
   const viewport = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const fit = () => {
     const space = viewport.current;
     const board = content.current;
     if (!space || !board || !space.clientWidth || !space.clientHeight) return;
-    const naturalWidth = Math.max(296, space.clientWidth);
+    const wide = window.matchMedia("(min-width: 700px) and (max-height: 700px)").matches;
+    const minimumWidth = grow && wide ? 560 : 296;
+    const naturalWidth = Math.max(minimumWidth, space.clientWidth);
     // Leave room for the crate shadows and rounding of transformed pixels.
     const availableHeight = Math.max(1, space.clientHeight - 5);
-    let scale = Math.min(1, space.clientWidth / naturalWidth);
+    let scale = grow ? Math.min(1.75, space.clientWidth / minimumWidth) : Math.min(1, space.clientWidth / naturalWidth);
     board.style.width = `${space.clientWidth / scale}px`;
     if (board.offsetHeight * scale > availableHeight) {
       // Reflowing wider often shortens text. Find the largest fitting scale

@@ -63,6 +63,9 @@ test("same-type crates prefer the fuller one, then the left one", () => {
     columns: [Array(6).fill("water") as BottleType[]],
     orders: ["water", "water"],
   });
+  // Exercise defensive routing for a legacy/manual state. New games never
+  // activate two batches of the same type at once.
+  state.crates[1] = { type: "water", count: 0, order: 1 };
   assert.equal(chooseCrate(state, "water"), 0);
   state.crates[1]!.count = 1;
   assert.equal(chooseCrate(state, "water"), 1);
@@ -71,6 +74,67 @@ test("same-type crates prefer the fuller one, then the left one", () => {
   state.crates[0]!.count = 3;
   assert.equal(chooseCrate(state, "water"), 1);
 });
+test("initial trays promote a different queued type without changing the level", () => {
+  const level: Level = {
+    id: 1,
+    columns: [["water", "water", "water", "water", "water", "water"], ["lemon", "lemon", "lemon"]],
+    orders: ["water", "water", "lemon"],
+  };
+  const snapshot = structuredClone(level);
+  const state = createGame(level);
+  assert.deepEqual(level, snapshot);
+  assert.deepEqual(state.crates.map(crate => crate?.type), ["water", "lemon"]);
+  assert.deepEqual(state.orders, ["water", "lemon", "water"]);
+  assert.equal(state.nextOrder, 2);
+});
+test("finishing blue bottles skips a yellow batch already active on the other side", () => {
+  const level: Level = {
+    id: 6,
+    columns: [["water", "water", "water"], ["lemon", "lemon", "lemon", "lemon", "lemon", "lemon"], ["currant", "currant", "currant"]],
+    orders: ["water", "lemon", "lemon", "currant"],
+  };
+  const before = moves(createGame(level), [0, 0]);
+  const snapshot = cloneState(before);
+  const result = takeBottle(before, 0);
+  assert.deepEqual(before, snapshot);
+  assert.deepEqual(result.state.crates.map(crate => crate?.type), ["currant", "lemon"]);
+  assert.deepEqual(result.state.orders, ["water", "lemon", "currant", "lemon"]);
+  for (const frame of result.frames) assertDistinctTrays(frame.state);
+  assert.deepEqual(bottleInventory(result.state), bottleInventory(before));
+});
+test("only repeated batches left wait, reactivate after completion and still win", () => {
+  const level: Level = {
+    id: 1,
+    columns: [["water", "water", "water"], ["lemon", "lemon", "lemon", "lemon", "lemon", "lemon"]],
+    orders: ["water", "lemon", "lemon"],
+  };
+  const initial = createGame(level);
+  const waiting = moves(initial, [0, 0, 0]);
+  assert.equal(waiting.crates[0], null);
+  assert.equal(waiting.crates[1]?.type, "lemon");
+  assert.equal(waiting.nextOrder, 2);
+  assert.equal(waiting.completed, 1);
+  const active = moves(waiting, [1, 1, 1]);
+  assert.equal(active.completed, 2);
+  assert.equal(active.nextOrder, 3);
+  assertDistinctTrays(active);
+  assert.deepEqual(active.crates[0], { type: "lemon", count: 0, order: 2 });
+  assert.equal(active.crates[1], null);
+  const final = moves(active, [1, 1, 1]);
+  assert.equal(final.status, "won");
+  assert.equal(final.completed, 3);
+  assert.deepEqual(bottleInventory(final), bottleInventory(initial));
+});
+test("level six keeps its trays distinct after the first batch is returned", () => {
+  const initial = createGame(levels[5]);
+  const next = moves(initial, [3, 3, 4]);
+  assert.equal(next.completed, 1);
+  assert.deepEqual(next.crates.map(crate => crate?.type), ["lemon", "currant"]);
+});
+function assertDistinctTrays(state: GameState) {
+  const types = state.crates.flatMap(crate => crate ? [crate.type] : []);
+  assert.equal(new Set(types).size, types.length, "Active trays must accept different bottle types");
+}
 test("a full buffer remains playable and undo restores the complete snapshot", () => {
   const level: Level = {
     id: 1,
@@ -190,6 +254,7 @@ test("the solver identifies a genuinely unsolvable balanced level", () => {
 for (const level of levels) {
   test(`level ${level.id}: balanced counts, winning solution, conservation in every animation frame, undo and restart`, () => {
     const initial = createGame(level);
+    assertDistinctTrays(initial);
     const inventory = bottleInventory(initial);
     for (const type of bottleTypes) if (!isGlass(type)) assert.equal(inventory[type] % 3, 0);
     const solution = solveLevel(level);
@@ -201,8 +266,11 @@ for (const level of levels) {
       const type = state.columns[column][0];
       const next = takeBottle(state, column, isGlass(type) ? type : undefined);
       assert.deepEqual(bottleInventory(next.state), inventory);
-      for (const frame of next.frames)
+      for (const frame of next.frames) {
         assert.deepEqual(bottleInventory(frame.state), inventory);
+        assertDistinctTrays(frame.state);
+      }
+      assertDistinctTrays(next.state);
       assert.ok(next.state.buffer.length <= 3);
       state = next.state;
     }
@@ -227,6 +295,7 @@ for (const level of levels) {
         const column = choices[seed % choices.length];
         const type = state.columns[column][0];
         state = takeBottle(state, column, isGlass(type) ? type : undefined).state;
+        assertDistinctTrays(state);
         assert.deepEqual(bottleInventory(state), expected);
         assert.ok(state.crates.every((c) => !c || c.count < 3));
         assert.ok(state.buffer.length <= 3);

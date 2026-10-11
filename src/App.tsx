@@ -707,76 +707,79 @@ export default function App() {
                       <span>{t.crateHint}</span>
                     </div>
                     <div className="crates machine-trays">
-                      {game.crates.map((crate, i) => (
-                        <div
-                          data-place={`crate-${i}`}
-                          key={i}
-                          className={`crate-wrap ${fullCrate === i ? "crate-full" : ""} ${!crate ? "crate-finished" : ""}`}
-                          style={
-                            {
-                              "--crate-color": crate
-                                ? bottles[crate.type].color
-                                : "#768778",
-                              "--crate-light": crate
-                                ? bottles[crate.type].light
-                                : "#e6ecdf",
-                            } as CSSProperties
-                          }
-                          aria-label={
-                            crate
-                              ? `${t.crate} ${i + 1}: ${t.bottleNames[crate.type]}, ${crate.count}/3`
-                              : t.crateDone
-                          }
-                        >
-                          <div className="crate-heading">
-                            {crate ? (
-                              <>
-                                <span className="type-dot" />
-                                <span className="crate-name">
-                                  {t.bottleNames[crate.type]}
-                                  <small className="machine-deposit">{formatDeposit(bottleDeposits[crate.type])}</small>
-                                </span>
-                                <span className="crate-amount">
-                                  {crate.count}
-                                  <small> / 3</small>
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <Icon name="check" size={17} />
-                                {t.crateDone}
-                              </>
-                            )}
-                          </div>
-                          <div className="crate-body machine-body">
-                            <div className="crate-slots">
-                              {[0, 1, 2].map((j) => (
-                                <div
-                                  className={`crate-slot ${crate && j < crate.count ? "has-bottle" : ""}`}
-                                  key={j}
-                                >
-                                  {crate ? (
-                                    <Bottle type={crate.type} />
-                                  ) : (
-                                    <Icon name="check" size={18} />
-                                  )}
-                                </div>
-                              ))}
+                      {game.crates.map((crate, i) => {
+                        const waiting = !crate && game.nextOrder < game.orders.length;
+                        return (
+                          <div
+                            data-place={`crate-${i}`}
+                            key={i}
+                            className={`crate-wrap ${fullCrate === i ? "crate-full" : ""} ${!crate ? "crate-finished" : ""}`}
+                            style={
+                              {
+                                "--crate-color": crate
+                                  ? bottles[crate.type].color
+                                  : "#768778",
+                                "--crate-light": crate
+                                  ? bottles[crate.type].light
+                                  : "#e6ecdf",
+                              } as CSSProperties
+                            }
+                            aria-label={
+                              crate
+                                ? `${t.crate} ${i + 1}: ${t.bottleNames[crate.type]}, ${crate.count}/3`
+                                : waiting ? t.crateWaiting : t.crateDone
+                            }
+                          >
+                            <div className="crate-heading">
+                              {crate ? (
+                                <>
+                                  <span className="type-dot" />
+                                  <span className="crate-name">
+                                    {t.bottleNames[crate.type]}
+                                    <small className="machine-deposit">{formatDeposit(bottleDeposits[crate.type])}</small>
+                                  </span>
+                                  <span className="crate-amount">
+                                    {crate.count}
+                                    <small> / 3</small>
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Icon name={waiting ? "clock" : "check"} size={17} />
+                                  {waiting ? t.crateWaiting : t.crateDone}
+                                </>
+                              )}
                             </div>
-                            <div className="crate-front">
-                              <span className="crate-handle" />
-                              {[0, 1, 2].map((j) => (
-                                <i
-                                  className={
-                                    crate && j < crate.count ? "filled" : ""
-                                  }
-                                  key={j}
-                                />
-                              ))}
+                            <div className="crate-body machine-body">
+                              <div className="crate-slots">
+                                {[0, 1, 2].map((j) => (
+                                  <div
+                                    className={`crate-slot ${crate && j < crate.count ? "has-bottle" : ""}`}
+                                    key={j}
+                                  >
+                                    {crate ? (
+                                      <Bottle type={crate.type} />
+                                    ) : (
+                                      <Icon name={waiting ? "clock" : "check"} size={18} />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="crate-front">
+                                <span className="crate-handle" />
+                                {[0, 1, 2].map((j) => (
+                                  <i
+                                    className={
+                                      crate && j < crate.count ? "filled" : ""
+                                    }
+                                    key={j}
+                                  />
+                                ))}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                   {hasGlass && (

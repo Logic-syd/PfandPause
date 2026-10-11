@@ -30,15 +30,11 @@ const output = levels.slice(0, 3);
 for (const spec of specs) {
   let chosen: Level | undefined;
   for (let attempt = 0; attempt < 3000; attempt++) {
-    let orders = shuffle(
+    const orders = shuffle(
       spec.counts.flatMap(
         (n, i) => Array(n).fill(bottleTypes[i]) as BottleType[],
       ),
     );
-    if (spec.id === 7)
-      orders = ["water", "water", ...orders.filter((t) => t !== "water")];
-    if (spec.id === 9)
-      orders = ["lemon", "lemon", ...orders.filter((t) => t !== "lemon")];
     const loose = shuffle(orders.flatMap((t) => [t, t, t]));
     const columns = spec.depths.map((n) => loose.splice(0, n));
     const candidate: Level = { id: spec.id, columns, orders };
@@ -69,5 +65,5 @@ for (const spec of specs) {
 }
 writeFileSync(
   "src/data/levels.ts",
-  `import type { Level } from '../game/types';\n// Static, solver-verified levels. Each column is TOP FIRST.\n// Orders 0 and 1 are the initial left/right crates; remaining orders share one queue.\nexport const levels: Level[] = ${JSON.stringify(output, null, 2)};\n`,
+  `import type { Level } from '../game/types';\n// Static, solver-verified levels. Each column is TOP FIRST.\n// Shared batch priority queue; active trays take the earliest distinct types.\nexport const levels: Level[] = ${JSON.stringify(output, null, 2)};\n`,
 );

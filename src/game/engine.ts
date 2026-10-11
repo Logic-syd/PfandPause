@@ -34,16 +34,28 @@ export function validateLevel(level: Level): void {
       throw new Error(`Unbalanced level ${level.id}: ${type}`);
   }
 }
+// Keep active trays distinct. Promote the earliest eligible waiting batch,
+// leaving already issued orders and the relative order of other batches intact.
+function fillEmptyCrates(state: GameState): void {
+  for (let slot = 0; slot < state.crates.length; slot++) {
+    if (state.crates[slot]) continue;
+    const next = state.orders.findIndex((type, order) =>
+      order >= state.nextOrder && !state.crates.some(crate => crate?.type === type),
+    );
+    if (next < 0) continue;
+    const [type] = state.orders.splice(next, 1);
+    state.orders.splice(state.nextOrder, 0, type);
+    state.crates[slot] = { type, count: 0, order: state.nextOrder++ };
+  }
+}
 export function createGame(level: Level): GameState {
   validateLevel(level);
-  return {
+  const state: GameState = {
     columns: structuredClone(level.columns),
     buffer: [],
-    crates: [0, 1].map((i) =>
-      level.orders[i] ? { type: level.orders[i], count: 0, order: i } : null,
-    ),
+    crates: [null, null],
     orders: [...level.orders],
-    nextOrder: Math.min(2, level.orders.length),
+    nextOrder: 0,
     completed: 0,
     recycled: [],
     penalties: 0,
@@ -51,6 +63,8 @@ export function createGame(level: Level): GameState {
     moves: 0,
     status: "playing",
   };
+  fillEmptyCrates(state);
+  return state;
 }
 // A fuller matching crate wins; equal fill uses the left slot.
 export function chooseCrate(state: GameState, type: BottleType): number {
@@ -120,14 +134,8 @@ export function takeBottle(previous: GameState, column: number, bin?: GlassType)
     if (full >= 0) {
       record({ kind: "full", index: full });
       state.completed++;
-      state.crates[full] =
-        state.nextOrder < state.orders.length
-          ? {
-              type: state.orders[state.nextOrder],
-              count: 0,
-              order: state.nextOrder++,
-            }
-          : null;
+      state.crates[full] = null;
+      fillEmptyCrates(state);
       record({ kind: "replace", index: full });
       continue;
     }

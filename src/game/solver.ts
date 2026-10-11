@@ -17,6 +17,7 @@ export function solveLevel(level: Level, limit = 500_000): Solution {
       state.buffer,
       state.crates,
       state.nextOrder,
+      state.orders.slice(state.nextOrder),
     ]);
     if (failed.has(key)) return null;
     if (++visited > limit) {

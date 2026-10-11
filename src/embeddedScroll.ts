@@ -30,7 +30,7 @@ export function installEmbeddedScroll(root: HTMLElement): () => void {
         && /auto|scroll/.test(getComputedStyle(element).overflowY)
         && element.scrollHeight > element.clientHeight + 1) return element;
       // A short dialog must not pass a swipe through to the board behind it.
-      if (element === dialog || element === root) return;
+      if (element === dialog || element === root) return element as HTMLElement;
     }
   };
   const start = (event: TouchEvent) => {

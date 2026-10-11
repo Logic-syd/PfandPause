@@ -15,6 +15,7 @@ try {
     page.on('pageerror', e => errors.push(e.message));
     await page.goto(url);
     assert.equal(await page.locator('html').getAttribute('lang'), language);
+    await page.locator('.brand').click();
     await page.getByRole('button', { name: translations[language].recyclingEntry, exact: true }).click();
     for (let question = 0; question < 8; question++) {
       if (language !== 'zh') assert.ok(!/[\u3400-\u9fff]/u.test(await page.locator('.recycling-practice').innerText()));
@@ -52,7 +53,8 @@ try {
     await page.reload();
     assert.equal(await page.locator('html').getAttribute('lang'), savedLanguage);
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('pfand-pause:v1')!).language), savedLanguage);
-    await page.getByRole('button', { name: translations[savedLanguage].play, exact: true }).click();
+    await page.locator('.help-button').click();
+    await page.getByRole('button', { name: translations[savedLanguage].learn, exact: true }).click();
     await page.getByRole('heading', { name: translations[savedLanguage].practiceTitle, exact: true }).waitFor();
     await page.getByRole('button', { name: translations[savedLanguage].skip, exact: true }).click();
     await page.locator('.help-button').click();

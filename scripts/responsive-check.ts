@@ -32,8 +32,10 @@ async function noOverflow(frame: Frame) {
   assert.ok(await frame.evaluate(() => {
     const root = document.getElementById("root")!;
     return root.scrollWidth <= root.clientWidth && root.clientHeight <= innerHeight
+      && (!document.querySelector(".game-screen") || (root.scrollHeight <= root.clientHeight && root.scrollTop === 0))
+      && getComputedStyle(root).scrollbarWidth === "none"
       && document.documentElement.scrollWidth <= innerWidth;
-  }), "The embedded game must not overflow horizontally");
+  }), "The entire embedded round must fit without page scrolling");
 }
 
 try {
@@ -67,7 +69,7 @@ try {
       body: `<meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:100%;border:0}</style><iframe src="${url}/?embedded-test" scrolling="no" allow="autoplay; fullscreen"></iframe>`,
     }));
     await page.goto(`${url}/portal-test`);
-    await page.frameLocator("iframe").frameLocator("iframe").locator(".landing").waitFor();
+    await page.frameLocator("iframe").frameLocator("iframe").locator(".game-screen").waitFor();
     const frame = page.frames().find(frame => frame.url().includes("?embedded-test"))!;
     assert.equal(await frame.evaluate(() => innerWidth), size.width,
       "The portal must preserve the phone viewport instead of using a desktop layout viewport");
@@ -93,16 +95,11 @@ try {
       await page.setViewportSize({ width: size.width, height: size.height });
     }
 
-    // Wheel input must scroll the game itself even though both portal frames
-    // explicitly disable document scrolling. Programmatic scroll alone is insufficient.
+    // Wheel or touch input must not move a fitted board inside nested frames.
     await frame.evaluate(() => document.getElementById("root")!.scrollTo(0, 0));
     const bounds = await frame.locator("#root").boundingBox();
     assert.ok(bounds);
-    const hasScroll = await frame.evaluate(() => {
-      const root = document.getElementById("root")!;
-      return root.scrollHeight > root.clientHeight;
-    });
-    if (hasScroll) {
+    {
       if (size.touch) {
         const touchSession = await context.newCDPSession(page);
         const x = bounds.x + bounds.width - 16;
@@ -122,7 +119,7 @@ try {
         await page.mouse.move(bounds.x + bounds.width - 12, bounds.y + bounds.height / 2);
         await page.mouse.wheel(0, 700);
       }
-      await frame.waitForFunction(() => document.getElementById("root")!.scrollTop > 0);
+      await noOverflow(frame);
     }
     await press(frame.getByRole("button", { name: t.restart, exact: true }));
     assert.equal(await frame.evaluate(() => document.getElementById("root")!.scrollTop), 0);
@@ -155,7 +152,7 @@ try {
       await settled(frame);
     }
     await frame.locator(".result-dialog.won").waitFor();
-    console.log(`PASS nested iframe ${size.width}×${size.height} @${size.scale}: ${language}, ${size.touch ? "touch" : "mouse"}, scroll, undo, restart, orders, recycling, tutorial, animated win`);
+    console.log(`PASS nested iframe ${size.width}×${size.height} @${size.scale}: ${language}, ${size.touch ? "touch" : "mouse"}, fitted board, undo, restart, orders, recycling, tutorial, animated win`);
     await context.close();
   }
   const faultContext = await browser.newContext({ viewport: { width: 1280, height: 720 } });
@@ -171,7 +168,7 @@ try {
   const faultPage = await faultContext.newPage();
   faultPage.on("pageerror", error => errors.push(error.message));
   await faultPage.goto(url);
-  await faultPage.locator(".landing-actions .primary").click();
+  await faultPage.locator(".game-screen").waitFor();
   const faultFrame = faultPage.mainFrame();
   for (const column of solveLevel(levels[0]).path!) {
     await faultPage.locator(`[data-column="${column}"]`).click();

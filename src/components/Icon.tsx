@@ -8,6 +8,7 @@ export default function Icon({
   const paths: Record<string, React.ReactNode> = {
     arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,
     back: <path d="M19 12H5m5-5-5 5 5 5" />,
+    menu: <path d="M4 6h16M4 12h16M4 18h16" />,
     undo: (
       <>
         <path

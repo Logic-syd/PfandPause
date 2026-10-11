@@ -38,7 +38,7 @@ try {
       reducedMotion: false, completed: [1,2,3,4,5,6,7,8,9,10], tutorialSeen: true, tutorialVersion }));
     document.addEventListener("DOMContentLoaded", () => {
       // Fault injection: touch events arrive but the browser does not pan.
-      // This must fail with 1.0.1's CSS-only scrolling, and pass with the fallback.
+      // Simulate an embedded browser that cannot natively pan inside its frame.
       const style = document.createElement("style");
       style.textContent = "#root, dialog { touch-action: none !important; }";
       document.head.append(style);
@@ -52,18 +52,18 @@ try {
   await page.route("**/scroll-frame", route => route.fulfill({ contentType: "text/html",
     body: `<meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:100%;border:0}</style><iframe scrolling="no" src="${gameUrl}/?scroll-compat"></iframe>` }));
   await page.goto(`${url}/scroll-portal`);
-  await page.frameLocator("iframe").frameLocator("iframe").locator(".landing").waitFor({ timeout: 5000 });
+  await page.frameLocator("iframe").frameLocator("iframe").locator(".game-screen").waitFor({ timeout: 5000 });
   const frame = page.frames().find(frame => frame.url().includes("?scroll-compat"))!;
   assert.equal(await frame.evaluate(() => innerWidth), 390);
   await select(frame, 1);
   const box = await frame.locator('[data-column="0"]').boundingBox();
   assert.ok(box);
   await swipe(context, page, box.x + box.width / 2, box.y + box.height - 12, box.y - 90);
-  assert.ok(await frame.locator("#root").evaluate(el => el.scrollTop) > 0,
-    "A swipe starting on a bottle must scroll even when native panning is unavailable");
+  assert.equal(await frame.locator("#root").evaluate(el => el.scrollTop), 0,
+    "The fitted board must stay fixed when swiped inside a portal");
   assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`0 ${t.moves}`),
     "Swiping a bottle must not pick it up");
-  console.log("PASS cross-origin nested frame: bottle swipe scrolls with native panning disabled; no accidental move");
+  console.log("PASS cross-origin nested frame: fitted board stays fixed when swiped; no accidental move");
   await swipe(context, page, 195, 160, 500);
   assert.equal(await frame.locator("#root").evaluate(el => el.scrollTop), 0);
   await frame.locator('[data-column="0"]').tap();
@@ -103,7 +103,7 @@ try {
   console.log("PASS two-finger gestures are not intercepted");
   await context.close();
 
-  // The compatibility handler belongs only to embedded games.
+  // Direct links also keep the entire board visible and accept bottle taps.
   const direct = await browser.newContext({ viewport: { width: 390, height: 700 }, isMobile: true, hasTouch: true });
   await direct.addInitScript(tutorialVersion => localStorage.setItem("pfand-pause:v1", JSON.stringify({
     language: "zh", sound: false, completed: [1,2,3,4,5,6,7,8,9,10], tutorialSeen: true, tutorialVersion,
@@ -113,8 +113,11 @@ try {
   await directPage.goto(gameUrl);
   await select(directPage.mainFrame(), 1);
   await swipe(direct, directPage, 195, 560, 200);
-  assert.ok(await directPage.locator("#root").evaluate(el => el.scrollTop) > 0);
-  console.log("PASS direct game retains native scrolling");
+  assert.equal(await directPage.locator("#root").evaluate(el => el.scrollTop), 0);
+  await directPage.locator('[data-column="0"]').tap();
+  await directPage.waitForFunction(() => !document.querySelector(".stacks.is-busy"));
+  assert.match(await directPage.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
+  console.log("PASS direct game stays fitted and bottle taps remain usable");
   await direct.close();
   assert.deepEqual(errors, []);
 } finally {

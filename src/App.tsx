@@ -4,6 +4,7 @@ import Icon from "./components/Icon";
 import Dialog from "./components/Dialog";
 import Tutorial from "./components/Tutorial";
 import RecyclingPractice from "./components/RecyclingPractice";
+import FitBoard from "./components/FitBoard";
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
 import { bottles } from "./data/bottles";
@@ -21,21 +22,24 @@ type Flight = {
   y: number;
   dx: number;
   dy: number;
+  width: number;
+  height: number;
 };
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const locationSelector = (place: Place) =>
   `[data-place="${place.kind}-${place.index}"]`;
 function scrollToStart() {
-  // Game portals can disable the iframe's document scrolling. Our own scroll
-  // container still lets players reach the entire board in a short viewport.
+  // Reset secondary screens before returning to the fitted board.
   document.getElementById("root")?.scrollTo({ top: 0 });
 }
 export default function App() {
   const [preferences, setPreferences] = useState(loadPreferences);
   const [saveError, setSaveError] = useState(false);
-  const [screen, setScreen] = useState<Screen>("start");
-  const [levelIndex, setLevelIndex] = useState(0);
-  const [game, setGame] = useState(() => createGame(levels[0]));
+  const [screen, setScreen] = useState<Screen>("play");
+  const [levelIndex, setLevelIndex] = useState(() => Math.max(
+    0, levels.findIndex((level) => !preferences.completed.includes(level.id)),
+  ));
+  const [game, setGame] = useState(() => createGame(levels[levelIndex]));
   const gameRef = useRef(game);
   const [history, setHistory] = useState<GameState[]>([]);
   const [busy, setBusy] = useState(false);
@@ -46,7 +50,6 @@ export default function App() {
   const [modal, setModal] = useState<"settings" | "help" | "orders" | null>(
     null,
   );
-  const [expandedOrders, setExpandedOrders] = useState(false);
   const [tutorial, setTutorial] = useState(false);
   const t = translations[preferences.language];
   const level = levels[levelIndex];
@@ -118,8 +121,7 @@ export default function App() {
     setHistory([]);
     setScreen("play");
     setModal(null);
-    setExpandedOrders(false);
-    setTutorial(preferences.tutorialVersion !== TUTORIAL_VERSION);
+    setTutorial(false);
     scrollToStart();
   }
   function dismissTutorial() {
@@ -158,11 +160,17 @@ export default function App() {
           .querySelector(locationSelector(to))
           ?.getBoundingClientRect();
         if (origin && target && !preferences.reducedMotion) {
+          const art = document.querySelector(`${locationSelector(from)} .bottle`)
+            ?.getBoundingClientRect();
+          const width = Math.min(48, art?.width ?? 48);
+          const height = width * 88 / 48;
           setFlight({
             source: `${from.kind}-${from.index}`,
             bottle,
-            x: origin.left + origin.width / 2 - 24,
-            y: origin.top + origin.height / 2 - 44,
+            x: origin.left + origin.width / 2 - width / 2,
+            y: origin.top + origin.height / 2 - height / 2,
+            width,
+            height,
             dx:
               target.left + target.width / 2 - (origin.left + origin.width / 2),
             dy:
@@ -272,26 +280,42 @@ export default function App() {
 
   return (
     <div
-      className={`app ${preferences.reducedMotion ? "reduce-motion" : ""}`}
+      className={`app ${screen === "play" ? "is-playing" : ""} ${preferences.reducedMotion ? "reduce-motion" : ""}`}
       onPointerDown={() => {
         if (preferences.sound) unlockAudio();
       }}
     >
       <header className="header">
-        <button
-          className="brand"
-          onClick={() => navigate("start")}
-          disabled={busy}
-          aria-label={`${t.brand} · ${t.home}`}
-        >
-          <span className="brand-icon">
-            <Icon name="leaf" size={23} />
-          </span>
-          <span>
-            pfand<span className="brand-pause">pause</span>
-            <span className="brand-dot">.</span>
-          </span>
-        </button>
+        <div className="header-leading">
+          <button
+            className="brand"
+            onClick={() => navigate("start")}
+            disabled={busy}
+            aria-label={`${t.brand} · ${t.home}`}
+          >
+            <span className="brand-icon">
+              <Icon name={screen === "play" ? "menu" : "leaf"} size={20} />
+            </span>
+            <span className="brand-name">
+              pfand<span className="brand-pause">pause</span>
+              <span className="brand-dot">.</span>
+            </span>
+          </button>
+          {screen === "play" && (
+            <button
+              className="level-link"
+              aria-label={t.chooseLevel}
+              title={t.levelNames[levelIndex]}
+              onClick={() => navigate("levels")}
+              disabled={busy}
+            >
+              <span className="level-label">{t.level}</span>
+              <strong>{String(level.id).padStart(2, "0")}</strong>
+              <span className="level-total">/ {String(levels.length).padStart(2, "0")}</span>
+              <Icon name="chevron" size={13} />
+            </button>
+          )}
+        </div>
         <nav>
           <button
             className="language-button"
@@ -318,6 +342,14 @@ export default function App() {
             <Icon name={preferences.sound ? "sound" : "mute"} />
           </button>
           <button
+            className="icon-button help-button"
+            onClick={() => setModal("help")}
+            aria-label={t.help}
+            disabled={busy}
+          >
+            <Icon name="help" />
+          </button>
+          <button
             className="icon-button"
             onClick={() => setModal("settings")}
             aria-label={t.settings}
@@ -340,119 +372,26 @@ export default function App() {
           />
         )}
         {screen === "start" && (
-          <section className="landing">
+          <section className="landing quick-menu">
             <div className="landing-copy">
-              <p className="eyebrow">
-                <span className="green-dot" />
-                {t.shop}
-              </p>
-              <h1>
-                {t.tagline.split("\n").map((line, i) => (
-                  <span key={line} className={i ? "pink-text" : ""}>
-                    {line}
-                  </span>
-                ))}
-              </h1>
-              <p className="intro">{t.intro}</p>
-              <button
-                className="primary recycling-entry"
-                onClick={() => navigate("recycling")}
-              >
-                {t.recyclingEntry}
-              </button>
               <div className="landing-actions">
                 <button
                   className="primary"
-                  onClick={() => start(nextUnfinished)}
+                  onClick={() => game.status === "playing" ? navigate("play") : start(nextUnfinished)}
                 >
                   {preferences.completed.length ? t.continue : t.play}
                   <Icon name="arrow" />
                 </button>
-                <button
-                  className="text-button"
-                  onClick={() => navigate("levels")}
-                >
-                  {t.chooseLevel}
-                  <Icon name="grid" size={17} />
+                <button className="text-button" onClick={() => navigate("levels")}>
+                  {t.chooseLevel}<Icon name="grid" size={17} />
                 </button>
               </div>
-              <button
-                className="learn-button"
-                onClick={() => setTutorial(true)}
-              >
-                <Icon name="help" size={18} />
-                {t.learn}
-                <Icon name="arrow" size={16} />
+              <button className="primary recycling-entry" onClick={() => navigate("recycling")}>
+                <Icon name="leaf" size={18} />{t.recyclingEntry}
               </button>
-              <p className="no-rush">
-                <Icon name="leaf" size={17} />
-                {t.noRush}
-              </p>
-              {preferences.completed.length > 0 && (
-                <div className="saved-progress">
-                  <span>{t.progress}</span>
-                  <b>
-                    {preferences.completed.length} / {levels.length}
-                  </b>
-                  <div className="progress-track">
-                    <i
-                      style={{
-                        width: `${(preferences.completed.length / levels.length) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="store-illustration" aria-hidden="true">
-              <div className="illustration-spark one">✧</div>
-              <div className="illustration-spark two">✳</div>
-              <div className="store-sign">
-                {t.returnCorner}
-                <span>✦</span>
-              </div>
-              <div className="awning">
-                <div />
-                <div />
-                <div />
-                <div />
-                <div />
-                <div />
-                <div />
-              </div>
-              <div className="store-interior">
-                <div className="hanging-sign">
-                  {t.shopOpen}
-                  <Icon name="heart" size={16} />
-                </div>
-                <div className="shop-shelf">
-                  <Bottle type="malt" />
-                  <Bottle type="apple" />
-                  <Bottle type="kola" />
-                  <span className="shelf-plant">
-                    <i />
-                    <i />
-                    <i />
-                    <b />
-                  </span>
-                </div>
-                <div className="hero-bottles">
-                  <Bottle type="lemon" />
-                  <Bottle type="water" />
-                  <Bottle type="currant" />
-                </div>
-                <div className="hero-crate">
-                  <span>pfandpause.</span>
-                  <div>
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                </div>
-                <div className="shop-counter" />
-              </div>
-              <div className="shop-base" />
-              <span className="store-note">{t.madeForPause}</span>
+              <button className="learn-button" onClick={() => setTutorial(true)}>
+                <Icon name="help" size={18} />{t.learn}<Icon name="arrow" size={16} />
+              </button>
             </div>
           </section>
         )}
@@ -507,314 +446,241 @@ export default function App() {
         )}
         {screen === "play" && (
           <section className="game-screen">
-            <div className="game-heading">
-              <div>
-                <button
-                  className="level-link"
-                  onClick={() => navigate("levels")}
-                  disabled={busy}
-                >
-                  <Icon name="grid" size={15} />
-                  {t.level} {String(level.id).padStart(2, "0")}{" "}
-                  <span>/ {String(levels.length).padStart(2, "0")}</span>
-                  <Icon name="chevron" size={13} />
-                </button>
-                <h1>{t.levelNames[levelIndex]}</h1>
-              </div>
+            <h1 className="sr-only">{t.levelNames[levelIndex]}</h1>
+            <div className="level-progress">
+              <span>
+                <b>{packed}</b> / {total} {t.packed}
+              </span>
               <button
-                className="icon-button help-button"
-                onClick={() => setModal("help")}
-                aria-label={t.help}
+                className="order-count-button"
+                onClick={() => setModal("orders")}
                 disabled={busy}
               >
-                <Icon name="help" />
+                <Icon name="receipt" size={13} />
+                {game.orders.length - game.nextOrder} {t.queued}
+                <Icon name="chevron" size={12} />
               </button>
+              <div key={level.id} className="progress-track">
+                <i style={{ width: `${(packed / total) * 100}%` }} />
+              </div>
             </div>
-            <div className="game-layout">
-              <div className="play-area">
-                <div className="level-progress">
-                  <span>
-                    <b>{packed}</b> / {total} {t.packed}
-                  </span>
-                  <button
-                    className="order-count-button"
-                    onClick={() => setModal("orders")}
-                    disabled={busy}
-                  >
-                    <Icon name="receipt" size={13} />
-                    {game.orders.length - game.nextOrder} {t.queued}
-                    <Icon name="chevron" size={12} />
-                  </button>
-                  <div key={level.id} className="progress-track">
-                    <i style={{ width: `${(packed / total) * 100}%` }} />
-                  </div>
-                </div>
-                <div className="counter">
-                  <div className="section-label">
-                    <span>{t.counter}</span>
-                    <span className="counter-count">
-                      {remaining} <Icon name="leaf" size={12} />
-                    </span>
-                  </div>
-                  <div
-                    className={`stacks ${busy ? "is-busy" : ""}`}
-                    style={
-                      {
-                        "--columns": game.columns.length,
-                        "--depth": Math.max(
-                          2,
-                          ...level.columns.map((c) => c.length),
-                        ),
-                      } as CSSProperties
-                    }
-                  >
-                    {game.columns.map((column, index) => (
-                      <div
-                        className="stack"
-                        key={index}
-                        style={
-                          { "--stack-height": column.length } as CSSProperties
-                        }
-                      >
-                        <span className="stack-number">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        {column.length ? (
-                          column.map((type, depth) =>
-                            depth === 0 ? (
-                              <button
-                                key={`${game.moves}-${depth}`}
-                                data-column={index}
-                                data-place={`column-${index}`}
-                                className={`bottle-pick ${flight?.source === `column-${index}` ? "moving-source" : ""} `}
-                                disabled={busy || game.status !== "playing"}
-                                style={
-                                  {
-                                    "--depth-index": depth,
-                                    zIndex: column.length - depth,
-                                  } as CSSProperties
-                                }
-                                onClick={() => void pick(index)}
-                                aria-label={`${t.pick} ${t.bottleNames[type]} · ${t.column} ${index + 1}`}
-                              >
-                                <Bottle type={type} />
-                                <span className="pick-dot" />
-                              </button>
-                            ) : (
-                              <div
-                                key={`${game.moves}-${depth}`}
-                                className="buried-bottle"
-                                style={
-                                  {
-                                    "--depth-index": depth,
-                                    zIndex: column.length - depth,
-                                  } as CSSProperties
-                                }
-                              >
-                                <Bottle type={type} />
-                                <span className="sr-only">
-                                  {t.bottleNames[type]}
-                                </span>
-                              </div>
-                            ),
-                          )
-                        ) : (
-                          <div className="empty-stack">
-                            <Icon name="check" size={17} />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="counter-edge" />
-                  <p className="counter-caption">
-                    <span className="tiny-spark">✧</span>
-                    {t.counterHint}
-                  </p>
-                </div>
-                <div
-                  className={`buffer-section ${game.buffer.length === 2 ? "buffer-caution" : ""}`}
-                >
-                  <div className="buffer-copy">
-                    <h2>{t.spare}</h2>
-                    <p>{t.spareHint}</p>
-                    <span className="buffer-count">
-                      {game.buffer.length} / 3
-                    </span>
-                  </div>
-                  <div className="buffer-slots" aria-label={t.buffer}>
-                    {[0, 1, 2].map((i) => (
-                      <div
-                        className={`buffer-slot ${flight?.source === `buffer-${i}` ? "moving-source" : ""} ${game.buffer[i] ? "occupied" : ""}`}
-                        key={i}
-                        data-place={`buffer-${i}`}
-                        aria-label={
-                          game.buffer[i]
-                            ? `${t.buffer} ${i + 1}: ${t.bottleNames[game.buffer[i]]}`
-                            : t.emptySpot
-                        }
-                      >
-                        {game.buffer[i] ? (
-                          <Bottle type={game.buffer[i]} />
-                        ) : (
-                          <span>+</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="crates-section">
-                  <div className="section-label">
-                    <span>{t.crates}</span>
-                    <span>{t.crateHint}</span>
-                  </div>
-                  <div className="crates">
-                    {game.crates.map((crate, i) => (
-                      <div
-                        data-place={`crate-${i}`}
-                        key={i}
-                        className={`crate-wrap ${fullCrate === i ? "crate-full" : ""} ${!crate ? "crate-finished" : ""}`}
-                        style={
-                          {
-                            "--crate-color": crate
-                              ? bottles[crate.type].color
-                              : "#768778",
-                            "--crate-light": crate
-                              ? bottles[crate.type].light
-                              : "#e6ecdf",
-                          } as CSSProperties
-                        }
-                        aria-label={
-                          crate
-                            ? `${t.crate} ${i + 1}: ${t.bottleNames[crate.type]}, ${crate.count}/3`
-                            : t.crateDone
-                        }
-                      >
-                        <div className="crate-heading">
-                          {crate ? (
-                            <>
-                              <span className="type-dot" />
-                              <span className="crate-name">
-                                {t.bottleNames[crate.type]}
-                              </span>
-                              <span className="crate-amount">
-                                {crate.count}
-                                <small> / 3</small>
-                              </span>
-                            </>
+            <FitBoard>
+              <div className="game-layout">
+                <div className="play-area">
+                  <div className="counter">
+                    <div className="section-label">
+                      <span>{t.counter}</span>
+                      <span className="counter-count">
+                        {remaining} <Icon name="leaf" size={12} />
+                      </span>
+                    </div>
+                    <div
+                      className={`stacks ${busy ? "is-busy" : ""}`}
+                      style={
+                        {
+                          "--columns": game.columns.length,
+                          "--depth": Math.max(
+                            2,
+                            ...level.columns.map((c) => c.length),
+                          ),
+                        } as CSSProperties
+                      }
+                    >
+                      {game.columns.map((column, index) => (
+                        <div
+                          className="stack"
+                          key={index}
+                          style={
+                            { "--stack-height": column.length } as CSSProperties
+                          }
+                        >
+                          <span className="stack-number">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          {column.length ? (
+                            column.map((type, depth) =>
+                              depth === 0 ? (
+                                <button
+                                  key={`${game.moves}-${depth}`}
+                                  data-column={index}
+                                  data-place={`column-${index}`}
+                                  className={`bottle-pick ${flight?.source === `column-${index}` ? "moving-source" : ""} `}
+                                  disabled={busy || game.status !== "playing"}
+                                  style={
+                                    {
+                                      "--depth-index": depth,
+                                      zIndex: column.length - depth,
+                                    } as CSSProperties
+                                  }
+                                  onClick={() => void pick(index)}
+                                  aria-label={`${t.pick} ${t.bottleNames[type]} · ${t.column} ${index + 1}`}
+                                >
+                                  <Bottle type={type} />
+                                  <span className="pick-dot" />
+                                </button>
+                              ) : (
+                                <div
+                                  key={`${game.moves}-${depth}`}
+                                  className="buried-bottle"
+                                  style={
+                                    {
+                                      "--depth-index": depth,
+                                      zIndex: column.length - depth,
+                                    } as CSSProperties
+                                  }
+                                >
+                                  <Bottle type={type} />
+                                  <span className="sr-only">
+                                    {t.bottleNames[type]}
+                                  </span>
+                                </div>
+                              ),
+                            )
                           ) : (
-                            <>
+                            <div className="empty-stack">
                               <Icon name="check" size={17} />
-                              {t.crateDone}
-                            </>
+                            </div>
                           )}
                         </div>
-                        <div className="crate-body">
-                          <div className="crate-slots">
-                            {[0, 1, 2].map((j) => (
-                              <div
-                                className={`crate-slot ${crate && j < crate.count ? "has-bottle" : ""}`}
-                                key={j}
-                              >
-                                {crate ? (
-                                  <Bottle type={crate.type} />
-                                ) : (
-                                  <Icon name="check" size={18} />
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          <div className="crate-front">
-                            <span className="crate-handle" />
-                            {[0, 1, 2].map((j) => (
-                              <i
-                                className={
-                                  crate && j < crate.count ? "filled" : ""
-                                }
-                                key={j}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    <div className="counter-edge" />
+                    <p className="counter-caption">
+                      <span className="tiny-spark">✧</span>
+                      {t.counterHint}
+                    </p>
                   </div>
-                </div>
-                <div className="game-toolbar">
-                  <button
-                    className="secondary"
-                    onClick={undo}
-                    disabled={!history.length || busy}
+                  <div
+                    className={`buffer-section ${game.buffer.length === 2 ? "buffer-caution" : ""}`}
                   >
-                    <Icon name="undo" size={18} />
-                    {t.undo}
-                  </button>
-                  <span>
-                    {game.moves} {t.moves}
-                  </span>
-                  <button
-                    className="text-button"
-                    onClick={() => start(levelIndex)}
-                    disabled={busy}
-                  >
-                    <Icon name="restart" size={17} />
-                    {t.restart}
-                  </button>
-                </div>
-              </div>
-              <aside className="game-aside">
-                <div className="order-slip">
-                  <div className="receipt-heading">
-                    <Icon name="receipt" size={23} />
-                    <h2>{t.orders}</h2>
-                  </div>
-                  <div className="receipt-subtitle">
-                    <span>
-                      {game.orders.length - game.nextOrder} {t.queued}
-                    </span>
-                    <span>
-                      {game.crates.filter(Boolean).length} {t.active}
-                    </span>
-                  </div>
-                  <p className="order-intro">{t.orderIntro}</p>
-                  <div className="order-preview">
-                    <span className="next-label">{t.nextUp}</span>
-                    {game.orders
-                      .slice(game.nextOrder, game.nextOrder + 3)
-                      .map((type, i) => (
-                        <div className="mini-order" key={game.nextOrder + i}>
-                          <Bottle type={type} />
-                          <span>{t.bottleNames[type]}</span>
-                          <small>×3</small>
+                    <div className="buffer-copy">
+                      <h2>{t.spare}</h2>
+                      <p>{t.spareHint}</p>
+                      <span className="buffer-count">
+                        {game.buffer.length} / 3
+                      </span>
+                    </div>
+                    <div className="buffer-slots" aria-label={t.buffer}>
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          className={`buffer-slot ${flight?.source === `buffer-${i}` ? "moving-source" : ""} ${game.buffer[i] ? "occupied" : ""}`}
+                          key={i}
+                          data-place={`buffer-${i}`}
+                          aria-label={
+                            game.buffer[i]
+                              ? `${t.buffer} ${i + 1}: ${t.bottleNames[game.buffer[i]]}`
+                              : t.emptySpot
+                          }
+                        >
+                          {game.buffer[i] ? (
+                            <Bottle type={game.buffer[i]} />
+                          ) : (
+                            <span>+</span>
+                          )}
                         </div>
                       ))}
-                    {game.nextOrder === game.orders.length && (
-                      <p className="last-crates">
-                        <Icon name="leaf" size={18} />
-                        {t.noOrders}
-                      </p>
-                    )}
+                    </div>
                   </div>
-                  <button
-                    className="order-toggle"
-                    aria-expanded={expandedOrders}
-                    onClick={() => setExpandedOrders((v) => !v)}
-                  >
-                    {expandedOrders ? t.hideOrders : t.allOrders}
-                    <Icon name="chevron" size={16} />
-                  </button>
-                  {expandedOrders && orderList}
-                  <div className="receipt-bottom">
-                    PFAND PAUSE <span>♡</span>
+                  <div className="crates-section">
+                    <div className="section-label">
+                      <span>{t.crates}</span>
+                      <span>{t.crateHint}</span>
+                    </div>
+                    <div className="crates">
+                      {game.crates.map((crate, i) => (
+                        <div
+                          data-place={`crate-${i}`}
+                          key={i}
+                          className={`crate-wrap ${fullCrate === i ? "crate-full" : ""} ${!crate ? "crate-finished" : ""}`}
+                          style={
+                            {
+                              "--crate-color": crate
+                                ? bottles[crate.type].color
+                                : "#768778",
+                              "--crate-light": crate
+                                ? bottles[crate.type].light
+                                : "#e6ecdf",
+                            } as CSSProperties
+                          }
+                          aria-label={
+                            crate
+                              ? `${t.crate} ${i + 1}: ${t.bottleNames[crate.type]}, ${crate.count}/3`
+                              : t.crateDone
+                          }
+                        >
+                          <div className="crate-heading">
+                            {crate ? (
+                              <>
+                                <span className="type-dot" />
+                                <span className="crate-name">
+                                  {t.bottleNames[crate.type]}
+                                </span>
+                                <span className="crate-amount">
+                                  {crate.count}
+                                  <small> / 3</small>
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Icon name="check" size={17} />
+                                {t.crateDone}
+                              </>
+                            )}
+                          </div>
+                          <div className="crate-body">
+                            <div className="crate-slots">
+                              {[0, 1, 2].map((j) => (
+                                <div
+                                  className={`crate-slot ${crate && j < crate.count ? "has-bottle" : ""}`}
+                                  key={j}
+                                >
+                                  {crate ? (
+                                    <Bottle type={crate.type} />
+                                  ) : (
+                                    <Icon name="check" size={18} />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="crate-front">
+                              <span className="crate-handle" />
+                              {[0, 1, 2].map((j) => (
+                                <i
+                                  className={
+                                    crate && j < crate.count ? "filled" : ""
+                                  }
+                                  key={j}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="gentle-note">
-                  <Icon name="leaf" size={23} />
-                  <h3>{t.guide}</h3>
-                  <p>{t.guideText}</p>
-                </div>
-                <div className="aside-footer">{t.madeForPause}</div>
-              </aside>
+              </div>
+            </FitBoard>
+            <div className="game-toolbar">
+              <button
+                className="secondary"
+                onClick={undo}
+                disabled={!history.length || busy}
+              >
+                <Icon name="undo" size={18} />
+                {t.undo}
+              </button>
+              <span>
+                {game.moves} {t.moves}
+              </span>
+              <button
+                className="text-button"
+                onClick={() => start(levelIndex)}
+                disabled={busy}
+              >
+                <Icon name="restart" size={17} />
+                {t.restart}
+              </button>
             </div>
           </section>
         )}
@@ -980,6 +846,8 @@ export default function App() {
             {
               left: flight.x,
               top: flight.y,
+              width: flight.width,
+              height: flight.height,
               "--dx": `${flight.dx}px`,
               "--dy": `${flight.dy}px`,
             } as CSSProperties

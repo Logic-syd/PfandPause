@@ -81,7 +81,6 @@ async function winLevel(page: Page) {
 }
 try {
   const page = await setup();
-  await page.getByRole("button", { name: "Let’s sort", exact: true }).click();
   await winLevel(page);
   await page.waitForFunction(
     "window.__voiceAudit.length === 1 && window.__voiceAudit[0].ended",
@@ -106,19 +105,18 @@ try {
   );
 
   const muted = await setup("en", false);
-  await muted.getByRole("button", { name: "Let’s sort", exact: true }).click();
   await winLevel(muted);
   await muted.waitForTimeout(600);
   assert.equal((await audit(muted)).length, 0);
   report("Sound off: English victory stays silent");
   const german = await setup("de", true);
-  await german.getByRole("button", { name: "Los geht’s", exact: true }).click();
   await winLevel(german);
   await german.waitForTimeout(600);
   assert.equal((await audit(german)).length, 0);
   report("German mode keeps existing chimes without playing an English voice");
 
   const practice = await setup();
+  await practice.locator(".help-button").click();
   await practice
     .getByRole("button", { name: "Show me how", exact: true })
     .click();
@@ -143,7 +141,6 @@ try {
   );
 
   const broken = await setup("en", true, true);
-  await broken.getByRole("button", { name: "Let’s sort", exact: true }).click();
   await winLevel(broken);
   await broken.waitForTimeout(600);
   assert.equal((await audit(broken)).length, 0);

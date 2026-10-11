@@ -78,6 +78,12 @@ try {
   const page = await mobile.newPage();
   monitor(page);
   await page.goto(url);
+  await page.locator(".game-screen").waitFor();
+  assert.equal(await page.locator(".tutorial-dialog").count(), 0);
+  await pick(page, 0);
+  assert.match((await page.locator(".game-toolbar").textContent())!, /1 moves/);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  check("Fresh visit opens a playable board immediately, without a landing screen or tutorial gate");
   await noOverflow(page);
   await page.screenshot({ path: "artifacts/start-mobile.png", fullPage: true });
   await page
@@ -86,6 +92,8 @@ try {
   assert.equal(await page.locator(".level-card:disabled").count(), 9);
   check("Fresh save unlocks only level 1");
   await page.locator(".level-card").first().click();
+  await page.locator(".help-button").click();
+  await page.getByRole("button", { name: "Show me how", exact: true }).click();
   await page.locator(".tutorial-dialog").waitFor();
   const beforePractice = await boardSnapshot(page);
   await page.waitForTimeout(250); // Capture after the opening fade completes.
@@ -325,8 +333,6 @@ try {
     path: "artifacts/start-desktop.png",
     fullPage: true,
   });
-  await desk.getByRole("button", { name: "Los geht’s", exact: true }).click();
-  await desk.getByRole("button", { name: "Überspringen", exact: true }).click();
   await desk.screenshot({ path: "artifacts/game-desktop.png", fullPage: true });
   await noOverflow(desk);
   check("German browser default and desktop layout");
@@ -344,12 +350,6 @@ try {
   await blockedPage.goto(url);
   assert.equal(await blockedPage.locator("html").getAttribute("lang"), "en");
   await blockedPage.locator(".save-error").waitFor();
-  await blockedPage
-    .getByRole("button", { name: "Let’s sort", exact: true })
-    .click();
-  await blockedPage
-    .getByRole("button", { name: "Skip tutorial", exact: true })
-    .click();
   await pick(blockedPage, 0);
   check(
     "Unavailable localStorage is nonfatal; unsupported language falls back to English",
@@ -362,7 +362,7 @@ try {
   monitor(corruptPage);
   await corruptPage.goto(url);
   await corruptPage
-    .getByRole("button", { name: "Let’s sort", exact: true })
+    .locator(".game-screen")
     .waitFor();
   check("Corrupt save recovers safely");
   const legacy = await browser.newContext({
@@ -375,9 +375,10 @@ try {
   const legacyPage = await legacy.newPage();
   monitor(legacyPage);
   await legacyPage.goto(url);
-  await legacyPage
-    .getByRole("button", { name: "Weitersortieren", exact: true })
-    .click();
+  assert.match((await legacyPage.locator(".level-link").textContent())!, /03/);
+  assert.equal(await legacyPage.locator(".tutorial-dialog").count(), 0);
+  await legacyPage.locator(".help-button").click();
+  await legacyPage.getByRole("button", { name: "Zeig mir, wie’s geht", exact: true }).click();
   await legacyPage.locator(".tutorial-dialog").waitFor();
   await legacyPage.screenshot({
     path: "artifacts/tutorial-mobile-de.png",
@@ -388,9 +389,6 @@ try {
     .getByRole("button", { name: "Überspringen", exact: true })
     .click();
   await legacyPage.reload();
-  await legacyPage
-    .getByRole("button", { name: "Weitersortieren", exact: true })
-    .click();
   assert.equal(await legacyPage.locator(".tutorial-dialog").count(), 0);
   await legacyPage
     .getByRole("button", { name: "Pfand Pause · Startseite", exact: true })
@@ -409,7 +407,7 @@ try {
     [1, 2],
   );
   check(
-    "Old saves see the new tutorial once; home replay and Escape keep saved progress",
+    "Old saves open their first unfinished level without blocking; optional practice and Escape preserve saved progress",
   );
   assert.deepEqual(errors, []);
   check("No browser console or runtime errors");

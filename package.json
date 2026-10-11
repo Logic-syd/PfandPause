@@ -1,7 +1,7 @@
 {
   "name": "pfand-pause",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -14,7 +14,8 @@
     "test:voice": "tsx scripts/voice-check.ts",
     "test:languages": "tsx scripts/language-check.ts",
     "test:responsive": "tsx scripts/responsive-check.ts",
-    "test:embedded-scroll": "tsx scripts/embedded-scroll-check.ts"
+    "test:embedded-scroll": "tsx scripts/embedded-scroll-check.ts",
+    "test:fit-board": "tsx scripts/fit-board-check.ts"
   },
   "dependencies": {
     "react": "^19.1.0",

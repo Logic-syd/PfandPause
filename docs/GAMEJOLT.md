@@ -2,6 +2,15 @@
 
 公开页面：https://gamejolt.com/games/pfand-pause/1106213
 
+## 1.0.3
+
+- 打开即进入首个未完成关卡，取消大标题、启动页和强制新手教程；帮助、练习及回收知识仍从顶部一行操作栏进入。
+- 正式棋盘按实际 iframe 的宽高缩放，瓶子、暂存区和两个箱子一起显示，无需上下滚动。矮宽窗口采用并排布局，避免把瓶子缩得过小。
+- 撤销、重开和队列按钮保留在缩放区之外，至少 44px 高；首屏顶部为 48px。瓶子的可点击区随画面一起适配，飞行动画也按瓶子实际尺寸调整。
+- 所有页面和弹窗隐藏滚动条；长订单和教学弹窗仍可独立滑动。手机使用动态窗口高度与底部安全区，避免浏览器工具栏遮住底部操作。
+
+`test:fit-board` 在双层无文档滚动的嵌入框中检查 240×320、320×320、320×568、390×568、390×844、844×390、1280×431、1280×720、1920×320、2560×1440 和 3840×2160 的全部十关：无棋盘溢出、内容完整显示、无滚动条，并检查点击／撤销。其他回归覆盖不同像素密度、动画时调整窗口、鼠标／触控、三语、全部十关通关、订单弹窗、练习和音效异常。上述为 Chromium 模拟检查，真实 iPhone Safari 仍需在设备上复测。
+
 ## 1.0.2
 
 - 针对移动浏览器在平台多层 iframe 中不能执行原生滑动的情况，增加游戏内部的纵向触摸拖动和惯性滚动。
@@ -28,16 +37,17 @@ npm test
 npm run build
 npm run preview
 # 在另一个终端执行；也可使用 Playwright 安装的 Chromium：
+BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:fit-board
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:responsive
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:embedded-scroll
 ```
 
 将 `dist/` 内的文件直接压缩，ZIP 根目录必须包含 `index.html`，不能包在 `dist/` 文件夹里。
 
-## 上传 1.0.2
+## 上传 1.0.3
 
 1. Game Jolt 后台 → Packages → Pfand Pause 的 Manage → New Release。
-2. Version Number 填 `1.0.2`，在 Upload Browser Build 上传 `PfandPause-html5-1.0.2.zip`。
+2. Version Number 填 `1.0.3`，在 Upload Browser Build 上传 `PfandPause-html5-1.0.3.zip`。
 3. 开启 Fit to screen?，保持 HTTPS support? 开启，点击 Save Build。
 4. 处理完成后确认构建为 Active，点击 Publish Release。
 5. 从公开游戏页面重新点击 Play，用手机和朋友原来的 2K 屏幕／缩放设置复测。使用同一个浏览器与 Game Jolt 地址时，现有语言设置和通关进度沿用原存储键。

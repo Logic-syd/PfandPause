@@ -5,11 +5,11 @@ import Dialog from "./components/Dialog";
 import Tutorial from "./components/Tutorial";
 import RecyclingPractice from "./components/RecyclingPractice";
 import FitBoard from "./components/FitBoard";
+import ReturnReceipt from "./components/ReturnReceipt";
 import { useRoundClock } from "./components/useRoundClock";
 import { timeLimit, MAX_GLASS_MISTAKES } from "./game/time";
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
-import { returnStats } from "./game/returns";
 import { bottles, bottleDeposits } from "./data/bottles";
 import { cloneState, createGame, takeBottle } from "./game/engine";
 import { glassTypes, isGlass, type GlassType, type BottleType, type GameState, type Place } from "./game/types";
@@ -61,14 +61,12 @@ export default function App() {
   const level = levels[levelIndex];
   const clock = useRoundClock(screen === "play" && game.status === "playing" && !modal && !tutorial, timeLimit(level));
   const seconds = Math.ceil(clock.milliseconds / 1000);
-  const returned = returnStats(level.columns.flat());
   const total = level.columns.flat().length;
   const hasGlass = level.columns.flat().some(isGlass);
   const formatDeposit = (cents: number) => new Intl.NumberFormat(
     LANGUAGE_OPTIONS.find(option => option.code === preferences.language)!.locale,
     { style: "currency", currency: "EUR" },
   ).format(cents / 100);
-  const refundAmount = formatDeposit(returned.cents);
   const packed =
     game.recycled.length + game.completed * 3 +
     game.crates.reduce((sum, c) => sum + (c?.count ?? 0), 0);
@@ -906,42 +904,41 @@ export default function App() {
               game.status === "won"
                 ? levelIndex === levels.length - 1 && allComplete
                   ? t.allDone
-                  : t.nice
+                  : t.receiptReady
                 : game.endReason === "time" ? t.timeOver : t.tooManyMistakes.replace("{count}", String(game.mistakes))
             }
             closeLabel={t.close}
             onClose={() => navigate("levels")}
           >
             <FitBoard>
-              <div className="result-content">
-                <div className="result-art" aria-hidden="true">
-                  <span>✧</span>
-                  <Bottle type={game.status === "won" ? "kola" : "currant"} />
-                  <span>{game.status === "won" ? "✦" : "♡"}</span>
-                  <i>
-                    <Icon
-                      name={game.status === "won" ? "check" : "undo"}
-                      size={26}
-                    />
-                  </i>
+              {game.status === "won" ? (
+                <ReturnReceipt items={level.columns.flat()} level={level.id} t={t} formatMoney={formatDeposit} cheer={t.winCheers[levelIndex]} />
+              ) : (
+                <div className="result-content">
+                  <div className="result-art" aria-hidden="true">
+                    <span>✧</span>
+                    <Bottle type="currant" />
+                    <span>♡</span>
+                    <i>
+                      <Icon
+                        name="undo"
+                        size={26}
+                      />
+                    </i>
+                  </div>
+                  <p>
+                    {game.endReason === "time" ? t.timeOverBody : t.fineNotice}
+                  </p>
+                  <div className="result-stats">
+                    <span>
+                      <b>{game.completed}</b>{" "}{t.packedCrates}
+                    </span>
+                    <span>
+                      <b>{game.moves}</b>{" "}{t.moves}
+                    </span>
+                  </div>
                 </div>
-                <p>
-                  {game.status === "won"
-                    ? t.winCheers[levelIndex]
-                    : game.endReason === "time" ? t.timeOverBody : t.fineNotice}
-                </p>
-                <div className="result-stats">
-                  <span>
-                    <b>{game.status === "won" ? returned.bottles : game.completed}</b>{" "}
-                    {game.status === "won" ? t.bottlesReturned : t.packedCrates}
-                  </span>
-                  <span>
-                    <b>{game.status === "won" ? refundAmount : game.moves}</b>{" "}
-                    {game.status === "won" ? t.depositReturned : t.moves}
-                  </span>
-                  {game.status === "won" && hasGlass && <span><b>{game.recycled.length}</b> {t.glassRecycled}</span>}
-                </div>
-              </div>
+              )}
             </FitBoard>
             {game.status === "won" ? (
               <>

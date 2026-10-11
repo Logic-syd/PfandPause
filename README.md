@@ -103,6 +103,7 @@ npm run build
 npx playwright install chromium   # 首次安装测试浏览器
 npm run test:browser
 npm run test:responsive            # 手机触控、嵌入框、2K/4K 与音频异常回归
+npm run test:embedded-scroll       # 跨源嵌套 iframe 的触摸滚动兼容与故障模拟
 ```
 
 已有 Google Chrome 时也可运行：

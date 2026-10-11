@@ -28,9 +28,18 @@ body {
   overflow: hidden;
 }
 #root {
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+}
+/* Reserve vertical touch drags for the embedded scroll handler before a
+   browser can hand the gesture to the portal's non-scrolling frame. */
+#root[data-embedded-touch-scroll],
+#root[data-embedded-touch-scroll] .dialog,
+#root[data-embedded-touch-scroll] .all-orders {
+  touch-action: pan-x pinch-zoom;
 }
 button {
   font: inherit;
@@ -1232,6 +1241,7 @@ main {
   box-shadow: 0 20px 80px #1b362530;
   max-height: calc(100svh - 45px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .dialog[open] {
   animation: dialog-enter 0.2s ease-out;

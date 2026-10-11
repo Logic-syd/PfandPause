@@ -8,6 +8,7 @@ import { playSound, playWinVoice, stopVoice, unlockAudio } from "../audio";
 import Bottle from "./Bottle";
 import Dialog from "./Dialog";
 import Icon from "./Icon";
+import FitBoard from "./FitBoard";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export default function Tutorial({
@@ -86,158 +87,162 @@ export default function Tutorial({
 
   return (
     <Dialog
-      className="tutorial-dialog"
-      title={t.practiceTitle}
+      className={`tutorial-dialog ${finished ? "practice-finished" : ""}`}
+      title={finished ? t.practiceComplete : t.practiceTitle}
       closeLabel={t.close}
       onClose={onClose}
     >
       <p className="practice-note">{t.practiceNote}</p>
-      <div
-        className={`practice-coach ${game.status === "lost" ? "practice-warning" : ""}`}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <span className="practice-number">
-          {finished ? (
-            <Icon name="check" size={18} />
-          ) : (
-            `${current.lesson + 1}/6`
-          )}
-        </span>
-        <div>
-          <h3>
-            {finished ? t.practiceComplete : t.practiceTitles[current.lesson]}
-          </h3>
-          <p>{finished ? t.practiceSummary : t.practiceSteps[step]}</p>
-        </div>
-      </div>
-      <div className="practice-board" data-step={step} aria-busy={busy}>
-        <div className="practice-counter">
-          <div className="section-label">
-            <span>{t.counter}</span>
-            <span>
-              {packed}/9 {t.practicePacked}
+      <FitBoard>
+        <div className="practice-stage">
+          <div
+            className={`practice-coach ${game.status === "lost" ? "practice-warning" : ""}`}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span className="practice-number">
+              {finished ? (
+                <Icon name="check" size={18} />
+              ) : (
+                `${current.lesson + 1}/6`
+              )}
             </span>
+            <div>
+              <h3>
+                {finished ? t.practiceComplete : t.practiceTitles[current.lesson]}
+              </h3>
+              <p>{finished ? t.practiceSummary : t.practiceSteps[step]}</p>
+            </div>
           </div>
-          <div className="practice-stacks">
-            {game.columns.map((column, i) => (
-              <div className="practice-stack" key={i}>
-                <span className="practice-stack-number">{i + 1}</span>
-                {column.map((type, depth) => {
-                  const style = {
-                    top: depth * 20,
-                    zIndex: column.length - depth,
-                  };
-                  return depth === 0 ? (
-                    <button
-                      key={`${game.moves}-${depth}`}
-                      ref={current?.column === i ? target : undefined}
-                      data-tutorial-column={i}
-                      className={`practice-bottle ${current?.column === i ? "practice-target" : ""}`}
-                      disabled={busy || finished || current?.column !== i}
-                      style={style}
-                      onClick={() => void act(i)}
-                      aria-label={`${t.pick} ${t.bottleNames[type]} · ${t.column} ${i + 1}`}
-                    >
-                      <Bottle type={type} />
-                    </button>
-                  ) : (
-                    <div
-                      className="practice-bottle practice-buried"
-                      key={`${game.moves}-${depth}`}
-                      style={style}
-                    >
-                      <Bottle type={type} />
-                    </div>
-                  );
-                })}
-                {!column.length && (
-                  <span className="practice-empty">
-                    <Icon name="check" size={17} />
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div
-          className={`practice-buffer ${game.status === "lost" ? "practice-buffer-full" : ""}`}
-        >
-          <div>
-            <strong>{t.buffer}</strong>
-            <span>{game.buffer.length}/3</span>
-          </div>
-          <div className="buffer-slots">
-            {[0, 1, 2].map((i) => (
-              <div
-                className={`buffer-slot ${game.buffer[i] ? "occupied" : ""}`}
-                key={i}
-              >
-                {game.buffer[i] ? (
-                  <Bottle type={game.buffer[i]} />
-                ) : (
-                  <span>+</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="practice-crates">
-          {game.crates.map((crate, i) => (
-            <div
-              key={i}
-              className={`practice-crate ${fullCrate === i ? "crate-full" : ""}`}
-              style={
-                {
-                  "--crate-light": crate
-                    ? bottles[crate.type].light
-                    : "#e5ecdf",
-                  "--crate-color": crate
-                    ? bottles[crate.type].color
-                    : "#73866d",
-                } as CSSProperties
-              }
-              aria-label={
-                crate
-                  ? `${t.crate} ${i + 1}: ${t.bottleNames[crate.type]}, ${crate.count}/3`
-                  : t.crateDone
-              }
-            >
-              <div className="crate-heading">
-                <span className="crate-name">
-                  {crate ? t.bottleNames[crate.type] : t.crateDone}
-                </span>
-                <span className="crate-amount">
-                  {crate ? `${crate.count}/3` : "✓"}
+          <div className="practice-board" hidden={finished} data-step={step} aria-busy={busy}>
+            <div className="practice-counter">
+              <div className="section-label">
+                <span>{t.counter}</span>
+                <span>
+                  {packed}/9 {t.practicePacked}
                 </span>
               </div>
-              <div className="practice-crate-slots">
-                {[0, 1, 2].map((j) => (
-                  <div
-                    className={crate && j < crate.count ? "has-bottle" : ""}
-                    key={j}
-                  >
-                    {crate ? (
-                      <Bottle type={crate.type} />
-                    ) : (
-                      <Icon name="check" size={15} />
+              <div className="practice-stacks">
+                {game.columns.map((column, i) => (
+                  <div className="practice-stack" key={i}>
+                    <span className="practice-stack-number">{i + 1}</span>
+                    {column.map((type, depth) => {
+                      const style = {
+                        top: depth * 20,
+                        zIndex: column.length - depth,
+                      };
+                      return depth === 0 ? (
+                        <button
+                          key={`${game.moves}-${depth}`}
+                          ref={current?.column === i ? target : undefined}
+                          data-tutorial-column={i}
+                          className={`practice-bottle ${current?.column === i ? "practice-target" : ""}`}
+                          disabled={busy || finished || current?.column !== i}
+                          style={style}
+                          onClick={() => void act(i)}
+                          aria-label={`${t.pick} ${t.bottleNames[type]} · ${t.column} ${i + 1}`}
+                        >
+                          <Bottle type={type} />
+                        </button>
+                      ) : (
+                        <div
+                          className="practice-bottle practice-buried"
+                          key={`${game.moves}-${depth}`}
+                          style={style}
+                        >
+                          <Bottle type={type} />
+                        </div>
+                      );
+                    })}
+                    {!column.length && (
+                      <span className="practice-empty">
+                        <Icon name="check" size={17} />
+                      </span>
                     )}
                   </div>
                 ))}
               </div>
             </div>
-          ))}
+            <div
+              className={`practice-buffer ${game.status === "lost" ? "practice-buffer-full" : ""}`}
+            >
+              <div>
+                <strong>{t.buffer}</strong>
+                <span>{game.buffer.length}/3</span>
+              </div>
+              <div className="buffer-slots">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    className={`buffer-slot ${game.buffer[i] ? "occupied" : ""}`}
+                    key={i}
+                  >
+                    {game.buffer[i] ? (
+                      <Bottle type={game.buffer[i]} />
+                    ) : (
+                      <span>+</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="practice-crates">
+              {game.crates.map((crate, i) => (
+                <div
+                  key={i}
+                  className={`practice-crate ${fullCrate === i ? "crate-full" : ""}`}
+                  style={
+                    {
+                      "--crate-light": crate
+                        ? bottles[crate.type].light
+                        : "#e5ecdf",
+                      "--crate-color": crate
+                        ? bottles[crate.type].color
+                        : "#73866d",
+                    } as CSSProperties
+                  }
+                  aria-label={
+                    crate
+                      ? `${t.crate} ${i + 1}: ${t.bottleNames[crate.type]}, ${crate.count}/3`
+                      : t.crateDone
+                  }
+                >
+                  <div className="crate-heading">
+                    <span className="crate-name">
+                      {crate ? t.bottleNames[crate.type] : t.crateDone}
+                    </span>
+                    <span className="crate-amount">
+                      {crate ? `${crate.count}/3` : "✓"}
+                    </span>
+                  </div>
+                  <div className="practice-crate-slots">
+                    {[0, 1, 2].map((j) => (
+                      <div
+                        className={crate && j < crate.count ? "has-bottle" : ""}
+                        key={j}
+                      >
+                        {crate ? (
+                          <Bottle type={crate.type} />
+                        ) : (
+                          <Icon name="check" size={15} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="practice-next">
+              <Icon name="receipt" size={16} />
+              {t.practiceNext}:{" "}
+              <strong>
+                {game.orders[game.nextOrder]
+                  ? t.bottleNames[game.orders[game.nextOrder]]
+                  : t.noOrders}
+              </strong>
+            </div>
+          </div>
         </div>
-        <div className="practice-next">
-          <Icon name="receipt" size={16} />
-          {t.practiceNext}:{" "}
-          <strong>
-            {game.orders[game.nextOrder]
-              ? t.bottleNames[game.orders[game.nextOrder]]
-              : t.noOrders}
-          </strong>
-        </div>
-      </div>
+      </FitBoard>
       <div className="practice-actions">
         {!finished && (
           <button className="text-button" onClick={onClose}>

@@ -78,12 +78,14 @@ try {
   const page = await mobile.newPage();
   monitor(page);
   await page.goto(url);
+  await page.locator(".home-screen").waitFor();
+  await page.locator(".home-actions .primary").first().click();
   await page.locator(".game-screen").waitFor();
   assert.equal(await page.locator(".tutorial-dialog").count(), 0);
   await pick(page, 0);
   assert.match((await page.locator(".game-toolbar").textContent())!, /1 moves/);
   await page.getByRole("button", { name: "Undo", exact: true }).click();
-  check("Fresh visit opens a playable board immediately, without a landing screen or tutorial gate");
+  check("Restored home starts a playable board with one click and no tutorial gate");
   await noOverflow(page);
   await page.screenshot({ path: "artifacts/start-mobile.png", fullPage: true });
   await page
@@ -328,6 +330,7 @@ try {
   const desk = await desktop.newPage();
   monitor(desk);
   await desk.goto(url);
+  await desk.locator(".home-actions .primary").first().click();
   assert.equal(await desk.locator("html").getAttribute("lang"), "de");
   await desk.screenshot({
     path: "artifacts/start-desktop.png",
@@ -348,6 +351,7 @@ try {
   const blockedPage = await blocked.newPage();
   monitor(blockedPage);
   await blockedPage.goto(url);
+  await blockedPage.locator(".home-actions .primary").first().click();
   assert.equal(await blockedPage.locator("html").getAttribute("lang"), "en");
   await blockedPage.locator(".save-error").waitFor();
   await pick(blockedPage, 0);
@@ -361,6 +365,7 @@ try {
   const corruptPage = await corrupt.newPage();
   monitor(corruptPage);
   await corruptPage.goto(url);
+  await corruptPage.locator(".home-actions .primary").first().click();
   await corruptPage
     .locator(".game-screen")
     .waitFor();
@@ -375,6 +380,7 @@ try {
   const legacyPage = await legacy.newPage();
   monitor(legacyPage);
   await legacyPage.goto(url);
+  await legacyPage.locator(".home-actions .primary").first().click();
   assert.match((await legacyPage.locator(".level-link").textContent())!, /03/);
   assert.equal(await legacyPage.locator(".tutorial-dialog").count(), 0);
   await legacyPage.locator(".help-button").click();
@@ -407,7 +413,7 @@ try {
     [1, 2],
   );
   check(
-    "Old saves open their first unfinished level without blocking; optional practice and Escape preserve saved progress",
+    "Old saves continue their first unfinished level without blocking; optional practice and Escape preserve saved progress",
   );
   assert.deepEqual(errors, []);
   check("No browser console or runtime errors");

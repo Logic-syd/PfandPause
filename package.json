@@ -15,7 +15,8 @@
     "test:languages": "tsx scripts/language-check.ts",
     "test:responsive": "tsx scripts/responsive-check.ts",
     "test:embedded-scroll": "tsx scripts/embedded-scroll-check.ts",
-    "test:fit-board": "tsx scripts/fit-board-check.ts"
+    "test:fit-board": "tsx scripts/fit-board-check.ts",
+    "test:practice-fit": "tsx scripts/practice-fit-check.ts"
   },
   "dependencies": {
     "react": "^19.1.0",

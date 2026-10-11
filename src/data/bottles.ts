@@ -118,3 +118,9 @@ export const bottles: Record<BottleType, BottleDesign> = {
     labelInk: "#fff5df",
   },
 };
+
+// Explicit amounts for these fictional labelled Mehrweg bottles, in cents.
+// Real returns depend on the actual bottle label and the accepting shop.
+export const bottleDeposits: Record<BottleType, number> = {
+  water: 15, lemon: 15, currant: 15, apple: 15, malt: 8, kola: 15,
+};

@@ -1,5 +1,5 @@
 import { useId, type CSSProperties } from "react";
-import { bottles } from "../data/bottles";
+import { bottles, bottleDeposits } from "../data/bottles";
 import { bottlePackaging, packagingText } from "../i18n";
 import type { BottleType } from "../game/types";
 
@@ -131,7 +131,8 @@ export default function Bottle({
         <g style={{ color: b.labelInk }}><Pattern type={type} /></g>
         <text x="34" y="99" fontSize={type === "kola" || type === "currant" ? "4" : "4.5"} fontWeight="800" letterSpacing=".35">{print.label}</text>
       </g>
-      <text x="34" y="111" fill={b.edge} fontSize="3.1" fontWeight="700" textAnchor="middle" letterSpacing=".3">{print.volume} · {packagingText.returnable}</text>
+      <text x="34" y="108" fill={b.edge} fontSize="3.1" fontWeight="700" textAnchor="middle" letterSpacing=".3">{print.volume} · {packagingText.returnable}</text>
+      <text x="34" y="114" fill={b.edge} fontSize="3.3" fontWeight="700" textAnchor="middle">PFAND {(bottleDeposits[type] / 100).toFixed(2).replace(".", ",")} €</text>
     </svg>
   );
 }

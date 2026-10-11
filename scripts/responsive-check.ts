@@ -69,6 +69,7 @@ try {
       body: `<meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:100%;border:0}</style><iframe src="${url}/?embedded-test" scrolling="no" allow="autoplay; fullscreen"></iframe>`,
     }));
     await page.goto(`${url}/portal-test`);
+    await page.frameLocator("iframe").frameLocator("iframe").locator(".home-actions .primary").first().click();
     await page.frameLocator("iframe").frameLocator("iframe").locator(".game-screen").waitFor();
     const frame = page.frames().find(frame => frame.url().includes("?embedded-test"))!;
     assert.equal(await frame.evaluate(() => innerWidth), size.width,
@@ -135,10 +136,10 @@ try {
     await press(frame.locator(".brand"));
     assert.equal(await frame.evaluate(() => document.getElementById("root")!.scrollTop), 0);
 
-    // First-time tutorial remains independently scrollable; controls can be
-    // reached with touch at phone and short landscape heights.
+    // Optional practice fits the dialog without scrolling at short heights.
     await press(frame.getByRole("button", { name: t.learn, exact: true }));
     await frame.locator(".tutorial-dialog").waitFor();
+    assert.ok(await frame.locator(".tutorial-dialog").evaluate(el => el.scrollHeight <= el.clientHeight));
     await press(frame.locator(".practice-target"));
     await frame.waitForFunction(() => document.querySelector(".practice-board")?.getAttribute("data-step") === "1");
     await press(frame.getByRole("button", { name: t.skip, exact: true }));
@@ -168,6 +169,7 @@ try {
   const faultPage = await faultContext.newPage();
   faultPage.on("pageerror", error => errors.push(error.message));
   await faultPage.goto(url);
+  await faultPage.locator(".home-actions .primary").first().click();
   await faultPage.locator(".game-screen").waitFor();
   const faultFrame = faultPage.mainFrame();
   for (const column of solveLevel(levels[0]).path!) {

@@ -64,6 +64,7 @@ async function setup(language = "en", sound = true, broken = false) {
       }),
     );
   await page.goto(base);
+  await page.locator(".home-actions .primary").first().tap();
   assert.equal((await audit(page)).length, 0);
   return page;
 }

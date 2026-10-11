@@ -36,11 +36,11 @@ try {
         await page.getByRole('button', { name: translations[language].close, exact: true }).click();
         assert.equal(await page.locator('.recycling-progress').innerText(), progress);
       }
-      await page.locator('.recycling-feedback button').click();
+      await page.locator('.recycling-actions .primary').click();
     }
     await page.locator('.recycling-result').waitFor();
     if (language !== 'zh') assert.ok(!/[\u3400-\u9fff]/u.test(await page.locator('.recycling-practice').innerText()));
-    await page.locator('.recycling-result button').click();
+    await page.locator('.recycling-actions .primary').click();
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${language}: overflow at ${width}`);
@@ -54,7 +54,7 @@ try {
     assert.equal(await page.locator('html').getAttribute('lang'), savedLanguage);
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('pfand-pause:v1')!).language), savedLanguage);
     await page.locator('.help-button').click();
-    await page.getByRole('button', { name: translations[savedLanguage].learn, exact: true }).click();
+    await page.locator('dialog[open]').getByRole('button', { name: translations[savedLanguage].learn, exact: true }).click();
     await page.getByRole('heading', { name: translations[savedLanguage].practiceTitle, exact: true }).waitFor();
     await page.getByRole('button', { name: translations[savedLanguage].skip, exact: true }).click();
     await page.locator('.help-button').click();

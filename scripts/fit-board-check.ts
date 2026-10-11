@@ -62,6 +62,7 @@ try {
     await page.route("**/fit-frame", route => route.fulfill({ contentType:"text/html",
       body:`<meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:100%;border:0}</style><iframe scrolling="no" src="${url}/?fit-test"></iframe>` }));
     await page.goto(`${url}/fit-portal`);
+    await page.frameLocator("iframe").frameLocator("iframe").locator(".home-actions .primary").first().tap();
     await page.frameLocator("iframe").frameLocator("iframe").locator(".game-screen").waitFor();
     const frame = page.frames().find(frame => frame.url().includes("?fit-test"))!;
     assert.equal(await frame.locator("dialog[open]").count(), 0, "No startup dialog may block play");
@@ -97,7 +98,7 @@ try {
       await page.screenshot({ path:"artifacts/compact-mobile-level1.png" });
     }
     if (width === 1280 && height === 431) await page.screenshot({ path:"artifacts/compact-short-desktop.png" });
-    console.log(`PASS ${width}×${height}: ${language}, immediate play, tap/undo, all 10 complete boards fit, no page scrolling or scrollbars`);
+    console.log(`PASS ${width}×${height}: ${language}, home → play, tap/undo, all 10 complete boards fit, no page scrolling or scrollbars`);
     await context.close();
   }
   assert.deepEqual(errors, []);

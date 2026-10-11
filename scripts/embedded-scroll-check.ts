@@ -52,6 +52,7 @@ try {
   await page.route("**/scroll-frame", route => route.fulfill({ contentType: "text/html",
     body: `<meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:100%;border:0}</style><iframe scrolling="no" src="${gameUrl}/?scroll-compat"></iframe>` }));
   await page.goto(`${url}/scroll-portal`);
+  await page.frameLocator("iframe").frameLocator("iframe").locator(".home-actions .primary").first().tap();
   await page.frameLocator("iframe").frameLocator("iframe").locator(".game-screen").waitFor({ timeout: 5000 });
   const frame = page.frames().find(frame => frame.url().includes("?scroll-compat"))!;
   assert.equal(await frame.evaluate(() => innerWidth), 390);

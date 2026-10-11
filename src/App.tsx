@@ -7,6 +7,7 @@ import RecyclingPractice from "./components/RecyclingPractice";
 import FitBoard from "./components/FitBoard";
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
+import { returnStats } from "./game/returns";
 import { bottles } from "./data/bottles";
 import { cloneState, createGame, takeBottle } from "./game/engine";
 import type { BottleType, GameState, Place } from "./game/types";
@@ -35,7 +36,7 @@ function scrollToStart() {
 export default function App() {
   const [preferences, setPreferences] = useState(loadPreferences);
   const [saveError, setSaveError] = useState(false);
-  const [screen, setScreen] = useState<Screen>("play");
+  const [screen, setScreen] = useState<Screen>("start");
   const [levelIndex, setLevelIndex] = useState(() => Math.max(
     0, levels.findIndex((level) => !preferences.completed.includes(level.id)),
   ));
@@ -53,7 +54,12 @@ export default function App() {
   const [tutorial, setTutorial] = useState(false);
   const t = translations[preferences.language];
   const level = levels[levelIndex];
-  const total = level.columns.flat().length;
+  const returned = returnStats(level.columns.flat());
+  const total = returned.bottles;
+  const refundAmount = new Intl.NumberFormat(
+    LANGUAGE_OPTIONS.find(option => option.code === preferences.language)!.locale,
+    { style: "currency", currency: "EUR" },
+  ).format(returned.cents / 100);
   const packed =
     game.completed * 3 +
     game.crates.reduce((sum, c) => sum + (c?.count ?? 0), 0);
@@ -280,7 +286,7 @@ export default function App() {
 
   return (
     <div
-      className={`app ${screen === "play" ? "is-playing" : ""} ${preferences.reducedMotion ? "reduce-motion" : ""}`}
+      className={`app ${["start", "play", "recycling"].includes(screen) ? "is-fitted" : ""} ${screen === "play" ? "is-playing" : ""} ${preferences.reducedMotion ? "reduce-motion" : ""}`}
       onPointerDown={() => {
         if (preferences.sound) unlockAudio();
       }}
@@ -372,25 +378,89 @@ export default function App() {
           />
         )}
         {screen === "start" && (
-          <section className="landing quick-menu">
-            <div className="landing-copy">
-              <div className="landing-actions">
-                <button
-                  className="primary"
-                  onClick={() => game.status === "playing" ? navigate("play") : start(nextUnfinished)}
-                >
-                  {preferences.completed.length ? t.continue : t.play}
-                  <Icon name="arrow" />
-                </button>
-                <button className="text-button" onClick={() => navigate("levels")}>
-                  {t.chooseLevel}<Icon name="grid" size={17} />
-                </button>
+          <section className="home-screen">
+            <FitBoard>
+              <div className="landing">
+                <div className="landing-copy">
+                  <p className="eyebrow"><span className="green-dot" />{t.shop}</p>
+                  <h1>{t.tagline.split("\n").map((line, i) => (
+                    <span key={line} className={i ? "pink-text" : ""}>{line}</span>
+                  ))}</h1>
+                  <p className="intro">{t.intro}</p>
+                  <p className="no-rush"><Icon name="leaf" size={17} />{t.noRush}</p>
+                  {preferences.completed.length > 0 && (
+                    <div className="saved-progress">
+                      <span>{t.progress}</span><b>{preferences.completed.length} / {levels.length}</b>
+                      <div className="progress-track"><i style={{ width: `${preferences.completed.length / levels.length * 100}%` }} /></div>
+                    </div>
+                  )}
+                </div>
+                <div className="home-art">
+                  <div className="store-illustration" aria-hidden="true">
+                    <div className="illustration-spark one">✧</div>
+                    <div className="illustration-spark two">✳</div>
+                    <div className="store-sign">
+                      {t.returnCorner}
+                      <span>✦</span>
+                    </div>
+                    <div className="awning">
+                      <div />
+                      <div />
+                      <div />
+                      <div />
+                      <div />
+                      <div />
+                      <div />
+                    </div>
+                    <div className="store-interior">
+                      <div className="hanging-sign">
+                        {t.shopOpen}
+                        <Icon name="heart" size={16} />
+                      </div>
+                      <div className="shop-shelf">
+                        <Bottle type="malt" />
+                        <Bottle type="apple" />
+                        <Bottle type="kola" />
+                        <span className="shelf-plant">
+                          <i />
+                          <i />
+                          <i />
+                          <b />
+                        </span>
+                      </div>
+                      <div className="hero-bottles">
+                        <Bottle type="lemon" />
+                        <Bottle type="water" />
+                        <Bottle type="currant" />
+                      </div>
+                      <div className="hero-crate">
+                        <span>pfandpause.</span>
+                        <div>
+                          <i />
+                          <i />
+                          <i />
+                        </div>
+                      </div>
+                      <div className="shop-counter" />
+                    </div>
+                    <div className="shop-base" />
+                    <span className="store-note">{t.madeForPause}</span>
+                  </div>
+                </div>
               </div>
+            </FitBoard>
+            <div className="home-actions">
+              <button className="primary" onClick={() => game.status === "playing" ? navigate("play") : start(nextUnfinished)}>
+                {preferences.completed.length ? t.continue : t.play}<Icon name="arrow" />
+              </button>
               <button className="primary recycling-entry" onClick={() => navigate("recycling")}>
                 <Icon name="leaf" size={18} />{t.recyclingEntry}
               </button>
+              <button className="text-button" onClick={() => navigate("levels")}>
+                {t.chooseLevel}<Icon name="grid" size={17} />
+              </button>
               <button className="learn-button" onClick={() => setTutorial(true)}>
-                <Icon name="help" size={18} />{t.learn}<Icon name="arrow" size={16} />
+                <Icon name="help" size={18} />{t.learn}
               </button>
             </div>
           </section>
@@ -771,32 +841,38 @@ export default function App() {
             closeLabel={t.close}
             onClose={() => navigate("levels")}
           >
-            <div className="result-art" aria-hidden="true">
-              <span>✧</span>
-              <Bottle type={game.status === "won" ? "kola" : "currant"} />
-              <span>{game.status === "won" ? "✦" : "♡"}</span>
-              <i>
-                <Icon
-                  name={game.status === "won" ? "check" : "undo"}
-                  size={26}
-                />
-              </i>
-            </div>
-            <p>
-              {game.status === "won"
-                ? levelIndex === levels.length - 1 && allComplete
-                  ? t.allDoneBody
-                  : t.winBody
-                : t.lostBody}
-            </p>
-            <div className="result-stats">
-              <span>
-                <b>{game.completed}</b> {t.packedCrates}
-              </span>
-              <span>
-                <b>{game.moves}</b> {t.moves}
-              </span>
-            </div>
+            <FitBoard>
+              <div className="result-content">
+                <div className="result-art" aria-hidden="true">
+                  <span>✧</span>
+                  <Bottle type={game.status === "won" ? "kola" : "currant"} />
+                  <span>{game.status === "won" ? "✦" : "♡"}</span>
+                  <i>
+                    <Icon
+                      name={game.status === "won" ? "check" : "undo"}
+                      size={26}
+                    />
+                  </i>
+                </div>
+                <p>
+                  {game.status === "won"
+                    ? levelIndex === levels.length - 1 && allComplete
+                      ? t.allDoneBody
+                      : t.winBody
+                    : t.lostBody}
+                </p>
+                <div className="result-stats">
+                  <span>
+                    <b>{game.status === "won" ? returned.bottles : game.completed}</b>{" "}
+                    {game.status === "won" ? t.bottlesReturned : t.packedCrates}
+                  </span>
+                  <span>
+                    <b>{game.status === "won" ? refundAmount : game.moves}</b>{" "}
+                    {game.status === "won" ? t.depositReturned : t.moves}
+                  </span>
+                </div>
+              </div>
+            </FitBoard>
             {game.status === "won" ? (
               <>
                 <button

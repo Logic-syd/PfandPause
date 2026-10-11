@@ -88,3 +88,32 @@ export function assessRecycling(item: RecyclingItem, destination: Destination) {
   const correct = item.destination === destination;
   return { correct, refundCents: correct ? item.cents : 0 };
 }
+
+// Short answer cards keep the destination and amount legible on small screens.
+// Detailed destination names remain available in the answer explanation.
+export const recyclingChoiceLabels: Record<Language, Record<Destination, { label: string; detail: string }>> = {
+  zh: {
+    single: { label: '退回商店 · 0.25 €', detail: 'Einweg · 一次性押金' },
+    multi15: { label: '退回商店 · 0.15 €', detail: 'Mehrweg · 可重复使用瓶' },
+    multi8: { label: '退回商店 · 0.08 €', detail: 'Mehrweg · 可重复使用瓶' },
+    white: { label: '白玻璃箱', detail: '无押金 · 透明玻璃' },
+    brown: { label: '棕玻璃箱', detail: '无押金 · 棕色玻璃' },
+    green: { label: '绿玻璃箱', detail: '无押金 · 绿色或其他颜色' },
+  },
+  en: {
+    single: { label: 'Shop · €0.25', detail: 'Einweg · single-use' },
+    multi15: { label: 'Shop · €0.15', detail: 'Mehrweg · refillable' },
+    multi8: { label: 'Shop · €0.08', detail: 'Mehrweg · refillable' },
+    white: { label: 'Clear-glass bank', detail: 'No deposit · clear glass' },
+    brown: { label: 'Brown-glass bank', detail: 'No deposit · brown glass' },
+    green: { label: 'Green-glass bank', detail: 'No deposit · green or other colors' },
+  },
+  de: {
+    single: { label: 'Geschäft · 0,25 €', detail: 'Einweg · mit Pfand' },
+    multi15: { label: 'Geschäft · 0,15 €', detail: 'Mehrweg · mit Pfand' },
+    multi8: { label: 'Geschäft · 0,08 €', detail: 'Mehrweg · mit Pfand' },
+    white: { label: 'Weißglascontainer', detail: 'Pfandfrei · farblos' },
+    brown: { label: 'Braunglascontainer', detail: 'Pfandfrei · braun' },
+    green: { label: 'Grünglascontainer', detail: 'Pfandfrei · grün oder andere Farben' },
+  },
+};

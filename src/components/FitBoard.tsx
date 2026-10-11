@@ -10,20 +10,27 @@ export default function FitBoard({ children }: { children: ReactNode }) {
     const board = content.current;
     if (!space || !board || !space.clientWidth || !space.clientHeight) return;
     const naturalWidth = Math.max(296, space.clientWidth);
-    board.style.width = `${naturalWidth}px`;
     // Leave room for the crate shadows and rounding of transformed pixels.
     const availableHeight = Math.max(1, space.clientHeight - 5);
-    let scale = Math.min(1, space.clientWidth / naturalWidth,
-      availableHeight / Math.max(1, board.offsetHeight));
-    for (let pass = 0; pass < 3; pass++) {
-      board.style.width = `${space.clientWidth / scale}px`;
-      const fittedHeight = board.offsetHeight * scale;
-      if (fittedHeight <= availableHeight) break;
-      scale *= availableHeight / fittedHeight;
+    let scale = Math.min(1, space.clientWidth / naturalWidth);
+    board.style.width = `${space.clientWidth / scale}px`;
+    if (board.offsetHeight * scale > availableHeight) {
+      // Reflowing wider often shortens text. Find the largest fitting scale
+      // rather than leaving text unnecessarily small after its lines reflow.
+      let low = 0;
+      let high = scale;
+      for (let pass = 0; pass < 10; pass++) {
+        const candidate = (low + high) / 2;
+        board.style.width = `${space.clientWidth / candidate}px`;
+        if (board.offsetHeight * candidate <= availableHeight) low = candidate;
+        else high = candidate;
+      }
+      scale = Math.max(low, 0.001);
     }
     board.style.width = `${space.clientWidth / scale}px`;
     board.style.transform = `translateX(-50%) scale(${scale})`;
     space.dataset.scale = String(scale);
+    space.style.setProperty("--fit-scale", String(scale));
   };
   useLayoutEffect(() => { fit(); });
   useLayoutEffect(() => {

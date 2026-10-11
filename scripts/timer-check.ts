@@ -29,7 +29,7 @@ try {
   await page.locator('.bottle-pick:not(:has([data-bottle-type^="glass"]))').first().click();await page.waitForFunction(()=>!document.querySelector('.stacks.is-busy'));
   await page.getByRole('button',{name:'Undo',exact:true}).click();assert.match(await page.locator('.round-clock').innerText(),/2\/3/);
   await page.locator('[data-column="0"]').click();await page.locator('[data-bin="glassBrown"]').click();await page.locator('.lost').waitFor();
-  assert.equal(await page.locator('.lost h2').innerText(),'Too many wrong glass choices');
+  assert.equal(await page.locator('.lost h2').innerText(),'Wrong choices this round: 3');
   await page.getByRole('button',{name:'Try again',exact:true}).click();assert.match(await page.locator('.round-clock').innerText(),/0\/3/);
   assert.deepEqual(errors,[]);console.log('PASS timer counts elapsed time, help pauses, buffer costs 5s, glass costs 10s, undo cannot refund penalties, timeout and third mistake end rounds, restart resets timer and mistakes');
   await context.close();

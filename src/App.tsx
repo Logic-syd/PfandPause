@@ -914,7 +914,7 @@ export default function App() {
                 ? levelIndex === levels.length - 1 && allComplete
                   ? t.allDone
                   : t.nice
-                : game.endReason === "time" ? t.timeOver : t.tooManyMistakes
+                : game.endReason === "time" ? t.timeOver : t.tooManyMistakes.replace("{count}", String(game.mistakes))
             }
             closeLabel={t.close}
             onClose={() => navigate("levels")}

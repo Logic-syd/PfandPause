@@ -2983,6 +2983,37 @@ main {
   .result-content .result-art i { width: 30px; height: 30px; right: 15px; }
 }
 
+/* The machine prints a little voucher from our own fictional corner shop. */
+.dialog.result-dialog.won[open] { height: min(610px, calc(100dvh - 24px)); max-width: 410px; animation: none; }
+.dialog.result-dialog.won h2 { font-size: 20px; margin: 10px 28px 14px; }
+.receipt-printer { position: relative; padding: 10px 14px 14px; max-width: 340px; margin: 0 auto; }
+.receipt-printer::before { content: ''; position: absolute; top: 0; left: 5px; right: 5px; height: 10px; border: 4px solid #c9d2c2; border-radius: 6px; background: #33483c; box-shadow: 0 2px 0 #a8b6a3; z-index: 1; }
+.return-receipt { position: relative; padding: 22px 20px 18px; background: #fffef8; color: #41493f; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.45; font-variant-numeric: tabular-nums; text-align: left; box-shadow: 2px 5px 12px #39432f12; animation: receipt-print 900ms cubic-bezier(.2,.7,.2,1) both; }
+.return-receipt::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: linear-gradient(135deg, #fffef8 25%, transparent 25%) -4px 0 / 8px 8px repeat-x, linear-gradient(225deg, #fffef8 25%, transparent 25%) -4px 0 / 8px 8px repeat-x; }
+.return-receipt-header { display: flex; align-items: center; justify-content: center; gap: 10px; padding-bottom: 16px; }
+.receipt-shop-mark { display: grid; place-items: center; width: 39px; height: 39px; border: 2px solid #4e6757; color: #4e6757; border-radius: 4px; font-size: 25px; font-weight: bold; letter-spacing: -3px; padding-right: 3px; }
+.receipt-shop-name { font-size: 16px; font-weight: bold; letter-spacing: 1px; }
+.receipt-shop-name small { display: block; font-size: 7px; letter-spacing: .6px; font-weight: normal; margin-top: 3px; }
+.return-receipt h3 { font: bold 13px/1.5 'Courier New', monospace; text-align: center; letter-spacing: 1px; margin: 0 0 4px; }
+.receipt-number { font-size: 9px; text-align: center; margin: 0; color: #798071; }
+.receipt-items { margin-top: 14px; border-top: 1px dashed #adb09f; border-bottom: 1px dashed #adb09f; padding: 10px 0; }
+.receipt-column-head, .receipt-item { display: flex; justify-content: space-between; gap: 12px; }
+.receipt-column-head { font-size: 10px; color: #798071; margin-bottom: 8px; }
+.receipt-item + .receipt-item { margin-top: 5px; }
+.return-receipt .receipt-totals { display: grid; gap: 7px; color: inherit; font-size: 11px; margin: 0; padding: 10px 0 0; }
+.return-receipt .receipt-totals > span { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+.return-receipt .receipt-totals b { color: inherit; font-weight: bold; white-space: nowrap; }
+.return-receipt .receipt-refund { font-size: 14px; border-bottom: 1px dashed #adb09f; padding-bottom: 12px; }
+.return-receipt .receipt-refund b { font-size: 25px; letter-spacing: -1px; }
+.return-receipt .receipt-glass { font-size: 10px; color: #798071; }
+.receipt-cash-note { font-size: 10px; text-align: center; max-width: 240px; margin: 14px auto 12px; }
+.receipt-barcode { height: 24px; width: 170px; max-width: 90%; margin: 0 auto 5px; background: repeating-linear-gradient(90deg, #495044 0 2px, transparent 2px 4px, #495044 4px 5px, transparent 5px 8px, #495044 8px 12px, transparent 12px 14px, #495044 14px 15px, transparent 15px 19px, #495044 19px 22px, transparent 22px 25px); }
+.receipt-cheer { font-size: 10px; text-align: center; margin-top: 12px; color: #69775f; }
+@keyframes receipt-print { from { clip-path: inset(0 0 100%); transform: translateY(-22px); } to { clip-path: inset(0 0 -10px); transform: translateY(0); } }
+@media (max-height: 450px) {
+  .dialog.result-dialog.won h2 { font-size: 17px; margin: 4px 28px 8px 0; }
+}
+
 /* Keep direct language choices visible in narrow game-portal windows. */
 @media (max-width: 440px) {
   .app:has(.home-screen) .brand-name { display: none; }

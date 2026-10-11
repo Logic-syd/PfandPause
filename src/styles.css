@@ -3000,7 +3000,7 @@ main {
 .receipt-column-head, .receipt-item { display: flex; justify-content: space-between; gap: 12px; }
 .receipt-column-head { font-size: 10px; color: #798071; margin-bottom: 8px; }
 .receipt-item + .receipt-item { margin-top: 5px; }
-.return-receipt .receipt-totals { display: grid; gap: 7px; color: inherit; font-size: 11px; margin: 0; padding: 10px 0 0; }
+.return-receipt .receipt-totals { display: grid; grid-template-columns: minmax(0, 1fr); justify-content: stretch; width: 100%; gap: 7px; color: inherit; font-size: 11px; margin: 0; padding: 10px 0 0; }
 .return-receipt .receipt-totals > span { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
 .return-receipt .receipt-totals b { color: inherit; font-weight: bold; white-space: nowrap; }
 .return-receipt .receipt-refund { font-size: 14px; border-bottom: 1px dashed #adb09f; padding-bottom: 12px; }

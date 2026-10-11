@@ -18,7 +18,7 @@ const en = {
   shop: "AT THE BOTTLE RETURN MACHINE",
   tagline: "Return your bottles.\nGet your deposit back.",
   intro:
-    "Check the label: €0.25, €0.15 or €0.08. Later, sort no-deposit glass by colour.",
+    "Different bottles, different deposits. Can’t return a glass bottle? Pop it into the matching colour bin.",
   play: "Return bottles",
   continue: "Continue returning",
   chooseLevel: "Choose a level",
@@ -168,7 +168,7 @@ const de: typeof en = {
   shop: "AM PFANDAUTOMATEN",
   tagline: "Flaschen zurück.\nPfand zurück.",
   intro:
-    "Etikett prüfen: 0,25 €, 0,15 € oder 0,08 €. Später kommt pfandfreies Altglas dazu.",
+    "Je nach Flasche gibt’s unterschiedlich viel Pfand. Glas ohne Pfand? Ab in den passenden Altglascontainer!",
   play: "Flaschen zurückgeben",
   continue: "Weiter zurückgeben",
   chooseLevel: "Level wählen",
@@ -317,7 +317,7 @@ const zh: typeof en = {
     "去退瓶机退瓶子，学会德国押金瓶与玻璃回收分类。支持中文、英语和德语。",
   shop: "来到超市退瓶机",
   tagline: "瓶子退回去，\n押金拿回来。",
-  intro: "看清瓶身标记：0.25、0.15 或 0.08 欧元。后面还会遇到无押金玻璃瓶，按颜色回收。",
+  intro: "不同的瓶子，押金也不一样。不能退的玻璃瓶，记得送进对应颜色的回收桶哦。",
   play: "去退瓶机退瓶",
   continue: "继续退瓶",
   chooseLevel: "选择关卡",

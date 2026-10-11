@@ -2968,7 +2968,10 @@ main {
 .round-clock { font-size: 14px; color: var(--ink); font-weight: 750; white-space: nowrap; }
 .round-clock small { font-size: 10px; }
 .round-clock.clock-urgent { color: #a34f38; }
-.time-penalty { flex-shrink: 0; font-size: 12px; line-height: 1.4; color: #984d3a; margin: 0 0 7px; }
+.time-penalty { display: grid; flex-shrink: 0; font-size: 12px; line-height: 1.4; color: #984d3a; margin: 0 0 7px; }
+/* Reserve the translated, wrapped notice height without duplicate announcements. */
+.time-penalty > span { grid-area: 1 / 1; }
+.time-penalty-space { visibility: hidden; }
 .result-content .result-stats { display: grid; grid-template-columns: 1fr; gap: 6px; width: 100%; margin: 0; padding: 12px 4px 4px; }
 @media (max-height: 500px) {
   .dialog.result-dialog[open] { padding: 12px; }

@@ -54,10 +54,10 @@ export const levels: Level[] = [
     ],
     orders: [
       "currant",
-      "currant",
+      "lemon",
       "water",
       "apple",
-      "lemon",
+      "currant",
       "lemon",
       "water",
       "apple",

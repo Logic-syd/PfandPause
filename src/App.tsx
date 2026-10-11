@@ -287,20 +287,6 @@ export default function App() {
       onClose={() => setModal(null)}
     >
       <div className="setting-row">
-        <span>{t.language}</span>
-        <div className="language-options">
-          {LANGUAGE_OPTIONS.map(({ code: lang, label }) => (
-            <button
-              key={lang}
-              aria-pressed={preferences.language === lang}
-              onClick={() => setPreferences((p) => ({ ...p, language: lang }))}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="setting-row">
         <span>{t.sound}</span>
         <button
           className="toggle"
@@ -374,18 +360,20 @@ export default function App() {
           )}
         </div>
         <nav>
-          <button
-            className="language-button"
-            onClick={() => setModal("settings")}
-            aria-haspopup="dialog"
-            aria-label={`${t.language}: ${LANGUAGE_OPTIONS.find((option) => option.code === preferences.language)?.label}`}
-            disabled={busy}
-          >
-            {preferences.language === "zh"
-              ? "中文"
-              : preferences.language.toUpperCase()}
-            <Icon name="chevron" size={13} />
-          </button>
+          <div className="language-switch" role="group" aria-label={t.language}>
+            {LANGUAGE_OPTIONS.map(({ code, label }) => (
+              <button
+                key={code}
+                className="language-choice"
+                aria-label={label}
+                aria-pressed={preferences.language === code}
+                onClick={() => setPreferences((p) => ({ ...p, language: code }))}
+                disabled={busy}
+              >
+                {code === "zh" ? "中文" : code.toUpperCase()}
+              </button>
+            ))}
+          </div>
           <button
             className="icon-button sound-button"
             onClick={() => {

@@ -143,16 +143,18 @@ main {
 .icon-button:hover {
   background: #eeeade;
 }
-.language-button {
+.language-switch { display: flex; align-items: center; flex-shrink: 0; }
+.language-choice {
   font-size: 12px;
   font-weight: 650;
-  letter-spacing: 1px;
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  padding: 12px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 6px;
+  border-radius: 8px;
   background: none;
 }
+.language-choice[aria-pressed="true"] { background: #e4ebde; }
+.language-choice:hover { background: #eeeade; }
 .eyebrow {
   font-size: 10px;
   font-weight: 700;
@@ -1274,20 +1276,6 @@ main {
   border-top: 1px solid var(--line);
   padding: 19px 0;
   font-size: 13px;
-}
-.language-options {
-  display: flex;
-  gap: 4px;
-}
-.language-options button {
-  font-size: 11px;
-  padding: 10px 9px;
-  border-radius: 5px;
-  background: none;
-  min-height: 42px;
-}
-.language-options button[aria-pressed="true"] {
-  background: var(--mint);
 }
 .toggle {
   display: flex;
@@ -2564,7 +2552,6 @@ main {
 .recycling-practice a { text-decoration: underline; }
 @media (max-width: 480px) { .recycling-choices { grid-template-columns: 1fr; } .recycling-item { padding: 12px; gap: 10px; } .recycling-entry { white-space: normal; } }
 
-.language-options { flex-wrap: wrap; justify-content: flex-end; }
 .recycling-choices button, .recycling-label { overflow-wrap: anywhere; }
 .recycling-item > div { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
 
@@ -2583,7 +2570,7 @@ main {
     width: 44px;
     height: 44px;
   }
-  .language-button,
+  .language-choice,
   .level-link,
   .order-count-button,
   .game-toolbar button,
@@ -2726,7 +2713,6 @@ main {
   height: 44px;
 }
 .app .header .help-button { border: 0; background: transparent; }
-.app .header .language-button { min-height: 44px; padding: 8px; }
 .app.is-playing .header { max-width: 760px; width: 100%; margin: 0 auto; }
 .app.is-playing .brand { width: 44px; justify-content: center; }
 .app.is-playing .brand-icon { background: transparent; }
@@ -2779,9 +2765,6 @@ main {
 }
 @media (max-width: 280px) {
   .app .header .help-button { display: none; }
-}
-@media (max-width: 200px) {
-  .app .header .language-button { display: none; }
 }
 
 /* Short, wide windows use spare horizontal space instead of tiny bottles. */
@@ -2995,4 +2978,17 @@ main {
   .result-content .result-art { height: 60px; width: 125px; margin: 0 auto 8px; }
   .result-content .result-art .bottle { height: 56px; }
   .result-content .result-art i { width: 30px; height: 30px; right: 15px; }
+}
+
+/* Keep direct language choices visible in narrow game-portal windows. */
+@media (max-width: 440px) {
+  .app:has(.home-screen) .brand-name { display: none; }
+}
+@media (max-width: 360px) {
+  .app .header .help-button { display: none; }
+}
+@media (max-width: 280px) {
+  .language-choice { min-width: 36px; padding: 0 4px; }
+  .app.is-playing .brand { width: 32px; }
+  .app.is-playing .level-link { padding: 0 2px; gap: 2px; }
 }

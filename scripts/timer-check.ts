@@ -11,7 +11,7 @@ try {
   const initial=await seconds();await page.clock.fastForward(10000);assert.ok((await seconds())<=initial-9);
   await page.locator('.help-button').click();const paused=await seconds();await page.clock.fastForward(20000);assert.equal(await seconds(),paused);
   await page.getByRole('button',{name:'Close',exact:true}).click();
-  const blocked={path:[0,1,3],column:0};
+  const blocked={path:[1,3,3,3],column:3};
   for(const column of blocked.path) {await page.locator(`[data-column="${column}"]`).click();await page.waitForFunction(()=>!document.querySelector('.stacks.is-busy'));}
   const before=await seconds();const moves=await page.locator('.game-toolbar').innerText();
   await page.locator(`[data-column="${blocked.column}"]`).click();assert.equal(await page.locator('.game-toolbar').innerText(),moves);assert.ok((await seconds())<=before-5);

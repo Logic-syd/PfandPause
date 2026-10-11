@@ -26,14 +26,10 @@ try {
         // Switching a live lesson keeps its answer, score and current question.
         const progress = await page.locator('.recycling-progress').innerText();
         const target: Language = language === 'zh' ? 'de' : 'zh';
-        await page.locator('.language-button').click();
-        await page.locator('.language-options').getByRole('button', { name: target === 'zh' ? '中文' : 'Deutsch', exact: true }).click();
-        await page.getByRole('button', { name: translations[target].close, exact: true }).click();
+        await page.locator('.language-switch').getByRole('button', { name: target === 'zh' ? '中文' : 'Deutsch', exact: true }).click();
         assert.equal(await page.locator('html').getAttribute('lang'), target);
         assert.equal(await page.locator('.recycling-choices button:enabled').count(), 0);
-        await page.locator('.language-button').click();
-        await page.locator('.language-options').getByRole('button', { name: { zh: '中文', en: 'English', de: 'Deutsch' }[language], exact: true }).click();
-        await page.getByRole('button', { name: translations[language].close, exact: true }).click();
+        await page.locator('.language-switch').getByRole('button', { name: { zh: '中文', en: 'English', de: 'Deutsch' }[language], exact: true }).click();
         assert.equal(await page.locator('.recycling-progress').innerText(), progress);
       }
       await page.locator('.recycling-actions .primary').click();
@@ -47,9 +43,7 @@ try {
     }
     // A saved choice must override the browser default on the next visit.
     const savedLanguage: Language = { zh: 'de', en: 'zh', de: 'en' }[language] as Language;
-    await page.locator('.language-button').click();
-    await page.locator('.language-options').getByRole('button', { name: { zh: '中文', en: 'English', de: 'Deutsch' }[savedLanguage], exact: true }).click();
-    await page.getByRole('button', { name: translations[savedLanguage].close, exact: true }).click();
+    await page.locator('.language-switch').getByRole('button', { name: { zh: '中文', en: 'English', de: 'Deutsch' }[savedLanguage], exact: true }).click();
     await page.reload();
     assert.equal(await page.locator('html').getAttribute('lang'), savedLanguage);
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('pfand-pause:v1')!).language), savedLanguage);

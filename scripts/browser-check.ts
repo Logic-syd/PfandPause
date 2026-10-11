@@ -296,9 +296,7 @@ try {
     path: "artifacts/levels-mobile.png",
     fullPage: true,
   });
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  await page.getByRole("button", { name: "Deutsch", exact: true }).click();
-  await page.getByRole("button", { name: "Schließen", exact: true }).click();
+  await page.locator(".language-switch").getByRole("button", { name: "Deutsch", exact: true }).click();
   await page.reload();
   assert.equal(await page.locator("html").getAttribute("lang"), "de");
   const saved = await page.evaluate(() =>

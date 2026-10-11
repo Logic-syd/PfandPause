@@ -60,15 +60,17 @@ try {
     // also reduces the actual game height below the monitor's resolution.
     await page.route("**/portal-test", route => route.fulfill({
       contentType: "text/html",
-      body: `<style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:calc(100% - 56px);border:0}</style><header style="height:56px">Game portal</header><iframe src="${url}/portal-frame" scrolling="no"></iframe>`,
+      body: `<meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:calc(100% - 56px);border:0}</style><header style="height:56px">Game portal</header><iframe src="${url}/portal-frame" scrolling="no"></iframe>`,
     }));
     await page.route("**/portal-frame", route => route.fulfill({
       contentType: "text/html",
-      body: `<style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:100%;border:0}</style><iframe src="${url}/?embedded-test" scrolling="no" allow="autoplay; fullscreen"></iframe>`,
+      body: `<meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:100%;border:0}</style><iframe src="${url}/?embedded-test" scrolling="no" allow="autoplay; fullscreen"></iframe>`,
     }));
     await page.goto(`${url}/portal-test`);
     await page.frameLocator("iframe").frameLocator("iframe").locator(".landing").waitFor();
     const frame = page.frames().find(frame => frame.url().includes("?embedded-test"))!;
+    assert.equal(await frame.evaluate(() => innerWidth), size.width,
+      "The portal must preserve the phone viewport instead of using a desktop layout viewport");
     const press = (button: Locator) => size.touch ? button.tap() : button.click();
     await press(frame.getByRole("button", { name: t.chooseLevel, exact: true }));
     await press(frame.locator(".level-card").nth(9));

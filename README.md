@@ -1,4 +1,18 @@
-# Latest version: 1.0.2
+# Pfand Pause — browser build 1.0.3
+
+[Download PfandPause-html5-1.0.3.zip](https://github.com/Logic-syd/PfandPause/raw/refs/heads/downloads/PfandPause-html5-1.0.3.zip)
+
+Source commit: `2ef101bf43fbb9b7f99361c89f4d4c4a2770613e` · SHA-256: `9df0cce500680a74c89918259685ae07965fb4fd3402501d6a250ed18f012e7d`
+
+Open directly into the first unfinished round. A single compact navigation row replaces the large logo and title. The complete board fits the actual window, including nested game portal frames, without gameplay scrolling or scrollbars. Short wide windows arrange bottles and crates side by side. Undo, restart and queue controls keep their normal touch size. Chinese, English and German, existing progress, recycling lessons and optional practice remain available.
+
+Validated production build: 41 unit tests, all 10 levels completed in the browser, three languages, audio, touch and mouse in nested frames. All 10 boards fit 11 viewport sizes from 240×320 through 3840×2160, plus live portrait/landscape resizing. Checks use Chromium; physical iPhone Safari needs device testing.
+
+Game Jolt: Packages → Manage → New Release → `1.0.3` → Upload Browser Build. Keep Fit to screen and HTTPS enabled, save the build and publish the release. ZIP has `index.html` directly in its root.
+
+---
+
+# Previous version: 1.0.2
 
 Download [PfandPause-html5-1.0.2.zip](https://github.com/Logic-syd/PfandPause/raw/refs/heads/downloads/PfandPause-html5-1.0.2.zip).
 

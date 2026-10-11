@@ -515,7 +515,6 @@ export default function App() {
               {t.progress} · {preferences.completed.length}/{levels.length}
             </p>
             <h1>{t.levels}</h1>
-            <p className="muted">{t.levelsIntro}</p>
             <div className="level-grid">
               {levels.map((l, i) => {
                 const complete = preferences.completed.includes(l.id);
@@ -922,9 +921,7 @@ export default function App() {
                 </div>
                 <p>
                   {game.status === "won"
-                    ? levelIndex === levels.length - 1 && allComplete
-                      ? t.allDoneBody
-                      : t.winBody
+                    ? t.winCheers[levelIndex]
                     : game.endReason === "time" ? t.timeOverBody : t.fineNotice}
                 </p>
                 <div className="result-stats">

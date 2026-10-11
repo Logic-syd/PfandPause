@@ -578,7 +578,10 @@ export default function App() {
                 <i style={{ width: `${(packed / total) * 100}%` }} />
               </div>
             </div>
-            {penaltyNotice === "buffer" && <p className="time-penalty" role="status">{t.bufferPenalty}</p>}
+            <p className="time-penalty" role="status">
+              <span className="time-penalty-space" aria-hidden="true">{t.bufferPenalty}</span>
+              <span className="time-penalty-message">{penaltyNotice === "buffer" ? t.bufferPenalty : ""}</span>
+            </p>
             <FitBoard>
               <div className={`game-layout ${hasGlass ? "has-glass" : ""}`}>
                 <div className="play-area">

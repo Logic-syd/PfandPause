@@ -1,4 +1,20 @@
-# Latest version: 1.0.1
+# Latest version: 1.0.2
+
+Download [PfandPause-html5-1.0.2.zip](https://github.com/Logic-syd/PfandPause/raw/refs/heads/downloads/PfandPause-html5-1.0.2.zip).
+
+This version handles vertical touch drags inside nested game portal frames when the browser does not pan natively. It separates a swipe from a bottle tap and scrolls modal content independently. Direct links retain native scrolling, and the game does not impose a fixed zoom or frame size.
+
+Create release `1.0.2` in the existing Game Jolt package, upload this ZIP as **Upload Browser Build**, enable **Fit to screen?**, keep HTTPS enabled, save the build, and publish the release once the build is Active.
+
+Validation: 41 unit tests, typecheck/build, seven simulated viewport scenarios, audio fault protection, and cross-origin nested-frame scroll fault tests. The latter deliberately disable native touch panning: 1.0.1 fails to scroll while 1.0.2 passes vertical bottle swipes, no accidental move, subsequent tap/undo, independent order list scrolling, and two-finger event handling. Direct-link native scrolling also passes. These are Chromium tests; real iPhone Safari remains to be tested.
+
+Source: https://github.com/Logic-syd/PfandPause/tree/e2eaf31108323fb2c5413e8563de1a8a735080e3
+
+SHA-256: `f270cf3b99c05696e4814a97ccc2259e511d8978a6b422db20a608ed4d1e216a`
+
+---
+
+# Previous version: 1.0.1
 
 Download [PfandPause-html5-1.0.1.zip](https://github.com/Logic-syd/PfandPause/raw/refs/heads/downloads/PfandPause-html5-1.0.1.zip) for the mobile and embedded-display update.
 

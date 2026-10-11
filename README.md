@@ -1,6 +1,6 @@
 # Pfand Pause
 
-一个完整可玩的、以德国小饮料店退瓶区为背景的 2D 分拣解谜游戏。原创 SVG / CSS 美术，中文、英语与德语，十个经过同一规则引擎求解验证的关卡。手机竖屏优先，也支持电脑鼠标和键盘。
+一个限时退瓶与玻璃回收解谜游戏。原创 SVG / CSS 美术，支持中文、英语与德语，共 15 个经求解验证的关卡。前15 关退押金瓶，后五关加入无押金玻璃的颜色分类。手机与桌面界面按视口适配，不需要上下滚动。
 
 ## 德国回收练习（中英德三语）
 
@@ -8,7 +8,7 @@
 
 内容包括一次性押金 0.25 €、常见可重复使用瓶押金 0.15 € / 0.08 €、无押金玻璃按颜色分类，以及蓝色等其他颜色通常进入绿玻璃箱。示例押金明确写在包装信息中，不根据饮料种类或瓶子颜色推断。可重复使用瓶金额不统一，商店接收瓶型及当地分类要求也可能不同；真实投放应查看实际包装、购买凭证和当地说明。无押金塑料、金属及纸盒包装不属于本练习的玻璃箱范围。
 
-原十关分拣解谜仍是独立的虚构玩法。教学数据位于 `src/data/recycling.ts`，界面位于 `src/components/RecyclingPractice.tsx`。`npm test` 包含教学去向与押金统计测试。规则参考入口：[DPG](https://dpg-pfandsystem.de/) 与 [德国消费者中心](https://www.verbraucherzentrale.de/wissen/umwelt-haushalt/abfall)。
+主线采用虚构的每批三瓶规则，但每种示例包装都明确标示押金：柠檬汽水为 Einweg PET / 0.25 €，其他 Mehrweg 示例为 0.15 € 或 0.08 €。三种无押金玻璃瓶明确标示 OHNE PFAND。教学数据位于 `src/data/recycling.ts`，界面位于 `src/components/RecyclingPractice.tsx`。`npm test` 包含教学去向与押金统计测试。规则参考入口：[DPG](https://dpg-pfandsystem.de/) 与 [德国消费者中心](https://www.verbraucherzentrale.de/wissen/umwelt-haushalt/abfall)。
 
 ## 启动
 
@@ -31,18 +31,12 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 ## 玩法
 
 - 每列从上到下排列瓶子。只能拿取最上方、带亮色边框的瓶子；后面的瓶子可看见但不可点击。移动设备直接点按，键盘可用 Tab 选择并按 Enter / Space。
-- 同时有两个瓶箱，每箱接受指定类型的 **三个** 瓶子。瓶型、颜色、标签图案三重区分六种类型。
-- 点击后，匹配的瓶子自动进箱；两个箱都不匹配时，进入 **三格临时区**。
-- 同类型有两个可用箱时，先填已有更多瓶子的箱子；一样多则优先左边。
-- 满箱移走，按固定订单队列补位。临时区中的匹配瓶子自动进新箱，继续结算，直到没有可执行的自动转移。
-- 全部自动转移结束后，临时区仍占满三格且尚未完成，失败。全部瓶子装箱则通关。
-- **撤销**恢复上次点击前的全部状态，包括自动转移、已完成箱、订单位置；可以连续撤销。**重开**恢复该关初始状态。
-- 首页保留店铺插画、介绍及进度，开始／继续、选关、回收练习和教学入口同屏可见；点击开始后直接进入关卡，没有强制教程。正式关卡顶部只有一行菜单、选关、语言、帮助和设置；可从首页或帮助打开独立互动练习（匹配、暂存、失败、撤销、自动换箱和通关）。练习不影响正式关卡或进度，后续关卡逐步解锁。没有计时，也没有步数惩罚。
-- 正式关卡按实际窗口宽高适配，瓶子、暂存区和箱子完整可见，无需滚动；矮宽窗口并排布局。撤销和重开位于棋盘外，保持至少 44px 的按钮高度。页面与弹窗隐藏滚动条，教学练习、回收问答与通关总结也适配实际窗口，无需滑动；长订单和规则说明可以独立滑动。
-- 通关总结显示本关归还的瓶数和模拟退回押金，按各瓶标签上的示例金额以整数分求和。游戏内水、汽水及果汁瓶标为 0.15 €，麦芽饮料瓶标为 0.08 €；它们是虚构包装的明确示例金额，不按饮料类别推断真实包装的押金。
-- 订单入口显示尚未发出的箱数，展开后可看到已完成、当前使用中和后续订单。两个当前箱不计入「queued / warten」。
-- localStorage 自动保存已通关关卡、教程状态、语言、音效和减少动态效果设置。首次使用跟随浏览器的中文或德语设置，其他语言默认使用英语。点击顶部语言按钮或设置，可选择中文、English、Deutsch；选择会持久保存。存储被禁用或损坏时仍可游玩。
-- 这是一款虚构的益智游戏，不模拟真实押金政策。
+- 退瓶机有两个接收位，每批接受三个相同包装的押金瓶，完成后依接收队列切换包装。这是解谜机制，不代表真实机器一定要凑三瓶。
+- 没有对应接收位的押金瓶进入三个暂存位；有接收位时自动移入。暂存位满时，仍可退匹配的瓶子；继续取不匹配的瓶子扣 5 秒，瓶子不移动。
+- 第 11 关起，点选标有 OHNE PFAND 的玻璃瓶，再选择白／棕／绿玻璃回收箱。投错扣 10 秒；累计投错三次结束本轮。
+- 关卡时间至少 60 秒，按瓶数增加，最后一关 120 秒。查看帮助、教学或离开关卡暂停计时；撤销不返还已扣时间，也不清除投错次数。
+- 倒计时结束前处理所有瓶子才能通关。通关统计分别显示实际归还的押金瓶数、模拟退回押金和无押金玻璃回收数。无押金玻璃不增加押金或退瓶数。
+- 时间用完或投错达到上限后只能重开／返回首页。罚款说明不写未核实的具体金额。
 
 ## 社区饮料店的视觉设计
 
@@ -57,11 +51,11 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 | `malt` | Malz | Malt drink | 0,33 l |
 | `kola` | Kola-Mix | Cola-orange | 0,5 l |
 
-瓶型、玻璃质感、饮料图案与德语实物标签共同营造社区饮料店的感觉；包装保留德语，界面名称随中文／英语／德语切换。`MEHRWEG`、容量与示例押金标在虚构包装上，用于本关模拟统计；真实押金仍以实际包装和购买凭证为准。全部包装与插画均为原创，无真实品牌、商标或外部游戏素材。
+瓶型、材质、图案与德语标签用于识别包装。界面随中英德切换，包装标签保留德语。`EINWEG PET`／`MEHRWEG`／`OHNE PFAND`、容量与金额明确写在示例包装上；真实押金以实际包装和购买凭证为准。全部包装与插画均为原创，无真实品牌、商标或外部游戏素材。
 
 参考了 [GDB 的回收瓶型](https://www.gdb.de/mehrweg/flaschen-und-kaesten/)、[RAPP 的日常饮料品类](https://www.rapp.de/shop/alkoholfreie-rapp-getraenke/)和 [Karamalz 的麦芽饮料规格](https://www.karamalz.de/produkte/karamalz-classic)，仅用作生活背景研究，没有使用这些品牌的名称、标志或包装素材。
 
-类型由 `berry / orange / cola / mint` 一一改为 `currant / apple / malt / kola`，关卡排列、订单顺序和规则保持相同，因此不改变难度与既有解路径。存档只保存已完成关卡 id 和设置，原有进度继续有效。
+类型由 `berry / orange / cola / mint` 一一改为 `currant / apple / malt / kola`，原十关排列继续保留；新倒计时、三位满后的扣时规则和玻璃分类独立演进。存档只保存已完成关卡 id 和设置，原有进度继续有效。
 
 ## 文件位置与设计
 
@@ -70,11 +64,11 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 | `src/game/types.ts`           | 瓶子、关卡、完整游戏状态、动画事件的类型                 |
 | `src/game/engine.ts`          | 纯规则：初始化、校验、选箱、拿瓶、自动结算、瓶子守恒统计 |
 | `src/game/solver.ts`          | 使用相同 `takeBottle` 的带记忆深度优先搜索               |
-| `src/data/levels.ts`          | 十关独立的静态数据；每列数组第一个元素就是最上方瓶子     |
+| `src/data/levels.ts`          | 十个退瓶谜题及五个玻璃分类关卡；每列数组第一个元素就是最上方瓶子     |
 | `src/data/tutorial.ts`        | 独立9瓶练习关、教学操作顺序和引导版本                    |
 | `src/components/Tutorial.tsx` | 与正式关卡隔离的互动新手引导                             |
-| `src/data/bottles.ts`         | 六种瓶子的配色、瓶型路径和瓶盖尺寸                       |
-| `src/components/Bottle.tsx`   | 统一 SVG 绘制及六种标签图案                              |
+| `src/data/bottles.ts`         | 九种包装的配色、瓶型路径和瓶盖尺寸                       |
+| `src/components/Bottle.tsx`   | 统一 SVG 绘制及包装标签                              |
 | `src/components/FitBoard.tsx` | 根据实际容器宽高缩放整局，兼容嵌套 iframe与动态窗口尺寸 |
 | `src/components/Dialog.tsx`   | 原生 modal dialog、焦点恢复和 Escape 支持                |
 | `src/App.tsx`                 | 页面、操作历史、动画事件播放、同步输入锁                 |
@@ -95,7 +89,7 @@ npm run preview        # 本地预览 dist，默认 http://localhost:4173
 
 ```sh
 npm test              # 核心规则、逐关解回放、动画帧守恒、随机合法操作
-npm run solve         # 校验十关并更新 docs/solutions.json
+npm run solve         # 校验15 关并更新 docs/solutions.json
 npm run typecheck
 npm run build
 ```
@@ -106,7 +100,9 @@ npm run build
 npx playwright install chromium   # 首次安装测试浏览器
 npm run test:browser
 npm run test:responsive            # 手机触控、嵌入框、2K/4K 与音频异常回归
-npm run test:fit-board             # 11种窗口、全部十关完整显示，无棋盘滚动或滚动条
+npm run test:timer                 # 倒计时、帮助暂停、扣时、不可撤销的惩罚、结束与重开
+npm run test:glass                 # 三语玻璃关卡、投错、撤销、统计与小屏完整显示
+npm run test:fit-board             # 11种窗口、全部15 关完整显示，无棋盘滚动或滚动条
 npm run test:practice-fit          # 三语、6种窗口，首页／教学全步骤／八题问答／通关统计
 npm run test:embedded-scroll       # 跨源嵌套 iframe 的触摸滚动兼容与故障模拟
 ```
@@ -119,7 +115,7 @@ BROWSER_CHANNEL=chrome npm run test:browser
 BASE_URL=http://localhost:4173 BROWSER_CHANNEL=chrome npm run test:browser
 ```
 
-脚本会实际点击通关全部十关，并检查 30 次同时点击只产生一步、失败后撤销、自动转移后撤销、重开、关卡解锁、刷新保存、德英语言、被禁用/损坏的存储、桌面通关，以及 320 / 360 / 390 / 768 / 1280px 的横向溢出。截图与回归报告写入 `artifacts/`。
+脚本会实际点击通关全部15 关，并检查 30 次同时点击只产生一步、暂存位满后撤销、自动转移后撤销、重开、关卡解锁、刷新保存、德英语言、被禁用/损坏的存储、桌面通关，以及 320 / 360 / 390 / 768 / 1280px 的横向溢出。截图与回归报告写入 `artifacts/`。
 
 三语回归覆盖浏览器语言识别、八个回收示例、练习中切换语言、设置持久化、教程、帮助和窄屏布局：
 
@@ -150,17 +146,17 @@ BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:languages
 ```
 
 1. 关卡 id 保持从 1 开始连续，每个列数组按 **从顶到底** 填写。
-2. 某种瓶子每出现一条订单，桌面就必须正好有三个这种瓶子；校验器会拒绝不平衡配置。
-3. 在 `src/i18n.ts` 的两种 `levelNames` 中补充关卡名。
-4. 若扩展到十关之外，更新 `src/storage.ts` 中保存关卡 id 的上限；这是一版十关的存档边界。
+2. 押金瓶每条接收订单对应三个瓶子；无押金玻璃不进接收队列，可单瓶出现。校验器拒绝不平衡押金瓶或将玻璃排入退瓶队列。
+3. 在 `src/i18n.ts` 的三语 `levelNames` 中补充关卡名。
+4. 存档关卡范围依据 `levels.length`，新增关卡后原有完成记录继续有效。
 5. 运行 `npm run solve` 和 `npm test`；没有验证解的关卡不能发布。
-6. 用 390px 窄屏检查列数和最深堆叠。目前经过视觉验证的范围是 3–5 列、2–8 层；更多列应补充 CSS 尺寸规则。
+6. 用 390px 窄屏检查列数和最深堆叠。目前经过视觉验证的范围是 3–5 列、2–9 层；更多列应补充 CSS 尺寸规则。
 
 `scripts/extend-levels.ts` 保留了后七关的确定性生成过程。它从固定种子抽取候选，通过同一求解器筛选后写入静态文件。正常修改关卡只需直接编辑数据；重新运行生成脚本会覆盖第 4–10 关。
 
 ## 新增瓶子
 
-1. 在 `src/game/types.ts` 的 `bottleTypes` 中增加类型。现有类型为 `water / lemon / currant / apple / malt / kola`；新增时使用独立 token（例如 `rhubarb`），不要复用已有类型。
+1. 在 `src/game/types.ts` 的 `bottleTypes` 中增加类型。现有退瓶类型为 `water / lemon / currant / apple / malt / kola`，无押金类型为 `glassClear / glassBrown / glassGreen`；新增时使用独立 token（例如 `rhubarb`），不要复用已有类型。
 2. 在 `src/data/bottles.ts` 中补齐颜色、浅色、SVG 瓶身路径、瓶盖位置；采用相同的 `68 × 124` 坐标系。
 3. 在 `src/components/Bottle.tsx` 的 `Pattern` 中画一个独立标签图案。务必同时保持颜色、瓶型、图案的辨识度。
 4. 在 `src/i18n.ts` 的中英德 `bottleNames` 中加上名称，并在 `bottlePackaging` 中配置固定德语标签与容量。然后用新类型配置关卡并运行全部验证。

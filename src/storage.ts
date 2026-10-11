@@ -1,3 +1,4 @@
+import { levels } from "./data/levels";
 import type { Language } from "./i18n";
 export interface Preferences {
   language: Language;
@@ -42,7 +43,7 @@ export function loadPreferences(): Preferences {
         ? [
             ...new Set(
               p.completed.filter(
-                (n) => Number.isInteger(n) && n >= 1 && n <= 10,
+                (n) => Number.isInteger(n) && n >= 1 && n <= levels.length,
               ),
             ),
           ]

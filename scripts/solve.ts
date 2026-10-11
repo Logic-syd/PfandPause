@@ -1,3 +1,4 @@
+import { isGlass } from "../src/game/types";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { levels } from "../src/data/levels";
 import { solveLevel } from "../src/game/solver";
@@ -10,7 +11,7 @@ const results = levels.map((level) => {
       `Level ${level.id}: ${solution.exhausted ? "search budget exceeded" : "unsolvable"}`,
     );
   const end = solution.path.reduce(
-    (state, column) => takeBottle(state, column).state,
+    (state, column) => { const type=state.columns[column][0]; return takeBottle(state, column, isGlass(type) ? type : undefined).state; },
     createGame(level),
   );
   if (end.status !== "won") throw new Error(`Invalid solution: ${level.id}`);

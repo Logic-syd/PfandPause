@@ -12,6 +12,7 @@ import { solveLevel } from "../src/game/solver";
 import { levels } from "../src/data/levels";
 import {
   bottleTypes,
+  isGlass,
   type BottleType,
   type GameState,
   type Level,
@@ -70,7 +71,7 @@ test("same-type crates prefer the fuller one, then the left one", () => {
   state.crates[0]!.count = 3;
   assert.equal(chooseCrate(state, "water"), 1);
 });
-test("a third unmatched bottle loses only after settling; undo restores the complete snapshot", () => {
+test("a full buffer remains playable and undo restores the complete snapshot", () => {
   const level: Level = {
     id: 1,
     columns: [
@@ -84,7 +85,7 @@ test("a third unmatched bottle loses only after settling; undo restores the comp
   const before = moves(initial, [0, 0]);
   const snapshot = cloneState(before);
   const result = takeBottle(before, 0);
-  assert.equal(result.state.status, "lost");
+  assert.equal(result.state.status, "playing");
   assert.equal(result.state.buffer.length, 3);
   assert.deepEqual(before, snapshot);
   assert.deepEqual(bottleInventory(before), bottleInventory(initial));
@@ -171,6 +172,9 @@ test("the solver identifies a genuinely unsolvable balanced level", () => {
         "currant",
         "currant",
         "currant",
+        "currant",
+        "currant",
+        "currant",
         "water",
         "water",
         "water",
@@ -179,7 +183,7 @@ test("the solver identifies a genuinely unsolvable balanced level", () => {
         "lemon",
       ],
     ],
-    orders: ["water", "lemon", "currant"],
+    orders: ["water", "lemon", "currant", "currant"],
   };
   assert.equal(solveLevel(impossible).path, null);
 });
@@ -187,18 +191,19 @@ for (const level of levels) {
   test(`level ${level.id}: balanced counts, winning solution, conservation in every animation frame, undo and restart`, () => {
     const initial = createGame(level);
     const inventory = bottleInventory(initial);
-    for (const type of bottleTypes) assert.equal(inventory[type] % 3, 0);
+    for (const type of bottleTypes) if (!isGlass(type)) assert.equal(inventory[type] % 3, 0);
     const solution = solveLevel(level);
     assert.ok(solution.path, `No solution (${solution.visited} states)`);
     let state = initial;
     const history: GameState[] = [];
     for (const column of solution.path) {
       history.push(cloneState(state));
-      const next = takeBottle(state, column);
+      const type = state.columns[column][0];
+      const next = takeBottle(state, column, isGlass(type) ? type : undefined);
       assert.deepEqual(bottleInventory(next.state), inventory);
       for (const frame of next.frames)
         assert.deepEqual(bottleInventory(frame.state), inventory);
-      assert.ok(next.state.buffer.length < 3);
+      assert.ok(next.state.buffer.length <= 3);
       state = next.state;
     }
     assert.equal(state.status, "won");
@@ -215,15 +220,17 @@ for (const level of levels) {
     for (let trial = 0; trial < 40; trial++) {
       let state = createGame(level);
       const expected = bottleInventory(state);
-      while (state.status === "playing") {
+      for (let turns=0; state.status === "playing" && turns<100; turns++) {
         seed = (seed * 1664525 + 1013904223) >>> 0;
         const choices = state.columns.flatMap((c, i) => (c.length ? [i] : []));
         assert.ok(choices.length);
-        state = takeBottle(state, choices[seed % choices.length]).state;
+        const column = choices[seed % choices.length];
+        const type = state.columns[column][0];
+        state = takeBottle(state, column, isGlass(type) ? type : undefined).state;
         assert.deepEqual(bottleInventory(state), expected);
         assert.ok(state.crates.every((c) => !c || c.count < 3));
         assert.ok(state.buffer.length <= 3);
-        if (state.status === "playing") assert.ok(state.buffer.length < 3);
+        if (state.status === "playing") assert.ok(state.buffer.length <= 3);
       }
     }
   });
@@ -243,7 +250,7 @@ test("guided practice uses real rules, recovers its deliberate failure and finis
     }
     assert.deepEqual(bottleInventory(state), inventory);
     if (step === 3) {
-      assert.equal(state.status, "lost");
+      assert.equal(state.status, "playing");
       assert.equal(state.buffer.length, 3);
     }
     if (step === 4) {

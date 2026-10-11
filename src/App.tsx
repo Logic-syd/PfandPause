@@ -5,12 +5,14 @@ import Dialog from "./components/Dialog";
 import Tutorial from "./components/Tutorial";
 import RecyclingPractice from "./components/RecyclingPractice";
 import FitBoard from "./components/FitBoard";
+import { useRoundClock } from "./components/useRoundClock";
+import { timeLimit, MAX_GLASS_MISTAKES } from "./game/time";
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
 import { returnStats } from "./game/returns";
-import { bottles } from "./data/bottles";
+import { bottles, bottleDeposits } from "./data/bottles";
 import { cloneState, createGame, takeBottle } from "./game/engine";
-import type { BottleType, GameState, Place } from "./game/types";
+import { glassTypes, isGlass, type GlassType, type BottleType, type GameState, type Place } from "./game/types";
 import { LANGUAGE_OPTIONS, translations } from "./i18n";
 import { loadPreferences, savePreferences } from "./storage";
 import { playSound, playWinVoice, stopVoice, unlockAudio } from "./audio";
@@ -52,16 +54,23 @@ export default function App() {
     null,
   );
   const [tutorial, setTutorial] = useState(false);
+  const [selectedGlass, setSelectedGlass] = useState<number | null>(null);
+  const [wrongBin, setWrongBin] = useState(false);
+  const [penaltyNotice, setPenaltyNotice] = useState<"buffer" | "bin" | null>(null);
   const t = translations[preferences.language];
   const level = levels[levelIndex];
+  const clock = useRoundClock(screen === "play" && game.status === "playing" && !modal && !tutorial, timeLimit(level));
+  const seconds = Math.ceil(clock.milliseconds / 1000);
   const returned = returnStats(level.columns.flat());
-  const total = returned.bottles;
-  const refundAmount = new Intl.NumberFormat(
+  const total = level.columns.flat().length;
+  const hasGlass = level.columns.flat().some(isGlass);
+  const formatDeposit = (cents: number) => new Intl.NumberFormat(
     LANGUAGE_OPTIONS.find(option => option.code === preferences.language)!.locale,
     { style: "currency", currency: "EUR" },
-  ).format(returned.cents / 100);
+  ).format(cents / 100);
+  const refundAmount = formatDeposit(returned.cents);
   const packed =
-    game.completed * 3 +
+    game.recycled.length + game.completed * 3 +
     game.crates.reduce((sum, c) => sum + (c?.count ?? 0), 0);
   const remaining = game.columns.flat().length;
   const nextUnfinished = Math.max(
@@ -110,6 +119,18 @@ export default function App() {
   useEffect(() => {
     stopVoice();
   }, [preferences.sound, preferences.language]);
+  useEffect(() => {
+    if (clock.milliseconds <= 0 && screen === "play" && game.status === "playing") expire();
+  }, [clock.milliseconds, screen, game.status]);
+
+  function expire() {
+    epoch.current++;
+    locked.current = false;
+    setBusy(false);
+    setFlight(null);
+    setFullCrate(null);
+    display({ ...gameRef.current, status:"lost", endReason:"time" });
+  }
 
   function display(state: GameState) {
     gameRef.current = state;
@@ -122,6 +143,10 @@ export default function App() {
     setBusy(false);
     setFlight(null);
     setFullCrate(null);
+    setSelectedGlass(null);
+    setWrongBin(false);
+    setPenaltyNotice(null);
+    clock.reset(timeLimit(levels[index]));
     setLevelIndex(index);
     display(createGame(levels[index]));
     setHistory([]);
@@ -139,7 +164,7 @@ export default function App() {
       tutorialVersion: TUTORIAL_VERSION,
     }));
   }
-  async function pick(column: number) {
+  async function pick(column: number, bin?: GlassType) {
     if (
       locked.current ||
       gameRef.current.status !== "playing" ||
@@ -148,8 +173,27 @@ export default function App() {
     )
       return;
     const previous = gameRef.current;
-    const result = takeBottle(previous, column);
+    if (clock.read() <= 0) { expire(); return; }
+    const type = previous.columns[column]?.[0];
+    if (type && isGlass(type) && bin === undefined) {
+      setSelectedGlass(column);
+      setWrongBin(false);
+      return;
+    }
+    const result = takeBottle(previous, column, bin);
     if (!result.frames.length) return;
+    const penalty = result.frames.find(frame => frame.event.kind === "penalty");
+    if (penalty?.event.kind === "penalty") {
+      clock.deduct(penalty.event.seconds);
+      setWrongBin(penalty.event.reason === "bin");
+      setPenaltyNotice(penalty.event.reason);
+      display(result.state);
+      if (clock.read() <= 0 && result.state.status === "playing") expire();
+      return;
+    }
+    setSelectedGlass(null);
+    setWrongBin(false);
+    setPenaltyNotice(null);
     locked.current = true;
     setBusy(true);
     unlockAudio();
@@ -201,6 +245,7 @@ export default function App() {
       }
     }
     if (ticket !== epoch.current) return;
+    if (clock.read() <= 0) { expire(); return; }
     display(result.state);
     setBusy(false);
     locked.current = false;
@@ -216,15 +261,21 @@ export default function App() {
     }
   }
   function undo() {
-    if (locked.current || !history.length) return;
+    if (locked.current || !history.length || gameRef.current.status === "lost") return;
     stopVoice();
-    display(cloneState(history[history.length - 1]));
+    setSelectedGlass(null);
+    setWrongBin(false);
+    setPenaltyNotice(null);
+    const previous = cloneState(history[history.length - 1]);
+    display({ ...previous, penalties:gameRef.current.penalties, mistakes:gameRef.current.mistakes });
     setHistory((h) => h.slice(0, -1));
   }
   function navigate(next: Screen) {
     if (!locked.current) {
       stopVoice();
       setScreen(next);
+      setSelectedGlass(null);
+      setWrongBin(false);
       setTutorial(false);
       scrollToStart();
     }
@@ -286,7 +337,7 @@ export default function App() {
 
   return (
     <div
-      className={`app ${["start", "play", "recycling"].includes(screen) ? "is-fitted" : ""} ${screen === "play" ? "is-playing" : ""} ${preferences.reducedMotion ? "reduce-motion" : ""}`}
+      className={`app ${["start", "play", "recycling", "levels"].includes(screen) ? "is-fitted" : ""} ${screen === "play" ? "is-playing" : ""} ${preferences.reducedMotion ? "reduce-motion" : ""}`}
       onPointerDown={() => {
         if (preferences.sound) unlockAudio();
       }}
@@ -433,8 +484,8 @@ export default function App() {
                         <Bottle type="water" />
                         <Bottle type="currant" />
                       </div>
-                      <div className="hero-crate">
-                        <span>pfandpause.</span>
+                      <div className="hero-crate hero-machine">
+                        <span>PFAND · 0,25 / 0,15 / 0,08 €</span>
                         <div>
                           <i />
                           <i />
@@ -467,6 +518,7 @@ export default function App() {
         )}
         {screen === "levels" && (
           <section className="levels-screen">
+            <FitBoard>
             <button className="text-button" onClick={() => navigate("start")}>
               <Icon name="back" />
               {t.back}
@@ -497,7 +549,7 @@ export default function App() {
                     />
                     <strong>{t.levelNames[i]}</strong>
                     <span className="level-mini-bottles">
-                      {[...new Set(l.orders)].map((type) => (
+                      {[...new Set(l.columns.flat())].map((type) => (
                         <Bottle key={type} type={type} />
                       ))}
                     </span>
@@ -512,6 +564,7 @@ export default function App() {
                 );
               })}
             </div>
+            </FitBoard>
           </section>
         )}
         {screen === "play" && (
@@ -520,6 +573,10 @@ export default function App() {
             <div className="level-progress">
               <span>
                 <b>{packed}</b> / {total} {t.packed}
+              </span>
+              <span className={`round-clock ${seconds <= 15 ? "clock-urgent" : ""}`} aria-label={`${t.timeLeft}: ${seconds}`}>
+                ⏱ {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2,"0")}
+                {hasGlass && <small> · {game.mistakes}/{MAX_GLASS_MISTAKES} {t.mistakes}</small>}
               </span>
               <button
                 className="order-count-button"
@@ -534,8 +591,9 @@ export default function App() {
                 <i style={{ width: `${(packed / total) * 100}%` }} />
               </div>
             </div>
+            {penaltyNotice === "buffer" && <p className="time-penalty" role="status">{t.bufferPenalty}</p>}
             <FitBoard>
-              <div className="game-layout">
+              <div className={`game-layout ${hasGlass ? "has-glass" : ""}`}>
                 <div className="play-area">
                   <div className="counter">
                     <div className="section-label">
@@ -574,7 +632,8 @@ export default function App() {
                                   key={`${game.moves}-${depth}`}
                                   data-column={index}
                                   data-place={`column-${index}`}
-                                  className={`bottle-pick ${flight?.source === `column-${index}` ? "moving-source" : ""} `}
+                                  className={`bottle-pick ${selectedGlass === index ? "glass-selected" : ""} ${flight?.source === `column-${index}` ? "moving-source" : ""} `}
+                                  aria-pressed={isGlass(type) ? selectedGlass === index : undefined}
                                   disabled={busy || game.status !== "playing"}
                                   style={
                                     {
@@ -583,9 +642,10 @@ export default function App() {
                                     } as CSSProperties
                                   }
                                   onClick={() => void pick(index)}
-                                  aria-label={`${t.pick} ${t.bottleNames[type]} · ${t.column} ${index + 1}`}
+                                  aria-label={`${t.pick} ${t.bottleNames[type]} · ${isGlass(type) ? t.noDeposit : formatDeposit(bottleDeposits[type])} · ${t.column} ${index + 1}`}
                                 >
                                   <Bottle type={type} />
+                                  <span className="bottle-deposit-tag">{isGlass(type) ? t.noDeposit : formatDeposit(bottleDeposits[type])}</span>
                                   <span className="pick-dot" />
                                 </button>
                               ) : (
@@ -656,7 +716,7 @@ export default function App() {
                       <span>{t.crates}</span>
                       <span>{t.crateHint}</span>
                     </div>
-                    <div className="crates">
+                    <div className="crates machine-trays">
                       {game.crates.map((crate, i) => (
                         <div
                           data-place={`crate-${i}`}
@@ -684,6 +744,7 @@ export default function App() {
                                 <span className="type-dot" />
                                 <span className="crate-name">
                                   {t.bottleNames[crate.type]}
+                                  <small className="machine-deposit">{formatDeposit(bottleDeposits[crate.type])}</small>
                                 </span>
                                 <span className="crate-amount">
                                   {crate.count}
@@ -697,7 +758,7 @@ export default function App() {
                               </>
                             )}
                           </div>
-                          <div className="crate-body">
+                          <div className="crate-body machine-body">
                             <div className="crate-slots">
                               {[0, 1, 2].map((j) => (
                                 <div
@@ -728,6 +789,23 @@ export default function App() {
                       ))}
                     </div>
                   </div>
+                  {hasGlass && (
+                    <section className="glass-section">
+                      <div className="section-label"><span>{t.glassBins}</span><span>{game.recycled.length}</span></div>
+                      <p className={`glass-coach ${wrongBin ? "wrong-bin" : ""}`} role="status">
+                        {wrongBin ? `${t.binPenalty} ${t.wrongBin}` : selectedGlass !== null ? t.glassSelected : t.glassHint}
+                      </p>
+                      <div className="glass-bins">
+                        {glassTypes.map((type, index) => (
+                          <button key={type} data-bin={type} data-place={`bin-${index}`}
+                            className={`glass-bin ${type}`} disabled={busy || selectedGlass === null || game.status !== "playing"}
+                            onClick={() => selectedGlass !== null && void pick(selectedGlass, type)}>
+                            <span className="bin-opening" aria-hidden="true" /><strong>{t.binNames[type]}</strong><small>{t.noDeposit} · 0 €</small>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  )}
                 </div>
               </div>
             </FitBoard>
@@ -735,7 +813,7 @@ export default function App() {
               <button
                 className="secondary"
                 onClick={undo}
-                disabled={!history.length || busy}
+                disabled={!history.length || busy || game.status === "lost"}
               >
                 <Icon name="undo" size={18} />
                 {t.undo}
@@ -836,7 +914,7 @@ export default function App() {
                 ? levelIndex === levels.length - 1 && allComplete
                   ? t.allDone
                   : t.nice
-                : t.lost
+                : game.endReason === "time" ? t.timeOver : t.tooManyMistakes
             }
             closeLabel={t.close}
             onClose={() => navigate("levels")}
@@ -859,7 +937,7 @@ export default function App() {
                     ? levelIndex === levels.length - 1 && allComplete
                       ? t.allDoneBody
                       : t.winBody
-                    : t.lostBody}
+                    : game.endReason === "time" ? t.timeOverBody : t.fineNotice}
                 </p>
                 <div className="result-stats">
                   <span>
@@ -870,6 +948,7 @@ export default function App() {
                     <b>{game.status === "won" ? refundAmount : game.moves}</b>{" "}
                     {game.status === "won" ? t.depositReturned : t.moves}
                   </span>
+                  {game.status === "won" && hasGlass && <span><b>{game.recycled.length}</b> {t.glassRecycled}</span>}
                 </div>
               </div>
             </FitBoard>
@@ -898,18 +977,17 @@ export default function App() {
               <>
                 <button
                   className="primary"
-                  onClick={undo}
-                  disabled={!history.length}
+                  onClick={() => start(levelIndex)}
                 >
-                  <Icon name="undo" />
-                  {t.undo}
+                  <Icon name="restart" />
+                  {t.tryAgain}
                 </button>
                 <button
                   className="text-button"
-                  onClick={() => start(levelIndex)}
+                  onClick={() => navigate("start")}
                 >
-                  {t.tryAgain}
-                  <Icon name="restart" size={16} />
+                  {t.home}
+                  <Icon name="back" size={16} />
                 </button>
               </>
             )}

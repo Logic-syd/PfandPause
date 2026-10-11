@@ -18,8 +18,14 @@ export interface BottleDesign {
   labelInk: string;
 }
 
-// Original returnable-glass silhouettes, inspired by everyday German drinks.
+// Fictional packaging examples. Deposits belong to the label, not the drink or colour.
 // BottleType remains the only link between artwork, orders and game rules.
+const glassBottle: BottleDesign = {
+  color: "#697d72", light: "#eff3e8", glass: "#e3ede5", edge: "#71877b", shade: "#b3c4ba",
+  path: "M28 12H40V37L49 51V108Q49 116 41 116H27Q19 116 19 108V51L28 37Z",
+  shine: "M31 20V35M24 56V67M24 100V108", capX:25, capY:6, capW:18,
+  crown:false, label:"ticket", labelFill:"#f8f3e4", labelInk:"#405e4f",
+};
 export const bottles: Record<BottleType, BottleDesign> = {
   water: {
     color: "#37758c",
@@ -43,12 +49,12 @@ export const bottles: Record<BottleType, BottleDesign> = {
     glass: "#e2e9c3",
     edge: "#7e8951",
     shade: "#b3c28a",
-    path: "M28 12H40V36L46 47Q48 51 48 59V109Q48 116 41 116H27Q20 116 20 109V59Q20 51 22 47L28 36Z",
+    path: "M28 12H40V30L48 43V104Q48 116 40 116H28Q20 116 20 104V43L28 30Z",
     shine: "M31 20V34M25 53V62M25 103V109",
     capX: 25,
     capY: 7,
     capW: 18,
-    crown: true,
+    crown: false,
     label: "ticket",
     labelFill: "#f3d675",
     labelInk: "#685522",
@@ -117,10 +123,14 @@ export const bottles: Record<BottleType, BottleDesign> = {
     labelFill: "#c3643b",
     labelInk: "#fff5df",
   },
+  glassClear: { ...glassBottle },
+  glassBrown: { ...glassBottle, color:"#87623e", light:"#eee0cc", glass:"#b88955", edge:"#705338", shade:"#98703e" },
+  glassGreen: { ...glassBottle, color:"#447454", light:"#dbe8d6", glass:"#88ab7e", edge:"#477150", shade:"#608959" },
 };
 
-// Explicit amounts for these fictional labelled Mehrweg bottles, in cents.
+// Explicit example deposits in cents. Lemon is labelled Einweg PET; other returnables are Mehrweg.
 // Real returns depend on the actual bottle label and the accepting shop.
 export const bottleDeposits: Record<BottleType, number> = {
-  water: 15, lemon: 15, currant: 15, apple: 15, malt: 8, kola: 15,
+  water: 15, lemon: 25, currant: 15, apple: 15, malt: 8, kola: 15,
+  glassClear: 0, glassBrown: 0, glassGreen: 0,
 };

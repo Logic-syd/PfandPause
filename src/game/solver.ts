@@ -1,5 +1,5 @@
 import { createGame, takeBottle } from "./engine";
-import type { GameState, Level } from "./types";
+import { isGlass, type GameState, type Level } from "./types";
 export interface Solution {
   path: number[] | null;
   visited: number;
@@ -37,7 +37,10 @@ export function solveLevel(level: Level, limit = 500_000): Solution {
       const stack = state.columns[i].join(",");
       if (equivalent.has(stack)) continue;
       equivalent.add(stack);
-      const path = search(takeBottle(state, i).state);
+      const type = state.columns[i][0];
+      const next = takeBottle(state, i, isGlass(type) ? type : undefined);
+      if (!next.frames.some(frame => frame.event.kind === "move")) continue;
+      const path = search(next.state);
       if (path) return [i, ...path];
       if (exhausted) return null;
     }

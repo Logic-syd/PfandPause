@@ -59,7 +59,7 @@ async function boardSnapshot(page: Page) {
   }));
 }
 function lossPath(state: GameState, path: number[] = []): number[] | null {
-  if (state.status === "lost") return path;
+  if (state.buffer.length === 3) return path;
   if (state.status === "won") return null;
   for (let i = 0; i < state.columns.length; i++)
     if (state.columns[i].length) {
@@ -91,7 +91,7 @@ try {
   await page
     .getByRole("button", { name: "Choose a level", exact: true })
     .click();
-  assert.equal(await page.locator(".level-card:disabled").count(), 9);
+  assert.equal(await page.locator(".level-card:disabled").count(), levels.length - 1);
   check("Fresh save unlocks only level 1");
   await page.locator(".level-card").first().click();
   await page.locator(".help-button").click();
@@ -225,17 +225,11 @@ try {
         if (i === failure.length - 1) beforeLast = await boardSnapshot(page);
         await pick(page, column);
       }
-      await page.locator("dialog.lost").waitFor();
-      await page.screenshot({
-        path: "artifacts/failure-mobile.png",
-        fullPage: true,
-      });
-      await page
-        .getByRole("dialog")
-        .getByRole("button", { name: "Undo", exact: true })
-        .click();
+      assert.equal(await page.locator("dialog.lost").count(),0);
+      assert.equal(await page.locator(".buffer-slot.occupied").count(),3);
+      await page.getByRole("button", { name:"Undo", exact:true }).click();
       assert.deepEqual(await boardSnapshot(page), beforeLast);
-      check("Real failure screen and undo recover the entire pre-loss state");
+      check("Full spare spots stay playable and undo recovers the pre-full state");
       await page
         .getByRole("button", { name: "Start again", exact: true })
         .click();
@@ -271,7 +265,11 @@ try {
       level.orders.length,
     );
     await page.getByRole("button", { name: "Close", exact: true }).click();
-    for (const column of solution.path) await pick(page, column);
+    for (const column of solution.path) {
+      const type = await page.locator(`[data-column="${column}"] .bottle`).getAttribute("data-bottle-type");
+      await pick(page, column);
+      if (type?.startsWith("glass")) { await page.locator(`[data-bin="${type}"]`).tap(); await settled(page); }
+    }
     await page.locator("dialog.won").waitFor();
     const saved = await page.evaluate(() =>
       JSON.parse(localStorage.getItem("pfand-pause:v1")!),
@@ -293,7 +291,7 @@ try {
     .getByRole("dialog")
     .getByRole("button", { name: "Choose a level", exact: true })
     .click();
-  assert.equal(await page.locator(".level-card.complete").count(), 10);
+  assert.equal(await page.locator(".level-card.complete").count(), levels.length);
   await page.screenshot({
     path: "artifacts/levels-mobile.png",
     fullPage: true,
@@ -308,7 +306,7 @@ try {
   );
   assert.equal(saved.sound, false);
   assert.equal(saved.reducedMotion, true);
-  assert.equal(saved.completed.length, 10);
+  assert.equal(saved.completed.length, levels.length);
   check("All progress, language, sound and motion settings survive reload");
   await page.getByRole("button", { name: "Level wählen", exact: true }).click();
   await page.locator(".level-card").last().click();

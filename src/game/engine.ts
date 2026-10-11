@@ -1,5 +1,9 @@
+import { BUFFER_PENALTY_SECONDS, GLASS_PENALTY_SECONDS, MAX_GLASS_MISTAKES } from "./time";
 import {
   bottleTypes,
+  glassTypes,
+  isGlass,
+  type GlassType,
   type BottleType,
   type GameState,
   type Level,
@@ -20,7 +24,9 @@ export function validateLevel(level: Level): void {
   const bottles = level.columns.flat();
   if ([...bottles, ...level.orders].some((t) => !bottleTypes.includes(t)))
     throw new Error("Unknown bottle type");
+  if (level.orders.some(isGlass)) throw new Error("No-deposit glass cannot be returned to the machine");
   for (const type of bottleTypes) {
+    if (isGlass(type)) continue;
     if (
       bottles.filter((t) => t === type).length !==
       level.orders.filter((t) => t === type).length * 3
@@ -39,6 +45,9 @@ export function createGame(level: Level): GameState {
     orders: [...level.orders],
     nextOrder: Math.min(2, level.orders.length),
     completed: 0,
+    recycled: [],
+    penalties: 0,
+    mistakes: 0,
     moves: 0,
     status: "playing",
   };
@@ -56,19 +65,42 @@ export function chooseCrate(state: GameState, type: BottleType): number {
   });
   return best;
 }
-export function takeBottle(previous: GameState, column: number): Transition {
+export function takeBottle(previous: GameState, column: number, bin?: GlassType): Transition {
   if (
     previous.status !== "playing" ||
     !Number.isInteger(column) ||
     !previous.columns[column]?.length
   )
     return { state: previous, frames: [] };
+  const top = previous.columns[column][0];
+  // Glass needs an explicit colour choice. Wrong choices leave the board unchanged.
+  if ((isGlass(top) && bin === undefined) || (!isGlass(top) && bin !== undefined))
+    return { state: previous, frames: [] };
+  if (isGlass(top) && bin !== top) {
+    const state = cloneState(previous);
+    state.penalties += GLASS_PENALTY_SECONDS;
+    state.mistakes++;
+    if (state.mistakes >= MAX_GLASS_MISTAKES) { state.status = "lost"; state.endReason = "mistakes"; }
+    return { state, frames:[{ state:cloneState(state), event:{ kind:"penalty", reason:"bin", seconds:GLASS_PENALTY_SECONDS } }] };
+  }
+  if (!isGlass(top) && previous.buffer.length >= 3 && chooseCrate(previous, top) < 0) {
+    const state = cloneState(previous);
+    state.penalties += BUFFER_PENALTY_SECONDS;
+    return { state, frames:[{ state:cloneState(state), event:{ kind:"penalty", reason:"buffer", seconds:BUFFER_PENALTY_SECONDS } }] };
+  }
   const state = cloneState(previous);
   const frames: Frame[] = [];
   const record = (event: GameEvent) =>
     frames.push({ state: cloneState(state), event });
   state.moves++;
   const bottle = state.columns[column].shift()!;
+  if (isGlass(bottle)) {
+    state.recycled.push(bottle);
+    record({ kind: "move", bottle, from: { kind: "column", index: column }, to: { kind: "bin", index: glassTypes.indexOf(bottle) } });
+    if (!state.columns.flat().length && !state.buffer.length && state.completed === state.orders.length)
+      state.status = "won";
+    return { state, frames };
+  }
   const destination = chooseCrate(state, bottle);
   if (destination >= 0) state.crates[destination]!.count++;
   else state.buffer.push(bottle);
@@ -114,8 +146,7 @@ export function takeBottle(previous: GameState, column: number): Transition {
       to: { kind: "crate", index: target },
     });
   }
-  if (state.completed === state.orders.length) state.status = "won";
-  else if (state.buffer.length >= 3) state.status = "lost";
+  if (state.completed === state.orders.length && !state.columns.flat().length && !state.buffer.length) state.status = "won";
   return { state, frames };
 }
 export function bottleInventory(state: GameState): Record<BottleType, number> {
@@ -124,6 +155,7 @@ export function bottleInventory(state: GameState): Record<BottleType, number> {
     number
   >;
   [...state.columns.flat(), ...state.buffer].forEach((t) => result[t]++);
+  state.recycled.forEach((t) => result[t]++);
   state.crates.forEach((c) => {
     if (c) result[c.type] += c.count;
   });

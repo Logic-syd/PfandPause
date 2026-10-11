@@ -1,7 +1,7 @@
 import { useId, type CSSProperties } from "react";
 import { bottles, bottleDeposits } from "../data/bottles";
 import { bottlePackaging, packagingText } from "../i18n";
-import type { BottleType } from "../game/types";
+import { isGlass, type BottleType } from "../game/types";
 
 /** Large, different pictograms keep the six types readable without color. */
 export function Pattern({ type }: { type: BottleType }) {
@@ -51,6 +51,10 @@ export function Pattern({ type }: { type: BottleType }) {
           <path d="m24 81-3-4m5 10-4-4m22-2 3-4m-5 10 4-4" />
         </g>
       );
+    case "glassClear":
+    case "glassBrown":
+    case "glassGreen":
+      return <text x="34" y="87" fontSize="7" fontWeight="750" textAnchor="middle" fill="currentColor">0 €</text>;
     case "kola":
       return (
         <>
@@ -131,8 +135,8 @@ export default function Bottle({
         <g style={{ color: b.labelInk }}><Pattern type={type} /></g>
         <text x="34" y="99" fontSize={type === "kola" || type === "currant" ? "4" : "4.5"} fontWeight="800" letterSpacing=".35">{print.label}</text>
       </g>
-      <text x="34" y="108" fill={b.edge} fontSize="3.1" fontWeight="700" textAnchor="middle" letterSpacing=".3">{print.volume} · {packagingText.returnable}</text>
-      <text x="34" y="114" fill={b.edge} fontSize="3.3" fontWeight="700" textAnchor="middle">PFAND {(bottleDeposits[type] / 100).toFixed(2).replace(".", ",")} €</text>
+      <text x="34" y="108" fill={b.edge} fontSize="3.1" fontWeight="700" textAnchor="middle" letterSpacing=".3">{print.volume} · {isGlass(type) ? "GLAS" : type === "lemon" ? "EINWEG PET" : packagingText.returnable}</text>
+      <text x="34" y="114" fill={b.edge} fontSize="3.3" fontWeight="700" textAnchor="middle">{isGlass(type) ? "OHNE PFAND" : `PFAND ${(bottleDeposits[type] / 100).toFixed(2).replace(".", ",")} €`}</text>
     </svg>
   );
 }

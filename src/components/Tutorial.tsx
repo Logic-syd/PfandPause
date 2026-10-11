@@ -96,7 +96,7 @@ export default function Tutorial({
       <FitBoard>
         <div className="practice-stage">
           <div
-            className={`practice-coach ${game.status === "lost" ? "practice-warning" : ""}`}
+            className={`practice-coach ${game.buffer.length >= 3 ? "practice-warning" : ""}`}
             aria-live="polite"
             aria-atomic="true"
           >
@@ -164,7 +164,7 @@ export default function Tutorial({
               </div>
             </div>
             <div
-              className={`practice-buffer ${game.status === "lost" ? "practice-buffer-full" : ""}`}
+              className={`practice-buffer ${game.buffer.length >= 3 ? "practice-buffer-full" : ""}`}
             >
               <div>
                 <strong>{t.buffer}</strong>

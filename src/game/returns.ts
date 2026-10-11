@@ -1,6 +1,6 @@
 import { bottleDeposits } from "../data/bottles";
-import type { BottleType } from "./types";
+import { isGlass, type BottleType } from "./types";
 
 export function returnStats(returned: readonly BottleType[]) {
-  return { bottles: returned.length, cents: returned.reduce((sum, type) => sum + bottleDeposits[type], 0) };
+  return { bottles: returned.filter(type => !isGlass(type)).length, cents: returned.reduce((sum, type) => sum + bottleDeposits[type], 0) };
 }

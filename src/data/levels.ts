@@ -176,3 +176,19 @@ export const levels: Level[] = [
     ],
   },
 ];
+
+// A second chapter adds individually sorted, no-deposit glass bottles to
+// solvable return puzzles. Glass never occupies a machine tray or spare spot.
+const recyclingChapter = [
+  { source:0, glass:["glassClear"] },
+  { source:1, glass:["glassClear","glassBrown"] },
+  { source:3, glass:["glassClear","glassBrown","glassGreen"] },
+  { source:6, glass:["glassBrown","glassClear","glassGreen","glassBrown"] },
+  { source:9, glass:["glassClear","glassBrown","glassGreen","glassClear","glassGreen"] },
+] as const;
+for (const [index, chapter] of recyclingChapter.entries()) {
+  const source = levels[chapter.source];
+  const columns = source.columns.map(column => [...column]);
+  chapter.glass.forEach((type,i) => columns[i % columns.length].splice(i % 2,0,type));
+  levels.push({ id:11+index, columns, orders:[...source.orders] });
+}

@@ -53,7 +53,7 @@ try {
     const context = await browser.newContext({ viewport: { width,height },
       hasTouch: true, isMobile: true, locale: { zh:"zh-CN",en:"en-US",de:"de-DE" }[language] });
     await context.addInitScript(language => localStorage.setItem("pfand-pause:v1", JSON.stringify({
-      language, sound:false, reducedMotion:false, completed:[1,2,3,4,5,6,7,8,9,10],
+      language, sound:false, reducedMotion:false, completed:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
     })), language);
     const page = await context.newPage();
     page.on("pageerror", error => errors.push(error.message));
@@ -68,11 +68,11 @@ try {
     assert.equal(await frame.locator("dialog[open]").count(), 0, "No startup dialog may block play");
     assert.equal(await frame.locator(".landing").count(), 0);
     await fitted(frame);
-    await frame.locator('[data-column="0"]').tap();
+    await frame.locator('.bottle-pick:not(:has([data-bottle-type^="glass"]))').first().tap();
     await frame.waitForFunction(() => !document.querySelector(".stacks.is-busy"));
     assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
     await frame.getByRole("button", { name:t.undo,exact:true }).tap();
-    for (let level = 0; level < 10; level++) {
+    for (let level = 0; level < 15; level++) {
       await frame.getByRole("button", { name:t.chooseLevel,exact:true }).tap();
       await frame.locator(".level-card").nth(level).tap();
       await fitted(frame);
@@ -85,7 +85,7 @@ try {
         await frame.evaluate(() => new Promise<void>(resolve =>
           requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
         await fitted(frame);
-        await frame.locator('[data-column="0"]').tap();
+        await frame.locator('.bottle-pick:not(:has([data-bottle-type^="glass"]))').first().tap();
         await frame.waitForFunction(() => !document.querySelector(".stacks.is-busy"));
         assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
         await frame.getByRole("button", { name:t.undo,exact:true }).tap();
@@ -98,7 +98,7 @@ try {
       await page.screenshot({ path:"artifacts/compact-mobile-level1.png" });
     }
     if (width === 1280 && height === 431) await page.screenshot({ path:"artifacts/compact-short-desktop.png" });
-    console.log(`PASS ${width}×${height}: ${language}, home → play, tap/undo, all 10 complete boards fit, no page scrolling or scrollbars`);
+    console.log(`PASS ${width}×${height}: ${language}, home → play, tap/undo, all 15 complete boards fit, no page scrolling or scrollbars`);
     await context.close();
   }
   assert.deepEqual(errors, []);

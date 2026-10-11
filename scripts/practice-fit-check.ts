@@ -74,10 +74,10 @@ try {
       await frame.locator('.result-dialog.won').waitFor();
       await fits(frame,'.result-stats,.result-dialog > button');
       const stats=await frame.locator('.result-stats').innerText();
-      assert.match(stats,/12/);assert.match(stats,/1[.,]80/);assert.ok(stats.includes(t.depositReturned));
+      assert.match(stats,/12/);assert.match(stats,/2[.,]40/);assert.ok(stats.includes(t.depositReturned));
       if(width===390 && language==='zh') await page.screenshot({path:'artifacts/returned-bottle-stats.png'});
       await context.close();
-      console.log(`PASS ${width}×${height} ${language}: restored home, all tutorial steps and completion, all 8 questions and feedback, summary, 12 bottles / €1.80, no scrolling`);
+      console.log(`PASS ${width}×${height} ${language}: restored home, all tutorial steps and completion, all 8 questions and feedback, summary, 12 bottles / €2.40, no scrolling`);
     }
   }
   assert.deepEqual(errors,[]);

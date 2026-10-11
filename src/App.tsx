@@ -25,6 +25,11 @@ type Flight = {
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const locationSelector = (place: Place) =>
   `[data-place="${place.kind}-${place.index}"]`;
+function scrollToStart() {
+  // Game portals can disable the iframe's document scrolling. Our own scroll
+  // container still lets players reach the entire board in a short viewport.
+  document.getElementById("root")?.scrollTo({ top: 0 });
+}
 export default function App() {
   const [preferences, setPreferences] = useState(loadPreferences);
   const [saveError, setSaveError] = useState(false);
@@ -115,7 +120,7 @@ export default function App() {
     setModal(null);
     setExpandedOrders(false);
     setTutorial(preferences.tutorialVersion !== TUTORIAL_VERSION);
-    window.scrollTo({ top: 0 });
+    scrollToStart();
   }
   function dismissTutorial() {
     stopVoice();
@@ -207,7 +212,7 @@ export default function App() {
       stopVoice();
       setScreen(next);
       setTutorial(false);
-      window.scrollTo({ top: 0 });
+      scrollToStart();
     }
   }
   const settings = (

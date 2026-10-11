@@ -17,9 +17,20 @@
 * {
   box-sizing: border-box;
 }
+html,
+body,
+#root {
+  height: 100%;
+}
 body {
   margin: 0;
   min-width: 320px;
+  overflow: hidden;
+}
+#root {
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 button {
   font: inherit;
@@ -2250,6 +2261,9 @@ main {
 .practice-bottle:disabled {
   opacity: 1;
 }
+.practice-bottle:disabled:not(.practice-target) .bottle {
+  opacity: 0.45;
+}
 .practice-buried {
   pointer-events: none;
   opacity: 0.75;
@@ -2541,3 +2555,132 @@ main {
 .language-options { flex-wrap: wrap; justify-content: flex-end; }
 .recycling-choices button, .recycling-label { overflow-wrap: anywhere; }
 .recycling-item > div { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+
+/* Keep tap targets usable and the board compact inside mobile game portals. */
+@media (max-width: 760px) {
+  .app {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  .header {
+    height: 64px;
+  }
+  .icon-button,
+  .help-button,
+  .dialog-close {
+    width: 44px;
+    height: 44px;
+  }
+  .language-button,
+  .level-link,
+  .order-count-button,
+  .game-toolbar button,
+  .order-toggle {
+    min-height: 44px;
+  }
+  .game-screen {
+    padding-top: 12px;
+  }
+  .game-heading {
+    margin-bottom: 10px;
+  }
+  .level-link {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .level-progress {
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 4px;
+  }
+  .counter {
+    padding: 10px 10px 0;
+  }
+  .counter-edge {
+    margin: 0 -11px;
+  }
+  .stacks {
+    --bottle-width: 54px;
+    --bottle-height: 98px;
+    --peek: 24px;
+    padding-top: 23px;
+    padding-bottom: 17px;
+    min-height: calc(var(--bottle-height) + (var(--depth) - 1) * var(--peek) + 40px);
+  }
+  .stacks[style*="--columns: 5"] {
+    --bottle-width: 49px;
+    --bottle-height: 90px;
+    --peek: 23px;
+  }
+  .bottle-pick {
+    width: 100%;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  .bottle-pick .bottle {
+    width: var(--bottle-width);
+    margin: auto;
+    pointer-events: none;
+  }
+  .bottle-pick:before {
+    left: calc(50% - var(--bottle-width) / 2);
+    right: calc(50% - var(--bottle-width) / 2);
+  }
+  .pick-dot {
+    right: calc(50% - var(--bottle-width) / 2 + 6px);
+  }
+  .buffer-section {
+    margin: 14px 0;
+  }
+  .buffer-copy {
+    min-width: 0;
+  }
+  .buffer-copy p {
+    font-size: 10px;
+  }
+  .crates {
+    gap: 10px;
+  }
+  .crate-heading {
+    min-width: 0;
+  }
+  .crate-name {
+    overflow-wrap: anywhere;
+  }
+  .game-toolbar {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    margin-top: 12px;
+    padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+    min-height: 56px;
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+  }
+  /* The queue button above the counter opens the full order list. */
+  .game-aside {
+    display: none;
+  }
+  .dialog {
+    max-height: calc(100dvh - 24px);
+    overscroll-behavior: contain;
+  }
+  .practice-actions {
+    position: sticky;
+    bottom: -12px;
+    z-index: 10;
+    padding: 8px 0;
+    background: var(--paper);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bottle-pick:not(:disabled):hover {
+    transform: translateY(-4px);
+  }
+}
+@media (hover: none) {
+  .bottle-pick:not(:disabled):hover {
+    transform: none;
+  }
+}

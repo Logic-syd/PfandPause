@@ -41,21 +41,26 @@ export function playSound(
       : kind === "full"
         ? [659, 880]
         : [540];
-  notes.forEach((frequency, i) => {
-    const oscillator = context!.createOscillator();
-    const gain = context!.createGain();
-    const start = context!.currentTime + i * 0.085;
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(frequency, start);
-    gain.gain.setValueAtTime(0, start);
-    gain.gain.linearRampToValueAtTime(
-      victoryVoice.active ? 0.012 : 0.045,
-      start + 0.012,
-    );
-    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.16);
-    oscillator.connect(gain);
-    gain.connect(context!.destination);
-    oscillator.start(start);
-    oscillator.stop(start + 0.18);
-  });
+  try {
+    notes.forEach((frequency, i) => {
+      const oscillator = context!.createOscillator();
+      const gain = context!.createGain();
+      const start = context!.currentTime + i * 0.085;
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(
+        victoryVoice.active ? 0.012 : 0.045,
+        start + 0.012,
+      );
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.16);
+      oscillator.connect(gain);
+      gain.connect(context!.destination);
+      oscillator.start(start);
+      oscillator.stop(start + 0.18);
+    });
+  } catch {
+    // Audio output can fail after a context resumes or the output device changes.
+    // An optional sound must never abort a move and leave the board locked.
+  }
 }

@@ -20,7 +20,7 @@ export default function Dialog({
     dialog.showModal();
     return () => {
       dialog.close();
-      previous?.focus();
+      previous?.focus({ preventScroll: true });
     };
   }, []);
   return (

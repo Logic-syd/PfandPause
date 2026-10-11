@@ -102,6 +102,7 @@ npm run build
 ```sh
 npx playwright install chromium   # 首次安装测试浏览器
 npm run test:browser
+npm run test:responsive            # 手机触控、嵌入框、2K/4K 与音频异常回归
 ```
 
 已有 Google Chrome 时也可运行：
@@ -164,7 +165,7 @@ BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:languages
 
 本版本支持现代 Chrome / Edge / Firefox / Safari；实际自动回归使用桌面 Chrome 的鼠标与手机触屏模拟，没有替代实体 iPhone / Android 测试。没有后端、跨设备同步或 PWA 离线安装。保存的是通关进度和设置，刷新会回到开始页，**不会恢复正在进行的半局**。深层关卡在矮屏上需要纵向滚动；不会横向滚动。
 
-已提供生产构建和 GitHub Pages 自动部署流程。首次开启、上线验证与后续更新见 [发布说明](docs/DEPLOYMENT.md)；实际发布状态以 GitHub 的部署记录为准。
+游戏已发布到 [Game Jolt](https://gamejolt.com/games/pfand-pause/1106213)。HTML5 包更新步骤和手机兼容验证见 [Game Jolt 更新说明](docs/GAMEJOLT.md)。另保留了可选的 [GitHub Pages 部署说明](docs/DEPLOYMENT.md)。
 
 ## DaVinci 英语配音
 

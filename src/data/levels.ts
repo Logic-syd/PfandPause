@@ -1,6 +1,6 @@
 import type { Level } from "../game/types";
 // Static, solver-verified levels. Each column is TOP FIRST.
-// Orders 0 and 1 are the initial left/right crates; remaining orders share one queue.
+// Shared batch priority queue; active trays take the earliest distinct types.
 export const levels: Level[] = [
   {
     id: 1,

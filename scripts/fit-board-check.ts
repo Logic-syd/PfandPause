@@ -15,6 +15,7 @@ async function fitted(frame: Frame) {
   const result = await frame.evaluate(() => {
     const root = document.getElementById("root")!;
     const space = document.querySelector(".board-viewport")!.getBoundingClientRect();
+    const toolbar = document.querySelector(".game-toolbar")!.getBoundingClientRect();
     const targets = [...document.querySelectorAll("[data-column], .buffer-slot, .crate-body")];
     return {
       vertical: root.scrollHeight <= root.clientHeight + 1 && root.scrollTop === 0,
@@ -36,12 +37,17 @@ async function fitted(frame: Frame) {
       header: document.querySelector(".header")!.getBoundingClientRect().height,
       toolbarVisible: document.querySelector(".game-toolbar")!.getBoundingClientRect().bottom <= root.clientHeight + 1,
       toolbarBottom: document.querySelector(".game-toolbar")!.getBoundingClientRect().bottom,
+      toolbarAboveBoard: toolbar.bottom <= space.top + 1,
+      toolbarTop: toolbar.top,
+      actionHeights: [...document.querySelectorAll(".game-toolbar button")].map(button => button.getBoundingClientRect().height),
       scale: document.querySelector<HTMLElement>(".board-viewport")!.dataset.scale,
     };
   });
   assert.ok(result.vertical && result.horizontal, `No round may require scrolling: ${JSON.stringify(result)}`);
   assert.ok(result.inside, `Bottles, spare spots, crates and actions must remain visible: ${JSON.stringify(result)}`);
   assert.ok(result.hiddenBars && result.toolbarVisible);
+  assert.ok(result.toolbarAboveBoard && result.toolbarTop < 200, `Actions must stay near the top, above the board: ${JSON.stringify(result)}`);
+  assert.ok(result.actionHeights.every(height => height >= 44), "Actions must keep their touch size when the board scales");
   assert.ok(result.header <= 48);
   return result;
 }

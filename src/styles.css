@@ -2734,8 +2734,13 @@ main {
 .app.is-playing .game-screen { height: 100%; display: flex; flex-direction: column; }
 .board-viewport { position: relative; flex: 1; min-height: 0; overflow: hidden; }
 .fit-board-content { position: absolute; top: 0; left: 50%; width: 100%; transform-origin: top center; }
+.app.is-playing { max-width: 1440px; }
+.app.is-playing .header, .app.is-playing .game-screen { max-width: 1280px; }
+.app.is-playing .crate-wrap { display: flex; flex-direction: column; }
+.app.is-playing .crate-heading { flex: 1; }
+.app.is-playing .crate-body { flex-shrink: 0; }
 .app.is-playing .game-toolbar { position: static; padding-bottom: 6px; min-height: 44px; margin-top: 8px; }
-.app.is-playing .game-toolbar { flex-shrink: 0; }
+.app.is-playing .game-toolbar { flex-shrink: 0; margin-top: 0; margin-bottom: 8px; }
 .app.is-playing .game-toolbar button { min-height: 44px; }
 .app.is-playing .level-progress { flex-shrink: 0; }
 .app.is-playing .bottle-pick { width: 100%; }

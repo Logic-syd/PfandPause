@@ -576,11 +576,32 @@ export default function App() {
                 <i style={{ width: `${(packed / total) * 100}%` }} />
               </div>
             </div>
+            <div className="game-toolbar">
+              <button
+                className="secondary"
+                onClick={undo}
+                disabled={!history.length || busy || game.status === "lost"}
+              >
+                <Icon name="undo" size={18} />
+                {t.undo}
+              </button>
+              <span>
+                {game.moves} {t.moves}
+              </span>
+              <button
+                className="text-button"
+                onClick={() => start(levelIndex)}
+                disabled={busy}
+              >
+                <Icon name="restart" size={17} />
+                {t.restart}
+              </button>
+            </div>
             <p className="time-penalty" role="status">
               <span className="time-penalty-space" aria-hidden="true">{t.bufferPenalty}</span>
               <span className="time-penalty-message">{penaltyNotice === "buffer" ? t.bufferPenalty : ""}</span>
             </p>
-            <FitBoard>
+            <FitBoard grow>
               <div className={`game-layout ${hasGlass ? "has-glass" : ""}`}>
                 <div className="play-area">
                   <div className="counter">
@@ -800,27 +821,6 @@ export default function App() {
                 </div>
               </div>
             </FitBoard>
-            <div className="game-toolbar">
-              <button
-                className="secondary"
-                onClick={undo}
-                disabled={!history.length || busy || game.status === "lost"}
-              >
-                <Icon name="undo" size={18} />
-                {t.undo}
-              </button>
-              <span>
-                {game.moves} {t.moves}
-              </span>
-              <button
-                className="text-button"
-                onClick={() => start(levelIndex)}
-                disabled={busy}
-              >
-                <Icon name="restart" size={17} />
-                {t.restart}
-              </button>
-            </div>
           </section>
         )}
       </main>

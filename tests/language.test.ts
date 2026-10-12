@@ -12,8 +12,10 @@ test('removing old round one migrates progress once while preserving preferences
  const {loadPreferences,savePreferences,STORAGE_KEY}=await import('../src/storage');
  const oldWindow=Object.getOwnPropertyDescriptor(globalThis,'window');
  const oldStorage=Object.getOwnPropertyDescriptor(globalThis,'localStorage');
+ const oldNavigator=Object.getOwnPropertyDescriptor(globalThis,'navigator');
  const memory=new Map<string,string>();
  Object.defineProperty(globalThis,'window',{configurable:true,value:{matchMedia:()=>({matches:false})}});
+ Object.defineProperty(globalThis,'navigator',{configurable:true,value:{language:'en-GB'}});
  Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:(key:string)=>memory.get(key)??null,setItem:(key:string,value:string)=>memory.set(key,value)}});
  try{
   memory.set(STORAGE_KEY,JSON.stringify({language:'de',sound:false,reducedMotion:true,completed:[1,2,3,15,15,'4',null],tutorialVersion:4}));
@@ -22,5 +24,6 @@ test('removing old round one migrates progress once while preserving preferences
  }finally{
   if(oldWindow)Object.defineProperty(globalThis,'window',oldWindow);else Reflect.deleteProperty(globalThis,'window');
   if(oldStorage)Object.defineProperty(globalThis,'localStorage',oldStorage);else Reflect.deleteProperty(globalThis,'localStorage');
+  if(oldNavigator)Object.defineProperty(globalThis,'navigator',oldNavigator);else Reflect.deleteProperty(globalThis,'navigator');
  }
 });

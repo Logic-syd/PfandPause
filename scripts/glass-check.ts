@@ -46,7 +46,8 @@ try {
             const before=await frame.locator('.game-toolbar').innerText();
             await frame.locator(`[data-bin="${type==='glassBrown'?'glassGreen':'glassBrown'}"]`).tap();
             assert.equal(await frame.locator('.game-toolbar').innerText(),before);
-            assert.equal(await frame.locator('.glass-coach').innerText(),`${t.binPenalty} ${t.wrongBin}`);
+            assert.equal(await frame.locator('.glass-coach').innerText(),t.wrongBin);
+            assert.equal(await frame.locator('.penalty-flash').innerText(),t.binPenalty);
             await fits(frame,'.glass-coach,.glass-bin');wrongChecked=true;
           }
           await frame.locator(`[data-bin="${type}"]`).tap();

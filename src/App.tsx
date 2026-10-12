@@ -118,6 +118,12 @@ export default function App() {
     stopVoice();
   }, [preferences.sound, preferences.language]);
   useEffect(() => {
+    if (!penaltyNotice) return;
+    if (screen !== "play") { setPenaltyNotice(null); return; }
+    const timer = window.setTimeout(() => setPenaltyNotice(null), 1600);
+    return () => window.clearTimeout(timer);
+  }, [penaltyNotice, game.penalties, screen]);
+  useEffect(() => {
     if (clock.milliseconds <= 0 && screen === "play" && game.status === "playing") expire();
   }, [clock.milliseconds, screen, game.status]);
 
@@ -575,19 +581,13 @@ export default function App() {
               <div key={level.id} className="progress-track">
                 <i style={{ width: `${(packed / total) * 100}%` }} />
               </div>
+              {penaltyNotice && (
+                <span key={game.penalties} className="penalty-flash" role="status">
+                  {penaltyNotice === "buffer" ? t.bufferPenalty : t.binPenalty}
+                </span>
+              )}
             </div>
             <div className="game-toolbar">
-              <button
-                className="secondary"
-                onClick={undo}
-                disabled={!history.length || busy || game.status === "lost"}
-              >
-                <Icon name="undo" size={18} />
-                {t.undo}
-              </button>
-              <span>
-                {game.moves} {t.moves}
-              </span>
               <button
                 className="text-button"
                 onClick={() => start(levelIndex)}
@@ -596,11 +596,19 @@ export default function App() {
                 <Icon name="restart" size={17} />
                 {t.restart}
               </button>
+              <span>
+                {game.moves} {t.moves}
+              </span>
+              <button
+                className="secondary undo-button"
+                onClick={undo}
+                disabled={!history.length || busy || game.status === "lost"}
+              >
+                <Icon name="undo" size={18} />
+                {t.undo}
+              </button>
             </div>
-            <p className="time-penalty" role="status">
-              <span className="time-penalty-space" aria-hidden="true">{t.bufferPenalty}</span>
-              <span className="time-penalty-message">{penaltyNotice === "buffer" ? t.bufferPenalty : ""}</span>
-            </p>
+            <p className="buffer-reminder">{t.bufferReminder}</p>
             <FitBoard grow>
               <div className={`game-layout ${hasGlass ? "has-glass" : ""}`}>
                 <div className="play-area">
@@ -805,7 +813,7 @@ export default function App() {
                     <section className="glass-section">
                       <div className="section-label"><span>{t.glassBins}</span><span>{game.recycled.length}</span></div>
                       <p className={`glass-coach ${wrongBin ? "wrong-bin" : ""}`} role="status">
-                        {wrongBin ? `${t.binPenalty} ${t.wrongBin}` : selectedGlass !== null ? t.glassSelected : t.glassHint}
+                        {wrongBin ? t.wrongBin : selectedGlass !== null ? t.glassSelected : t.glassHint}
                       </p>
                       <div className="glass-bins">
                         {glassTypes.map((type, index) => (

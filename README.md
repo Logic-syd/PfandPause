@@ -77,6 +77,7 @@ npm run build
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:fit-board
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:responsive
+BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:mobile-frame
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:embedded-scroll
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:demo
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:practice-fit
@@ -89,6 +90,8 @@ BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run
 ```
 
 浏览器检查覆盖实际点击十四关、七格满槽终局和重开、三语练习及玻璃分类、存档、10→1 倒数、押金小票、动画、不同像素密度、短窗口和两层 iframe。模拟检查不能代替真实 iPhone Safari 或 Game Jolt 的最终设备测试。
+
+手机和矮嵌入框将重开按钮并入计时栏，并压缩牌面、传送带及玻璃桶的占位。断点以游戏 iframe 自己的宽高为准。`test:mobile-frame` 固定外层浏览器大小，只改变跨域双层 iframe 的尺寸，覆盖三语、第三/五/十四关、框架高度变化和外层缩放后的实际触屏点击；常见小屏检查瓶子及回收桶至少 44px，极矮框检查全部内容可见且无滚动。游戏不能修改跨域平台外层的框架尺寸或消除平台本身的裁切。
 
 ## 发布
 

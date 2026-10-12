@@ -3113,3 +3113,26 @@ main {
   .app.is-playing .level-progress { margin-bottom: 3px; }
   .buffer-reminder { font-size: 10px; line-height: 1.2; margin-bottom: 3px; }
 }
+
+/* Keep quiz feedback and its next action together instead of pinning it to the footer. */
+.fit-board-compact { flex: 0 0 auto; }
+.app .recycling-practice { justify-content: center; max-width: 1040px; }
+.recycling-actions { margin-top: 12px; }
+@media (min-width: 700px) {
+  .recycling-content { grid-template-columns: minmax(0,.85fr) minmax(0,1.15fr); gap: 16px; }
+  .app .recycling-heading h1 { font-size: 26px; }
+  .app .recycling-progress { font-size: 12px; }
+  .app .recycling-item { align-items: center; padding: 20px; gap: 16px; }
+  .app .recycling-item svg { width: 72px; height: 144px; }
+  .app .recycling-item h2 { font-size: 18px; }
+  .app .recycling-item p { font-size: 15px; }
+  .app .recycling-feedback, .app .recycling-result { padding: 20px; font-size: 16px; }
+  .app .recycling-feedback h2, .app .recycling-result h2 { font-size: 21px; }
+  .recycling-actions .primary { font-size: 14px; padding: 12px 20px; }
+}
+@media (min-width: 700px) and (min-height: 651px) {
+  .app .recycling-item { flex-direction: column; justify-content: center; text-align: center; }
+  .app .recycling-item > div { width: 100%; }
+  .app .recycling-item svg { width: 96px; height: 192px; }
+  .app .recycling-feedback { display: flex; flex-direction: column; justify-content: center; }
+}

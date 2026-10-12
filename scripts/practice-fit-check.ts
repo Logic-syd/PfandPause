@@ -58,6 +58,12 @@ try {
         // Include an incorrect answer to verify the explanatory state too.
         await frame.locator('.recycling-choices button').nth(question===0?5:[0,1,2,3,4,5,5,0][question]).tap();
         await fits(frame,'.recycling-item,.recycling-feedback,.recycling-actions');
+        const feedback=await frame.locator('.recycling-feedback').boundingBox();
+        const next=await frame.locator('.recycling-actions .primary').boundingBox();
+        assert.ok(feedback && next && next.y-feedback.y-feedback.height<=20,'The next button must stay beside the feedback, with no empty spacer');
+        assert.ok(next.height>=44,'Navigation must keep its touch size');
+        if(width===1707 && language==='zh' && question===0) await page.screenshot({path:'artifacts/compact-feedback-desktop.png'});
+
         if(width===390 && language==='zh' && question===0) await page.screenshot({path:'artifacts/recycling-feedback-mobile.png'});
         await frame.locator('.recycling-actions .primary').tap();
       }

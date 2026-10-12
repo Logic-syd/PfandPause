@@ -33,7 +33,7 @@ export default function RecyclingPractice({ language, onClose }: { language: Lan
     </div>
     <p className="sr-only">{t.eyebrow}</p>
     <p className="recycling-progress">{done ? t.completed : t.question(index + 1, recyclingItems.length)} · {t.correctCount(correctCount)} · {t.refund(refundAmount)}</p>
-    <FitBoard>
+    <FitBoard compact grow>
       <div className="recycling-content">
         {done ? <div className="recycling-result">
           <h2>{t.summaryTitle}</h2>

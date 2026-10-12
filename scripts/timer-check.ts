@@ -56,7 +56,8 @@ try {
   await page.getByRole('button',{name:'Close',exact:true}).click();assert.equal(await page.locator('.final-countdown').innerText(),'10');
   await page.clock.fastForward(1000);assert.equal(await page.locator('.final-countdown').innerText(),'9');
   await page.clock.fastForward(8000);assert.equal(await page.locator('.final-countdown').innerText(),'1');
-  await page.clock.fastForward(1000);await page.locator('.lost').waitFor();assert.equal(await page.locator('.lost h2').innerText(),'Time is up');
+  await page.clock.fastForward(1000);await page.locator('.lost').waitFor();assert.equal(await page.locator('.lost h2').innerText(),'The supermarket is closed');
+  assert.equal(await page.locator('.lost .result-content > p').innerText(),'Come back tomorrow.');
   assert.equal(await page.locator('.final-countdown').count(),0,'Expired rounds never retain the countdown overlay');
   assert.equal(await page.locator('.lost button').filter({hasText:'Undo'}).count(),0);
   await page.getByRole('button',{name:'Try again',exact:true}).click();assert.ok((await seconds())>=initial-1);

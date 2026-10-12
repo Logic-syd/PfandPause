@@ -38,6 +38,8 @@ npm run preview
 
 首页仍有独立的「德国回收练习」，包含八个包装示例、解释和模拟押金统计。规则参考 [DPG](https://dpg-pfandsystem.de/) 和 [德国消费者中心](https://www.verbraucherzentrale.de/wissen/umwelt-haushalt/abfall)。另有十二瓶自由试玩，包含四种瓶型和遮挡，不计时，不强制操作顺序，不改变关卡进度。试玩也可撤回、移出三瓶、洗牌；满槽时棋盘仍显示，使用道具后能继续。
 
+回收问答答对显示绿色大勾、上扬音效和本题押金奖励；答错显示红色大叉、轻微摇动和低音提示，对照所选答案与正确去向。包装线索高亮，玻璃回收显示对应颜色的垃圾箱图标。静音及减少动态效果设置有效，答错与玻璃回收不增加押金。
+
 ## 实现
 
 | 文件 | 用途 |
@@ -78,6 +80,7 @@ BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:embedded-scroll
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:demo
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:practice-fit
+BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:feedback
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:glass
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:timer
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:languages

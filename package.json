@@ -19,7 +19,8 @@
     "test:practice-fit": "tsx scripts/practice-fit-check.ts",
     "test:glass": "tsx scripts/glass-check.ts",
     "test:timer": "tsx scripts/timer-check.ts",
-    "test:demo": "tsx scripts/demo-check.ts"
+    "test:demo": "tsx scripts/demo-check.ts",
+    "test:feedback": "tsx scripts/feedback-check.ts"
   },
   "dependencies": {
     "react": "^19.1.0",

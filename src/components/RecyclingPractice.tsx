@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { assessRecycling, recyclingChoiceLabels, getRecyclingDestinations, getRecyclingItems, type Destination } from '../data/recycling';
 import { recyclingTranslations } from '../data/recyclingTranslations';
 import { translations, type Language } from '../i18n';
 import FitBoard from './FitBoard';
 import Dialog from './Dialog';
+import Icon from './Icon';
+import { playSound, unlockAudio } from '../audio';
 
-export default function RecyclingPractice({ language, onClose }: { language: Language; onClose: () => void }) {
+export default function RecyclingPractice({ language, sound, onClose }: { language: Language; sound: boolean; onClose: () => void }) {
   const t = recyclingTranslations[language];
   const recyclingItems = getRecyclingItems(language);
   const destinations = getRecyclingDestinations(language);
@@ -15,16 +17,21 @@ export default function RecyclingPractice({ language, onClose }: { language: Lan
   const [correctCount, setCorrectCount] = useState(0);
   const [refund, setRefund] = useState(0);
   const [notes, setNotes] = useState(false);
+  const answered = useRef(false);
   const done = index === recyclingItems.length;
   const item = recyclingItems[index];
+  const correct = answer !== null && answer === item?.destination;
   function choose(destination: Destination) {
-    if (answer !== null) return;
+    if (answered.current || done) return;
+    answered.current = true;
     const result = assessRecycling(item, destination);
+    if (sound) { unlockAudio(); playSound(result.correct ? 'correct' : 'wrong', true); }
     setAnswer(destination);
     if (result.correct) setCorrectCount(n => n + 1);
     setRefund(n => n + result.refundCents);
   }
-  function restart() { setIndex(0); setAnswer(null); setCorrectCount(0); setRefund(0); }
+  function restart() { answered.current = false; setIndex(0); setAnswer(null); setCorrectCount(0); setRefund(0); }
+  function advance() { if (!answered.current) return; answered.current = false; setIndex(n => n + 1); setAnswer(null); }
   const refundAmount = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(refund / 100);
   return <section className="recycling-practice" lang={locale} aria-labelledby="recycling-title">
     <div className="recycling-heading">
@@ -48,12 +55,14 @@ export default function RecyclingPractice({ language, onClose }: { language: Lan
               <rect x="20" y="80" width="40" height="40" rx="4" fill="#fffbed" />
               <text x="40" y="104" textAnchor="middle" fontSize="11" fill="#304c3e">{item.cents ? 'PFAND' : 'GLAS'}</text>
             </svg>
-            <div><h2>{item.name}</h2><p>{item.material}</p><p className="recycling-label">{t.packaging}{item.label}</p></div>
+            <div><h2>{item.name}</h2><p>{item.material}</p><p className="recycling-label">{t.packaging}<strong className={answer !== null ? 'packaging-clue' : ''}>{item.label}</strong></p></div>
           </article>
           {answer === null ? <div className="recycling-choices">{destinations.map(d => <button key={d.id} onClick={() => choose(d.id)}><strong>{recyclingChoiceLabels[language][d.id].label}</strong><span>{recyclingChoiceLabels[language][d.id].detail}</span></button>)}</div>
-            : <div className="recycling-feedback" role="status">
-              <h2>{answer === item.destination ? t.correct : t.incorrect}</h2>
-              <p className="recycling-answer">{t.destination}{destinations.find(d => d.id === item.destination)?.label}</p>
+            : <div className={`recycling-feedback ${correct ? 'is-correct' : 'is-incorrect'}`} data-correct={correct} role="status" aria-atomic="true">
+              <div className="feedback-verdict"><span className="feedback-mark"><Icon name={correct ? 'check' : 'close'} size={40} /></span><h2>{correct ? t.correct : t.incorrect}</h2></div>
+              {!correct && <div className="answer-comparison chosen-answer"><Icon name="close" size={20} /><div><span>{t.yourChoice}</span><strong>{recyclingChoiceLabels[language][answer].label}</strong></div></div>}
+              <div className="answer-comparison correct-answer"><span className={`destination-badge destination-${item.destination}`} aria-hidden="true"><Icon name={item.cents ? 'receipt' : 'bin'} size={22} /></span><div><span>{t.destination}</span><strong>{recyclingChoiceLabels[language][item.destination].label}</strong></div></div>
+              {correct && <div className="feedback-reward"><Icon name={item.cents ? 'receipt' : 'leaf'} size={18} />{item.cents ? t.depositReward(new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(item.cents / 100)) : t.glassReward}</div>}
               <p>{item.explanation}</p>
             </div>}
         </>}
@@ -62,7 +71,7 @@ export default function RecyclingPractice({ language, onClose }: { language: Lan
     <div className="recycling-actions">
       <button className="text-button" onClick={() => setNotes(true)}>{t.references}</button>
       {done ? <button className="primary" onClick={restart}>{t.restart}</button>
-        : answer !== null ? <button className="primary" onClick={() => { setIndex(n => n + 1); setAnswer(null); }}>{index === recyclingItems.length - 1 ? t.seeSummary : t.next}</button>
+        : answer !== null ? <button className="primary" onClick={advance}>{index === recyclingItems.length - 1 ? t.seeSummary : t.next}</button>
           : <span>{t.prompt}</span>}
     </div>
     {notes && <Dialog className="lesson-notes" title={t.references} closeLabel={translations[language].close} onClose={() => setNotes(false)}>

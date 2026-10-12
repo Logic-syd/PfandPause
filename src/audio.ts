@@ -31,7 +31,7 @@ export function unlockAudio(): void {
   }
 }
 export function playSound(
-  kind: "pick" | "full" | "win" | "tick",
+  kind: "pick" | "full" | "win" | "tick" | "correct" | "wrong",
   enabled: boolean,
 ): void {
   if (!enabled || !context || context.state !== "running") return;
@@ -40,13 +40,15 @@ export function playSound(
       ? [523, 659, 784, 1047]
       : kind === "full"
         ? [659, 880]
-        : kind === "tick" ? [880] : [540];
+        : kind === "correct" ? [659, 880, 1047]
+          : kind === "wrong" ? [260, 196]
+            : kind === "tick" ? [880] : [540];
   try {
     notes.forEach((frequency, i) => {
       const oscillator = context!.createOscillator();
       const gain = context!.createGain();
       const start = context!.currentTime + i * 0.085;
-      oscillator.type = kind === "tick" ? "triangle" : "sine";
+      oscillator.type = kind === "tick" || kind === "wrong" ? "triangle" : "sine";
       oscillator.frequency.setValueAtTime(frequency, start);
       gain.gain.setValueAtTime(0, start);
       gain.gain.linearRampToValueAtTime(

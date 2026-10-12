@@ -6,6 +6,7 @@ export default function Icon({
   size?: number;
 }) {
   const paths: Record<string, React.ReactNode> = {
+    bin: <><path d="M4 6h16M8 6V3h8v3M6 6l1 15h10l1-15M10 10v7M14 10v7" /></>,
     shuffle: <><path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c5 0 7-12 12-12h3m-4-4 4 4-4 4" /></>,
     lift: <><path d="M4 14v6h16v-6M12 16V3m-5 5 5-5 5 5" /></>,
     arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,

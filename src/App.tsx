@@ -424,6 +424,7 @@ export default function App() {
       <main>
         {screen === "recycling" && (
           <RecyclingPractice
+            sound={preferences.sound}
             language={preferences.language}
             onClose={() => navigate("start")}
           />

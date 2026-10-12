@@ -6,6 +6,9 @@ export interface Solution {
   exhausted: boolean;
 }
 export function solveLevel(level: Level, limit = 500_000): Solution {
+  return solveState(createGame(level), limit);
+}
+export function solveState(initial: GameState, limit = 500_000): Solution {
   const failed = new Set<string>();
   let visited = 0;
   let exhausted = false;
@@ -48,5 +51,5 @@ export function solveLevel(level: Level, limit = 500_000): Solution {
     failed.add(key);
     return null;
   }
-  return { path: search(createGame(level)), visited, exhausted };
+  return { path: search(initial), visited, exhausted };
 }

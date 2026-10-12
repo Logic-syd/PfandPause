@@ -11,7 +11,8 @@ import { timeLimit, MAX_GLASS_MISTAKES, FINAL_COUNTDOWN_SECONDS } from "./game/t
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
 import { bottles, bottleDeposits } from "./data/bottles";
-import { cloneState, createGame, takeBottle } from "./game/engine";
+import { createGame, takeBottle } from "./game/engine";
+import { createUndoTrail, advanceUndoTrail, canUndoBottle, undoPendingBottle } from "./game/undo";
 import { glassTypes, isGlass, type GlassType, type BottleType, type GameState, type Place } from "./game/types";
 import { LANGUAGE_OPTIONS, translations } from "./i18n";
 import { loadPreferences, savePreferences } from "./storage";
@@ -44,7 +45,8 @@ export default function App() {
   ));
   const [game, setGame] = useState(() => createGame(levels[levelIndex]));
   const gameRef = useRef(game);
-  const [history, setHistory] = useState<GameState[]>([]);
+  const undoTrail = useRef(createUndoTrail());
+  const [undoAvailable, setUndoAvailable] = useState(false);
   const [busy, setBusy] = useState(false);
   const locked = useRef(false);
   const epoch = useRef(0);
@@ -161,7 +163,8 @@ export default function App() {
     clock.reset(timeLimit(levels[index]));
     setLevelIndex(index);
     display(createGame(levels[index]));
-    setHistory([]);
+    undoTrail.current = createUndoTrail();
+    setUndoAvailable(false);
     setScreen("play");
     setModal(null);
     setTutorial(false);
@@ -210,7 +213,6 @@ export default function App() {
     setBusy(true);
     unlockAudio();
     const ticket = epoch.current;
-    setHistory((h) => [...h, cloneState(previous)]);
     for (const frame of result.frames) {
       if (ticket !== epoch.current) return;
       if (frame.event.kind === "move") {
@@ -241,6 +243,7 @@ export default function App() {
           await pause(230);
         }
         if (ticket !== epoch.current) return;
+        undoTrail.current = advanceUndoTrail(undoTrail.current, frame.event);
         display(frame.state);
         setFlight(null);
         playSound("pick", preferences.sound);
@@ -251,6 +254,7 @@ export default function App() {
         playSound("full", preferences.sound);
         await pause(preferences.reducedMotion ? 0 : 240);
       } else {
+        undoTrail.current = advanceUndoTrail(undoTrail.current, frame.event);
         display(frame.state);
         setFullCrate(null);
         await pause(preferences.reducedMotion ? 0 : 120);
@@ -259,6 +263,7 @@ export default function App() {
     if (ticket !== epoch.current) return;
     if (clock.read() <= 0) { expire(); return; }
     display(result.state);
+    setUndoAvailable(canUndoBottle(result.state, undoTrail.current));
     setBusy(false);
     locked.current = false;
     if (result.state.status === "won") {
@@ -273,14 +278,16 @@ export default function App() {
     }
   }
   function undo() {
-    if (locked.current || !history.length || gameRef.current.status === "lost") return;
+    if (locked.current) return;
+    const result = undoPendingBottle(gameRef.current, undoTrail.current);
+    if (!result) return;
     stopVoice();
     setSelectedGlass(null);
     setWrongBin(false);
     setPenaltyNotice(null);
-    const previous = cloneState(history[history.length - 1]);
-    display({ ...previous, penalties:gameRef.current.penalties, mistakes:gameRef.current.mistakes });
-    setHistory((h) => h.slice(0, -1));
+    undoTrail.current = result.trail;
+    display(result.state);
+    setUndoAvailable(canUndoBottle(result.state, result.trail));
   }
   function navigate(next: Screen) {
     if (!locked.current) {
@@ -617,7 +624,8 @@ export default function App() {
               <button
                 className="secondary undo-button"
                 onClick={undo}
-                disabled={!history.length || busy || game.status === "lost"}
+                disabled={!undoAvailable || busy || game.status === "lost"}
+                title={t.undoHint}
               >
                 <Icon name="undo" size={18} />
                 {t.undo}

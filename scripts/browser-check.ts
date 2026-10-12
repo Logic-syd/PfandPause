@@ -56,6 +56,7 @@ async function boardSnapshot(page: Page) {
     ),
     toolbar: document.querySelector(".game-toolbar")?.textContent,
     progress: document.querySelector(".level-progress")?.textContent,
+    orders: document.querySelector(".order-count-button")?.textContent,
   }));
 }
 function lossPath(state: GameState, path: number[] = []): number[] | null {
@@ -238,13 +239,19 @@ try {
       const before = await boardSnapshot(page);
       for (const c of [0, 0, 1, 1]) await pick(page, c);
       assert.equal(await page.locator(".buffer-slot.occupied").count(), 2);
-      const preCascade = await boardSnapshot(page);
       await pick(page, 2);
       assert.equal(await page.locator(".buffer-slot.occupied").count(), 0);
+      const afterCascade = await boardSnapshot(page);
       await page.getByRole("button", { name: "Undo", exact: true }).click();
-      assert.deepEqual(await boardSnapshot(page), preCascade);
+      const afterRecall = await boardSnapshot(page);
+      assert.deepEqual(afterRecall.orders, afterCascade.orders);
+      assert.match(afterRecall.crates[0]!,/1\/3$/);
+      assert.equal(await page.locator('[data-column="1"] .bottle').getAttribute('data-bottle-type'),'currant');
+      await page.getByRole("button", { name: "Undo", exact: true }).click();
+      assert.ok(await page.getByRole("button", { name: "Undo", exact: true }).isDisabled());
+      assert.match((await boardSnapshot(page)).crates[0]!,/0\/3$/);
       check(
-        "Undo restores waiting bottles, old crate and order queue after auto-transfer",
+        "Undo recalls unfinished transferred bottles while completed batches and queue stay returned",
       );
       await page
         .getByRole("button", { name: "Start again", exact: true })

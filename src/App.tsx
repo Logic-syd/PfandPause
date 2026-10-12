@@ -12,8 +12,9 @@ import { timeLimit, MAX_GLASS_MISTAKES, FINAL_COUNTDOWN_SECONDS } from "./game/t
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
 import { bottles } from "./data/bottles";
-import { createGame, takeBottle, type TripleState as GameState, type TripleTransition } from "./game/triple";
+import { availableTiles, createGame, takeBottle, type TripleState as GameState, type TripleTransition } from "./game/triple";
 import TripleBoard from "./components/TripleBoard";
+import { useBottleInput } from "./components/useBottleInput";
 import { isGlass, type GlassType, type BottleType, type Place } from "./game/types";
 import { LANGUAGE_OPTIONS, translations } from "./i18n";
 import { loadPreferences, savePreferences } from "./storage";
@@ -57,6 +58,7 @@ export default function App() {
   const [tutorial, setTutorial] = useState(false);
   const [selectedGlass, setSelectedGlass] = useState<number | null>(null);
   const [wrongBin, setWrongBin] = useState(false);
+  const input = useBottleInput(performPick);
   const [penaltyNotice, setPenaltyNotice] = useState<"buffer" | "bin" | null>(null);
   const t = translations[preferences.language];
   const level = levels[levelIndex];
@@ -114,6 +116,7 @@ export default function App() {
 
   function expire() {
     epoch.current++;
+    input.clear();
     locked.current = false;
     setBusy(false);
     setFlight(null);
@@ -128,6 +131,7 @@ export default function App() {
   function start(index: number) {
     stopVoice();
     epoch.current++;
+    input.clear();
     locked.current = false;
     setBusy(false);
     setFlight(null);
@@ -153,9 +157,13 @@ export default function App() {
       tutorialVersion: TUTORIAL_VERSION,
     }));
   }
-  async function pick(column: number, bin?: GlassType) {
+  function pick(column: number, bin?: GlassType) {
+    if (screen !== "play" || modal || tutorial || gameRef.current.status !== "playing" || !availableTiles(gameRef.current).includes(column)) return;
+    input.enqueue(column, bin);
+  }
+  async function performPick(column: number, bin?: GlassType) {
     if (
-      locked.current ||
+      screen !== "play" ||
       gameRef.current.status !== "playing" ||
       modal ||
       tutorial
@@ -577,7 +585,7 @@ export default function App() {
               <span className="sr-only">{game.moves} {t.moves}</span>
             </div>
             <FitBoard grow>
-              <TripleBoard state={game} busy={busy} selectedGlass={selectedGlass} wrongBin={wrongBin} fullGroup={fullCrate} flightSource={flight?.source}
+              <TripleBoard state={game} busy={busy} pendingIds={input.pendingIds} selectedGlass={selectedGlass} wrongBin={wrongBin} fullGroup={fullCrate} flightSource={flight?.source}
                 t={t} formatMoney={formatDeposit} onPick={(id, bin) => void pick(id, bin)} onReserve={() => {}} />
             </FitBoard>
           </section>

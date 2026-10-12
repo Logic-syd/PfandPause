@@ -17,7 +17,7 @@ npm run preview
 
 ## 主线规则
 
-- 瓶子错层叠放；露出的亮色卡片可以点击，被覆盖的灰色卡片不能点击。支持鼠标、触控、Tab 和 Enter / Space。
+- 瓶子错层叠放；露出的亮色卡片可以点击，被覆盖的灰色卡片不能点击。支持鼠标、触控、Tab 和 Enter / Space。动画中连续点其他露出的瓶子会按顺序处理，立即变色打勾；同一瓶不会重复入列。超时、重开或关闭试玩会清空未处理的点击。
 - 所有押金瓶共用七格传送带，没有指定瓶型的接收队列。三个同款会自动消除并累计模拟退回押金；不同包装即使押金相同也不算同款。
 - 七格被未消除的瓶子占满，本轮失败。如果第七瓶正好组成三个同款，会先消除再判定满槽。
 - 没有撤销、移出或洗牌救场；满槽结束后只能重新开始。试玩使用相同失败规则。
@@ -36,7 +36,7 @@ npm run preview
 
 主玩法采用常见的七格配对消除机制。设计研究参考 [yulegeyu](https://github.com/liyupi/yulegeyu) 中的槽位、遮挡与消除规则；当前引擎和关卡生成代码为本项目实现，未复制其他游戏的图片、角色、音效或品牌。
 
-首页仍有独立的「德国回收练习」，包含八个包装示例、解释和模拟押金统计。规则参考 [DPG](https://dpg-pfandsystem.de/) 和 [德国消费者中心](https://www.verbraucherzentrale.de/wissen/umwelt-haushalt/abfall)。另有十二瓶自由试玩，包含四种瓶型和遮挡，不计时，不强制操作顺序，不改变关卡进度。试玩随操作说明拿取、三瓶消除和遮挡；七格旁始终显示「七格满了就输了」，失败后只能重试。
+首页有独立的「这瓶扔哪？」，包含八个包装示例、解释和模拟押金统计。规则参考 [DPG](https://dpg-pfandsystem.de/) 和 [德国消费者中心](https://www.verbraucherzentrale.de/wissen/umwelt-haushalt/abfall)。另有十二瓶自由试玩，包含四种瓶型和遮挡，不计时，不强制操作顺序，不改变关卡进度。试玩随操作说明拿取、三瓶消除和遮挡；七格旁始终显示满槽失败提醒，失败后只能重试。
 
 回收问答答对显示绿色大勾、上扬音效和本题押金奖励；答错显示红色大叉、轻微摇动和低音提示，对照所选答案与正确去向。包装线索高亮，玻璃回收显示对应颜色的垃圾箱图标。静音及减少动态效果设置有效，答错与玻璃回收不增加押金。
 
@@ -50,6 +50,7 @@ npm run preview
 | `src/components/TripleBoard.tsx` | 错层棋盘、七格传送带、满槽警告及玻璃箱 |
 | `src/data/levels.ts` | 十四关瓶子库存，保留原始 columns / orders 数据格式 |
 | `src/components/Tutorial.tsx` | 独立十二瓶自由试玩 |
+| `src/components/useBottleInput.ts` | 动画期间接收连点、去重和取消待处理点击 |
 | `src/components/useRoundClock.ts` | 实际经过时间、暂停和扣时 |
 | `src/components/FitBoard.tsx` | 根据实际容器缩放，处理嵌套框和窗口调整 |
 | `src/components/ReturnReceipt.tsx` | 按包装押金计算的小票 |
@@ -61,7 +62,7 @@ npm run preview
 
 `createGame` 先构造不会塞满七格的拿取序列，再沿随机拓扑顺序把瓶子分配到遮挡图中。第三关开始同时交错更多未完成瓶型，末关四层。每关由求解器独立验证并回放，游戏不会给玩家显示解路径。
 
-所有规则函数不修改输入，返回最终状态与动画帧。界面同步锁定操作后播放动画，防止连点重复拿取。满槽是不可恢复的终局；菜单先暂停，必须点明确的返回按钮才能离开，点击弹窗外空白不会关闭或跳转。旧存档移除原第一关并将后续完成编号前移一次，保留语言和声音设置。
+所有规则函数不修改输入，返回最终状态与动画帧。界面按点击顺序播放动画，连点先入队并立即标记，同一瓶重复点击只处理一次。满槽是不可恢复的终局；菜单先暂停，必须点明确的返回按钮才能离开，点击弹窗外空白不会关闭或跳转。旧存档移除原第一关并将后续完成编号前移一次，保留语言和声音设置。
 
 `src/game/engine.ts`、`solver.ts`、`undo.ts` 、`src/data/legacy-levels.ts` 和旧练习数据保留为上一版规则及历史回归；正式界面不再使用旧接收队列。当前解路径见 `docs/solutions.json`。
 
@@ -80,6 +81,7 @@ BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:fit-board
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:responsive
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:mobile-frame
+BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:rapid-taps
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:embedded-scroll
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:demo
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:practice-fit
@@ -91,7 +93,7 @@ BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:voice
 ```
 
-浏览器检查覆盖实际点击十四关、七格满槽终局和重开、三语练习及玻璃分类、存档、10→1 倒数、押金小票、动画、不同像素密度、短窗口和两层 iframe。模拟检查不能代替真实 iPhone Safari 或 Game Jolt 的最终设备测试。
+浏览器检查覆盖手机及 iframe 连点、重复点击去重、重开清空待处理点击、实际点击十四关、七格满槽终局和重开、三语练习及玻璃分类、存档、10→1 倒数、押金小票、动画、不同像素密度、短窗口和两层 iframe。模拟检查不能代替真实 iPhone Safari 或 Game Jolt 的最终设备测试。
 
 手机和矮嵌入框将重开按钮并入计时栏，并压缩牌面、传送带及玻璃桶的占位。断点以游戏 iframe 自己的宽高为准。`test:mobile-frame` 固定外层浏览器大小，只改变跨域双层 iframe 的尺寸，覆盖三语、第三/五/十四关、框架高度变化和外层缩放后的实际触屏点击；常见小屏检查瓶子及回收桶至少 44px，极矮框检查全部内容可见且无滚动。游戏不能修改跨域平台外层的框架尺寸或消除平台本身的裁切。
 

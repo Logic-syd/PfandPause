@@ -24,7 +24,7 @@ try {
   await page.locator('.help-button').click();const paused=await seconds();await page.clock.fastForward(20000);assert.equal(await seconds(),paused);
   await page.getByRole('button',{name:'Close',exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Undo',exact:true}).count(),0);
-  assert.equal(await page.locator('.tray-danger').innerText(),'Seven full slots = game over');
+  assert.equal(await page.locator('.tray-danger').innerText(),'Seven full slots. Game over.');
   await page.locator('.tile-card:enabled').first().click();await page.waitForFunction(()=>!document.querySelector('.tile-field.is-busy'));
   const geometryBeforeNotice=await boardGeometry();
   await page.clock.fastForward(((await seconds())-11)*1000);
@@ -41,7 +41,7 @@ try {
   assert.equal(await page.locator('.lost .result-content > p').innerText(),'Come back tomorrow.');
   assert.equal(await page.locator('.final-countdown').count(),0,'Expired rounds never retain the countdown overlay');
   assert.equal(await page.locator('.lost button').filter({hasText:'Undo'}).count(),0);
-  await page.getByRole('button',{name:'Try again',exact:true}).click();assert.ok((await seconds())>=initial-1);
+  await page.getByRole('button',{name:'One more go',exact:true}).click();assert.ok((await seconds())>=initial-1);
   assert.equal(await page.locator('.final-countdown').count(),0,'Restart clears the countdown');
   await page.locator('.brand').click();await page.locator('.pause-dialog').getByRole('button',{name:'Choose a level',exact:true}).click();
   // Seed an existing ten-level save through a reload to test the first glass level.
@@ -57,7 +57,7 @@ try {
   assert.match(await page.locator('.round-clock').innerText(),/2\/3/);
   await page.locator(`[data-bin="${wrongType}"]`).click();await page.locator('.lost').waitFor();
   assert.equal(await page.locator('.lost h2').innerText(),'Wrong choices this round: 3');
-  await page.getByRole('button',{name:'Try again',exact:true}).click();assert.match(await page.locator('.round-clock').innerText(),/0\/3/);
+  await page.getByRole('button',{name:'One more go',exact:true}).click();assert.match(await page.locator('.round-clock').innerText(),/0\/3/);
   assert.deepEqual(errors,[]);console.log('PASS final countdown runs 10→1 without layout shifts, help pauses, timer counts elapsed time, glass costs 10s, no undo controls, timeout and third mistake end rounds, restart resets timer and mistakes');
   await context.close();
 } finally {await browser.close();}

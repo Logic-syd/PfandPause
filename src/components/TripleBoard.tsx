@@ -6,7 +6,8 @@ import { translations } from "../i18n";
 import Bottle from "./Bottle";
 import Icon from "./Icon";
 
-export default function TripleBoard({ state, busy, selectedGlass, wrongBin, fullGroup, flightSource, t, formatMoney, onPick, onReserve }: {
+export default function TripleBoard({ state, busy, pendingIds, selectedGlass, wrongBin, fullGroup, flightSource, t, formatMoney, onPick, onReserve }: {
+  pendingIds?: readonly number[];
   state: TripleState; busy: boolean; selectedGlass: number | null; wrongBin: boolean; fullGroup: number | null; flightSource?: string;
   t: typeof translations.en; formatMoney: (cents: number) => string;
   onPick: (id: number, bin?: GlassType) => void; onReserve: (index: number) => void;
@@ -19,13 +20,15 @@ export default function TripleBoard({ state, busy, selectedGlass, wrongBin, full
       <div className={`tile-field ${busy ? "is-busy" : ""}`} style={{ "--board-width": state.boardWidth, "--board-height": state.boardHeight } as CSSProperties} aria-label={t.tileBoard}>
         {state.tiles.filter(tile => state.columns[tile.id].length).map(tile => {
           const covered = !available.has(tile.id);
+          const pending = pendingIds?.includes(tile.id) ?? false;
           return <button key={tile.id} data-column={tile.id} data-place={`column-${tile.id}`} data-covered={covered}
-            className={`tile-card ${covered ? "is-covered" : ""} ${selectedGlass === tile.id ? "glass-selected" : ""} ${flightSource === `column-${tile.id}` ? "moving-source" : ""}`}
+            className={`tile-card ${covered ? "is-covered" : ""} ${pending ? "is-pending" : ""} ${selectedGlass === tile.id ? "glass-selected" : ""} ${flightSource === `column-${tile.id}` ? "moving-source" : ""}`}
             style={{ left: `${tile.x / state.boardWidth * 100}%`, top: `${tile.y / state.boardHeight * 100}%`, width: `${1 / state.boardWidth * 100}%`, height: `${1 / state.boardHeight * 100}%`, zIndex: tile.layer * 100 + tile.id } as CSSProperties}
-            disabled={covered || busy || state.status !== "playing"} onClick={() => onPick(tile.id)}
+            disabled={covered || (pendingIds ? pending : busy) || state.status !== "playing"} onClick={() => onPick(tile.id)}
             aria-label={`${t.pick} ${t.bottleNames[tile.bottle]} · ${isGlass(tile.bottle) ? t.noDeposit : formatMoney(bottleDeposits[tile.bottle])}`}
             title={covered ? t.coveredTile : t.bottleNames[tile.bottle]}>
             <Bottle type={tile.bottle} />
+            {pending && <span className="tile-queued" aria-hidden="true"><Icon name="check" size={12} /></span>}
             <span className="tile-price">{isGlass(tile.bottle) ? t.noDeposit : formatMoney(bottleDeposits[tile.bottle])}</span>
           </button>;
         })}

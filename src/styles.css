@@ -3053,6 +3053,8 @@ main {
 .tile-card:hover:not(:disabled) { background: #fff4d1; }
 .tile-card.is-covered { background: #bac5b3; filter: brightness(.7) saturate(.5); cursor: default; }
 .tile-card:disabled { opacity: 1; }
+.tile-card.is-pending { background: #f7dfb8; border-color: #ba8145; }
+.tile-queued { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; display: grid; place-items: center; border-radius: 50%; background: #304d42; color: #fff; pointer-events: none; }
 .tile-card.glass-selected { outline: 3px solid #b97c94; background: #f4dce5; }
 .tile-card.moving-source .bottle { visibility: hidden; }
 .tile-price { position: absolute; bottom: 3px; left: 1px; right: 1px; text-align: center; font-size: 10px; font-weight: 800; line-height: 1.2; color: var(--ink); white-space: nowrap; }

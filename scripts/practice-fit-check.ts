@@ -4,7 +4,7 @@ import { mkdirSync } from 'node:fs';
 import { translations } from '../src/i18n';
 import { recyclingTranslations } from '../src/data/recyclingTranslations';
 import { levels } from '../src/data/levels';
-import { solveLevel } from '../src/game/solver';
+import { solveState, createGame } from '../src/game/triple';
 
 const url = process.env.BASE_URL ?? 'http://localhost:4173';
 const browser = await chromium.launch({ headless:true, executablePath:process.env.BROWSER_EXECUTABLE_PATH ?? '/usr/bin/chromium' });
@@ -41,16 +41,14 @@ try {
       if (width===390 && language==='zh') await page.screenshot({path:'artifacts/restored-home-mobile.png'});
       if (width===1707 && language==='zh') await page.screenshot({path:'artifacts/restored-home-desktop.png'});
       await frame.locator('.home-actions .learn-button').tap();
-      const actions=[0,1,2,3,null,0,0,3,1,1,1];
-      for (const [step,column] of actions.entries()) {
-        await fits(frame,'.practice-coach,.practice-target,.practice-actions button,.dialog-close');
-        if(column===null) await frame.getByRole('button',{name:t.practiceUndo,exact:true}).tap();
-        else await frame.locator(`[data-tutorial-column="${column}"]`).tap();
-        await frame.waitForFunction(step=>document.querySelector('.practice-board')?.getAttribute('data-step')===String(step),step+1);
+      for (const id of solveState(createGame(levels[0])).path!) {
+        await fits(frame,'.tile-card,.tray-slot,.practice-actions button,.dialog-close');
+        await frame.locator(`dialog [data-column="${id}"]`).tap();
+        await frame.waitForFunction(()=>!document.querySelector('dialog .tile-field.is-busy'));
       }
-      await fits(frame,'.practice-coach,.practice-actions button,.dialog-close');
-      assert.ok(await frame.locator('.practice-board').isHidden());
-      if(width===1280 && language==='zh') await page.screenshot({path:'artifacts/tutorial-complete-short.png'});
+      await frame.locator('.practice-finished').waitFor();
+      await fits(frame,'.practice-summary,.practice-actions button,.dialog-close');
+      assert.equal((await frame.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,10,'Practice never changes progress');
       await frame.getByRole('button',{name:t.gotIt,exact:true}).tap();
       await frame.getByRole('button',{name:t.recyclingEntry,exact:true}).tap();
       for(let question=0;question<8;question++) {
@@ -67,9 +65,9 @@ try {
       await frame.getByRole('button',{name:r.back,exact:true}).tap();
       await frame.getByRole('button',{name:t.chooseLevel,exact:true}).tap();
       await frame.locator('.level-card').nth(1).tap();
-      for(const column of solveLevel(levels[1]).path!) {
+      for(const column of solveState(createGame(levels[1])).path!) {
         await frame.locator(`[data-column="${column}"]`).tap();
-        await frame.waitForFunction(()=>!document.querySelector('.stacks.is-busy'));
+        await frame.waitForFunction(()=>!document.querySelector('.tile-field.is-busy'));
       }
       await frame.locator('.result-dialog.won').waitFor();
       await fits(frame,'.result-stats,.result-dialog > button');
@@ -77,7 +75,7 @@ try {
       assert.match(stats,/12/);assert.match(stats,/2[.,]40/);assert.ok(stats.includes(t.depositReturned));
       if(width===390 && language==='zh') await page.screenshot({path:'artifacts/returned-bottle-stats.png'});
       await context.close();
-      console.log(`PASS ${width}×${height} ${language}: restored home, all tutorial steps and completion, all 8 questions and feedback, summary, 12 bottles / €2.40, no scrolling`);
+      console.log(`PASS ${width}×${height} ${language}: restored home, free-play triples and completion, all 8 questions and feedback, summary, 12 bottles / €2.40, no scrolling`);
     }
   }
   assert.deepEqual(errors,[]);

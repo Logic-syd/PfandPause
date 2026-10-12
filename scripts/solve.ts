@@ -1,11 +1,11 @@
 import { isGlass } from "../src/game/types";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { levels } from "../src/data/levels";
-import { solveLevel } from "../src/game/solver";
-import { createGame, takeBottle, validateLevel } from "../src/game/engine";
+
+import { createGame, takeBottle, solveState } from "../src/game/triple";
 const results = levels.map((level) => {
-  validateLevel(level);
-  const solution = solveLevel(level);
+
+  const solution = solveState(createGame(level));
   if (!solution.path)
     throw new Error(
       `Level ${level.id}: ${solution.exhausted ? "search budget exceeded" : "unsolvable"}`,
@@ -20,7 +20,7 @@ const results = levels.map((level) => {
   );
   return {
     level: level.id,
-    columnsAreOneBased: true,
+    tilesAreOneBased: true,
     path: solution.path.map((c) => c + 1),
     visited: solution.visited,
   };

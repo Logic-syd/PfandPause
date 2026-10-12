@@ -35,11 +35,11 @@ export interface GameState {
   recycled: GlassType[];
   penalties: number;
   mistakes: number;
-  endReason?: "time" | "mistakes";
+  endReason?: "time" | "mistakes" | "full";
   moves: number;
   status: "playing" | "won" | "lost";
 }
-export type Place = { kind: "column" | "buffer" | "crate" | "bin"; index: number };
+export type Place = { kind: "column" | "buffer" | "crate" | "bin" | "reserve"; index: number };
 export type GameEvent =
   | { kind: "move"; bottle: BottleType; from: Place; to: Place }
   | { kind: "full" | "replace"; index: number }

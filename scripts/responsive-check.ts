@@ -4,7 +4,7 @@ import { mkdirSync } from "node:fs";
 import { levels } from "../src/data/levels";
 import { TUTORIAL_VERSION } from "../src/data/tutorial";
 import { translations, type Language } from "../src/i18n";
-import { solveLevel } from "../src/game/solver";
+import { solveState, createGame } from "../src/game/triple";
 
 const url = process.env.BASE_URL ?? "http://localhost:5173";
 const browser = await chromium.launch({
@@ -26,7 +26,7 @@ const sizes = [
 ] as const;
 
 async function settled(frame: Frame) {
-  await frame.waitForFunction(() => !document.querySelector(".stacks.is-busy"));
+  await frame.waitForFunction(() => !document.querySelector(".tile-field.is-busy"));
 }
 async function noOverflow(frame: Frame) {
   assert.ok(await frame.evaluate(() => {
@@ -78,9 +78,9 @@ try {
     await press(frame.getByRole("button", { name: t.chooseLevel, exact: true }));
     await press(frame.locator(".level-card").nth(9));
     await noOverflow(frame);
-    const pick = frame.locator('[data-column="0"]');
+    const pick = frame.locator('.tile-card:enabled').first();
     const box = await pick.boundingBox();
-    assert.ok(box && box.width >= 44 && box.height >= 44, "Bottles need usable tap targets");
+    assert.ok(box && box.width >= 44 && box.height >= 44, `Bottles need usable tap targets: ${JSON.stringify({size,box})}`);
     await press(pick);
     if (size.width === 1280) {
       // Simulate moving between displays or resizing while a bottle is flying.
@@ -124,7 +124,7 @@ try {
     }
     await press(frame.getByRole("button", { name: t.restart, exact: true }));
     assert.equal(await frame.evaluate(() => document.getElementById("root")!.scrollTop), 0);
-    await press(frame.locator(".order-count-button"));
+    await press(size.width <= 360 ? frame.getByRole("button", {name:t.settings, exact:true}) : frame.locator(".help-button"));
     await frame.locator("dialog[open]").waitFor();
     await press(frame.getByRole("button", { name: t.close, exact: true }));
 
@@ -140,20 +140,21 @@ try {
     await press(frame.getByRole("button", { name: t.learn, exact: true }));
     await frame.locator(".tutorial-dialog").waitFor();
     assert.ok(await frame.locator(".tutorial-dialog").evaluate(el => el.scrollHeight <= el.clientHeight));
-    await press(frame.locator(".practice-target"));
-    await frame.waitForFunction(() => document.querySelector(".practice-board")?.getAttribute("data-step") === "1");
+    await press(frame.locator('dialog .tile-card:enabled').first());
+    await settled(frame);
+    assert.equal(await frame.locator('dialog .tray-slot.occupied').count(),1);
     await press(frame.getByRole("button", { name: t.skip, exact: true }));
     await page.screenshot({ path: `artifacts/embedded-${size.width}x${size.height}.png` });
 
     // Complete a real animated level after scrolling and opening dialogs.
     await press(frame.getByRole("button", { name: t.chooseLevel, exact: true }));
     await press(frame.locator(".level-card").first());
-    for (const column of solveLevel(levels[0]).path!) {
+    for (const column of solveState(createGame(levels[0])).path!) {
       await press(frame.locator(`[data-column="${column}"]`));
       await settled(frame);
     }
     await frame.locator(".result-dialog.won").waitFor();
-    console.log(`PASS nested iframe ${size.width}×${size.height} @${size.scale}: ${language}, ${size.touch ? "touch" : "mouse"}, fitted board, undo, restart, orders, recycling, tutorial, animated win`);
+    console.log(`PASS nested iframe ${size.width}×${size.height} @${size.scale}: ${language}, ${size.touch ? "touch" : "mouse"}, fitted board, undo, restart, dialogs, recycling, tutorial, animated win`);
     await context.close();
   }
   const faultContext = await browser.newContext({ viewport: { width: 1280, height: 720 } });
@@ -172,7 +173,7 @@ try {
   await faultPage.locator(".home-actions .primary").first().click();
   await faultPage.locator(".game-screen").waitFor();
   const faultFrame = faultPage.mainFrame();
-  for (const column of solveLevel(levels[0]).path!) {
+  for (const column of solveState(createGame(levels[0])).path!) {
     await faultPage.locator(`[data-column="${column}"]`).click();
     await settled(faultFrame);
   }

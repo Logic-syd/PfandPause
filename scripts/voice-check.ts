@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 const browser = await chromium.launch({
   headless: true,
+  executablePath: process.env.BROWSER_EXECUTABLE_PATH ?? "/usr/bin/chromium",
   ...(process.env.BROWSER_CHANNEL
     ? { channel: process.env.BROWSER_CHANNEL }
     : {}),
@@ -72,10 +73,10 @@ async function audit(page: Page): Promise<VoiceAudit[]> {
   return page.evaluate("window.__voiceAudit");
 }
 async function winLevel(page: Page) {
-  for (const column of [0, 0, 1, 1, 2, 2]) {
+  for (const column of [0, 1, 2, 3, 4, 5]) {
     await page.locator(`[data-column="${column}"]`).tap();
     await page.waitForFunction(
-      () => !document.querySelector(".stacks.is-busy"),
+      () => !document.querySelector(".tile-field.is-busy"),
     );
   }
   await page.locator("dialog.won").waitFor();
@@ -121,18 +122,9 @@ try {
   await practice
     .getByRole("button", { name: "Show me how", exact: true })
     .click();
-  for (const [i, column] of [0, 1, 2, 3, null, 0, 0, 3, 1, 1, 1].entries()) {
-    if (column === null)
-      await practice
-        .getByRole("button", { name: "Undo this move", exact: true })
-        .click();
-    else await practice.locator(`[data-tutorial-column="${column}"]`).tap();
-    await practice.waitForFunction(
-      (step) =>
-        document.querySelector(".practice-board")?.getAttribute("data-step") ===
-        String(step),
-      i + 1,
-    );
+  for (const id of [0,1,2,3,4,5]) {
+    await practice.locator(`dialog [data-column="${id}"]`).tap();
+    await practice.waitForFunction(()=>!document.querySelector('dialog .tile-field.is-busy'));
   }
   await practice.waitForFunction("window.__voiceAudit.length === 1");
   await practice.getByRole("button", { name: "Got it", exact: true }).click();

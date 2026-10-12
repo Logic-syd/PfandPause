@@ -1,6 +1,6 @@
 import type { Level } from "../game/types";
-// Static, solver-verified levels. Each column is TOP FIRST.
-// Shared batch priority queue; active trays take the earliest distinct types.
+// Bottle inventories for fifteen rounds. The triple engine builds the layered board.
+// Columns/orders remain here as the original inventory format; they do not restrict acceptance.
 export const levels: Level[] = [
   {
     id: 1,

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
 import { levels } from '../src/data/levels';
 import { translations } from '../src/i18n';
-import { solveLevel } from '../src/game/solver';
+import { solveState, createGame } from '../src/game/triple';
 import { returnStats } from '../src/game/returns';
 
 const url=process.env.BASE_URL ?? 'http://localhost:4173';
@@ -36,7 +36,7 @@ try {
       await fits(frame,'.levels-screen h1,.level-card');
       await frame.locator('.level-card').nth(level.id-1).tap();
       let wrongChecked=false;
-      for(const column of solveLevel(level).path!) {
+      for(const column of solveState(createGame(level)).path!) {
         const type=await frame.locator(`[data-column="${column}"] .bottle`).getAttribute('data-bottle-type');
         await frame.locator(`[data-column="${column}"]`).tap();
         if(type?.startsWith('glass')) {
@@ -52,7 +52,7 @@ try {
           }
           await frame.locator(`[data-bin="${type}"]`).tap();
         }
-        await frame.waitForFunction(()=>!document.querySelector('.stacks.is-busy'));
+        await frame.waitForFunction(()=>!document.querySelector('.tile-field.is-busy'));
       }
       await frame.locator('.won').waitFor();await frame.waitForTimeout(250);await fits(frame,'.result-stats,.result-dialog > button');
       const stats=await frame.locator('.result-stats').innerText();assert.ok(stats.includes(t.bottlesReturned) && stats.includes(t.depositReturned) && stats.includes(t.glassRecycled));
@@ -60,12 +60,15 @@ try {
       const expected=returnStats(level.columns.flat());assert.equal(values[0],String(expected.bottles));
       assert.equal(values[2],String(level.columns.flat().length-expected.bottles));
       if(width===390 && language==='zh' && level.id===15) await page.screenshot({path:'artifacts/return-glass-result-mobile.png'});
-      if(level.id===11) {
+      if(level.id===12) {
         await frame.getByRole('button',{name:t.replay,exact:true}).tap();
-        await frame.locator('[data-column="0"]').tap();await frame.locator('[data-bin="glassClear"]').tap();
-        await frame.waitForFunction(()=>!document.querySelector('.stacks.is-busy'));
+        const original=createGame(level);const route=solveState(original).path!;const glassAt=route.findIndex(id=>original.tiles[id].bottle.startsWith('glass'));const glassId=route[glassAt];
+        for(const id of route.slice(0,glassAt)){await frame.locator(`[data-column="${id}"]`).tap();await frame.waitForFunction(()=>!document.querySelector('.tile-field.is-busy'));}
+        const glassType=original.tiles[glassId].bottle;
+        await frame.locator(`[data-column="${glassId}"]`).tap();await frame.locator(`[data-bin="${glassType}"]`).tap();
+        await frame.waitForFunction(()=>!document.querySelector('.tile-field.is-busy'));
         await frame.getByRole('button',{name:t.undo,exact:true}).tap();
-        assert.equal(await frame.locator('[data-column="0"] .bottle').getAttribute('data-bottle-type'),'glassClear');
+        assert.equal(await frame.locator(`[data-column="${glassId}"] .bottle`).getAttribute('data-bottle-type'),glassType);
         if(width===390 && language==='zh') await page.screenshot({path:'artifacts/return-machine-glass-mobile.png'});
         await frame.getByRole('button',{name:t.home,exact:false}).first().tap();
       } else {

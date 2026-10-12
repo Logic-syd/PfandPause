@@ -1,3 +1,17 @@
+# Game Jolt 发布说明
+
+当前测试版已改为七格传送带三瓶配对：露出的瓶子可以点，三个同款自动退走，七格满槽失败；撤回不会恢复已经退走的三瓶。移出三瓶和洗牌各一次。中英德、倒计时和玻璃分类保留。当前先测试，不生成新 ZIP。
+
+代码和 GitHub Pages 更新不会自动更新 Game Jolt。准备上传时，在 [Packages 后台](https://gamejolt.com/dashboard/games/1106213/packages) 编辑或新增 Release，将包含根目录 index.html 与 assets/ 的 ZIP 上传到 **Upload Browser Build**。
+
+HTML 构建的 Fit to screen 可开启，HTTPS support 保持开启；游戏按实际嵌入窗口适配。未开启 Fit to screen 时，需要填写 Width / Height 并保存，直到 Incomplete 消失。发布 Release 后还需确保游戏页面本身已发布。公开游戏链接为 https://gamejolt.com/games/pfand-pause/1106213 。
+
+测试网站为 https://logic-syd.github.io/PfandPause/ 。本地回归使用 Chromium 模拟嵌套框、触控及各种窗口；真实 Safari 和 Game Jolt 仍需设备测试。
+
+以下为旧版发布与排查记录，涉及三格储存／两个接收位／滑动的说明不适用于当前玩法。
+
+---
+
 # Game Jolt 更新与手机兼容
 
 公开页面：https://gamejolt.com/games/pfand-pause/1106213

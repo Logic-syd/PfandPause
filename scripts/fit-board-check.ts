@@ -16,7 +16,7 @@ async function fitted(frame: Frame) {
     const root = document.getElementById("root")!;
     const space = document.querySelector(".board-viewport")!.getBoundingClientRect();
     const toolbar = document.querySelector(".game-toolbar")!.getBoundingClientRect();
-    const targets = [...document.querySelectorAll("[data-column], .buffer-slot, .crate-body")];
+    const targets = [...document.querySelectorAll("[data-column], .tray-slot, .glass-bin, .reserve-row button")];
     return {
       vertical: root.scrollHeight <= root.clientHeight + 1 && root.scrollTop === 0,
       horizontal: root.scrollWidth <= root.clientWidth + 1,
@@ -74,8 +74,8 @@ try {
     assert.equal(await frame.locator("dialog[open]").count(), 0, "No startup dialog may block play");
     assert.equal(await frame.locator(".landing").count(), 0);
     await fitted(frame);
-    await frame.locator('.bottle-pick:not(:has([data-bottle-type^="glass"]))').first().tap();
-    await frame.waitForFunction(() => !document.querySelector(".stacks.is-busy"));
+    await frame.locator('.tile-card:enabled:not(:has([data-bottle-type^="glass"]))').first().tap();
+    await frame.waitForFunction(() => !document.querySelector(".tile-field.is-busy"));
     assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
     await frame.getByRole("button", { name:t.undo,exact:true }).tap();
     for (let level = 0; level < 15; level++) {
@@ -91,8 +91,8 @@ try {
         await frame.evaluate(() => new Promise<void>(resolve =>
           requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
         await fitted(frame);
-        await frame.locator('.bottle-pick:not(:has([data-bottle-type^="glass"]))').first().tap();
-        await frame.waitForFunction(() => !document.querySelector(".stacks.is-busy"));
+        await frame.locator('.tile-card:enabled:not(:has([data-bottle-type^="glass"]))').first().tap();
+        await frame.waitForFunction(() => !document.querySelector(".tile-field.is-busy"));
         assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
         await frame.getByRole("button", { name:t.undo,exact:true }).tap();
       }

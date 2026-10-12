@@ -68,25 +68,21 @@ try {
   await swipe(context, page, 195, 160, 500);
   assert.equal(await frame.locator("#root").evaluate(el => el.scrollTop), 0);
   await frame.locator('[data-column="0"]').tap();
-  await frame.waitForFunction(() => !document.querySelector(".stacks.is-busy"));
+  await frame.waitForFunction(() => !document.querySelector(".tile-field.is-busy"));
   assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
   await frame.getByRole("button", { name: t.undo, exact: true }).tap();
   console.log("PASS reverse swipe, then bottle tap and undo remain usable");
 
   await page.setViewportSize({ width: 390, height: 568 });
   await select(frame, 9);
-  await frame.locator(".order-count-button").tap();
-  const dialog = frame.locator("dialog[open]");
-  const orders = dialog.locator(".all-orders");
-  const ordersBox = await orders.boundingBox();
-  assert.ok(ordersBox);
-  const background = await frame.locator("#root").evaluate(el => el.scrollTop);
-  await swipe(context, page, ordersBox.x + ordersBox.width / 2,
-    ordersBox.y + ordersBox.height - 20, ordersBox.y + 20);
-  assert.ok(await orders.evaluate(el => el.scrollTop) > 0, "The list inside the order dialog must scroll independently");
-  assert.equal(await frame.locator("#root").evaluate(el => el.scrollTop), background);
-  await frame.getByRole("button", { name: t.close, exact: true }).tap();
-  console.log("PASS short viewport: order dialog scrolls without moving the board behind it");
+  await frame.locator('.help-button').tap();
+  const dialog=frame.locator('dialog[open]');
+  const boxDialog=await dialog.boundingBox();assert.ok(boxDialog);
+  const background=await frame.locator('#root').evaluate(el=>el.scrollTop);
+  await swipe(context,page,boxDialog.x+boxDialog.width/2,boxDialog.y+boxDialog.height-30,boxDialog.y+30);
+  assert.equal(await frame.locator('#root').evaluate(el=>el.scrollTop),background);
+  await frame.getByRole('button',{name:t.close,exact:true}).tap();
+  console.log('PASS short viewport: help gestures leave the board behind it fixed');
 
   await frame.evaluate(() => {
     const root = document.getElementById("root")!;
@@ -116,7 +112,7 @@ try {
   await swipe(direct, directPage, 195, 560, 200);
   assert.equal(await directPage.locator("#root").evaluate(el => el.scrollTop), 0);
   await directPage.locator('[data-column="0"]').tap();
-  await directPage.waitForFunction(() => !document.querySelector(".stacks.is-busy"));
+  await directPage.waitForFunction(() => !document.querySelector(".tile-field.is-busy"));
   assert.match(await directPage.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
   console.log("PASS direct game stays fitted and bottle taps remain usable");
   await direct.close();

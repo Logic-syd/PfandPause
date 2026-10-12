@@ -5,15 +5,16 @@ import Dialog from "./components/Dialog";
 import Tutorial from "./components/Tutorial";
 import RecyclingPractice from "./components/RecyclingPractice";
 import FitBoard from "./components/FitBoard";
+import { returnStats } from "./game/returns";
 import ReturnReceipt from "./components/ReturnReceipt";
 import { useRoundClock } from "./components/useRoundClock";
 import { timeLimit, MAX_GLASS_MISTAKES, FINAL_COUNTDOWN_SECONDS } from "./game/time";
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
-import { bottles, bottleDeposits } from "./data/bottles";
-import { createGame, takeBottle } from "./game/engine";
-import { createUndoTrail, advanceUndoTrail, canUndoBottle, undoPendingBottle } from "./game/undo";
-import { glassTypes, isGlass, type GlassType, type BottleType, type GameState, type Place } from "./game/types";
+import { bottles } from "./data/bottles";
+import { createGame, takeBottle, returnReserve, canUndo, undoBottle, moveOut, shuffleBoard, type TripleState as GameState, type TripleTransition } from "./game/triple";
+import TripleBoard from "./components/TripleBoard";
+import { isGlass, type GlassType, type BottleType, type Place } from "./game/types";
 import { LANGUAGE_OPTIONS, translations } from "./i18n";
 import { loadPreferences, savePreferences } from "./storage";
 import { playSound, playWinVoice, stopVoice, unlockAudio } from "./audio";
@@ -45,14 +46,14 @@ export default function App() {
   ));
   const [game, setGame] = useState(() => createGame(levels[levelIndex]));
   const gameRef = useRef(game);
-  const undoTrail = useRef(createUndoTrail());
   const [undoAvailable, setUndoAvailable] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [shuffling, setShuffling] = useState(false);
   const locked = useRef(false);
   const epoch = useRef(0);
   const [flight, setFlight] = useState<Flight | null>(null);
   const [fullCrate, setFullCrate] = useState<number | null>(null);
-  const [modal, setModal] = useState<"settings" | "help" | "orders" | null>(
+  const [modal, setModal] = useState<"settings" | "help" | null>(
     null,
   );
   const [tutorial, setTutorial] = useState(false);
@@ -61,7 +62,7 @@ export default function App() {
   const [penaltyNotice, setPenaltyNotice] = useState<"buffer" | "bin" | null>(null);
   const t = translations[preferences.language];
   const level = levels[levelIndex];
-  const clock = useRoundClock(screen === "play" && game.status === "playing" && !modal && !tutorial, timeLimit(level));
+  const clock = useRoundClock(screen === "play" && game.status === "playing" && !modal && !tutorial && !shuffling, timeLimit(level));
   const seconds = Math.ceil(clock.milliseconds / 1000);
   const countdownSecond = screen === "play" && game.status === "playing" && !modal && !tutorial && seconds > 0 && seconds <= FINAL_COUNTDOWN_SECONDS ? seconds : null;
   const lastCountdownSound = useRef<number | null>(null);
@@ -74,34 +75,11 @@ export default function App() {
   const packed =
     game.recycled.length + game.completed * 3 +
     game.crates.reduce((sum, c) => sum + (c?.count ?? 0), 0);
-  const remaining = game.columns.flat().length;
   const nextUnfinished = Math.max(
     0,
     levels.findIndex((l) => !preferences.completed.includes(l.id)),
   );
   const allComplete = preferences.completed.length === levels.length;
-
-  const orderList = (
-    <ol className="all-orders">
-      {game.orders.map((type, i) => {
-        const active = game.crates.some((c) => c?.order === i);
-        const completed = i < game.nextOrder && !active;
-        return (
-          <li className={completed ? "order-completed" : ""} key={i}>
-            <span>{String(i + 1).padStart(2, "0")}</span>
-            <Bottle type={type} />
-            <span>
-              {t.bottleNames[type]}
-              <small>
-                {completed ? t.delivered : active ? t.inProgress : t.waiting}
-              </small>
-            </span>
-            <b>{completed ? "✓" : "×3"}</b>
-          </li>
-        );
-      })}
-    </ol>
-  );
 
   useEffect(() => {
     setSaveError(!savePreferences(preferences));
@@ -163,7 +141,7 @@ export default function App() {
     clock.reset(timeLimit(levels[index]));
     setLevelIndex(index);
     display(createGame(levels[index]));
-    undoTrail.current = createUndoTrail();
+    setShuffling(false);
     setUndoAvailable(false);
     setScreen("play");
     setModal(null);
@@ -209,6 +187,9 @@ export default function App() {
     setSelectedGlass(null);
     setWrongBin(false);
     setPenaltyNotice(null);
+    await animate(result);
+  }
+  async function animate(result: TripleTransition) {
     locked.current = true;
     setBusy(true);
     unlockAudio();
@@ -243,7 +224,6 @@ export default function App() {
           await pause(230);
         }
         if (ticket !== epoch.current) return;
-        undoTrail.current = advanceUndoTrail(undoTrail.current, frame.event);
         display(frame.state);
         setFlight(null);
         playSound("pick", preferences.sound);
@@ -254,7 +234,6 @@ export default function App() {
         playSound("full", preferences.sound);
         await pause(preferences.reducedMotion ? 0 : 240);
       } else {
-        undoTrail.current = advanceUndoTrail(undoTrail.current, frame.event);
         display(frame.state);
         setFullCrate(null);
         await pause(preferences.reducedMotion ? 0 : 120);
@@ -263,7 +242,7 @@ export default function App() {
     if (ticket !== epoch.current) return;
     if (clock.read() <= 0) { expire(); return; }
     display(result.state);
-    setUndoAvailable(canUndoBottle(result.state, undoTrail.current));
+    setUndoAvailable(canUndo(result.state));
     setBusy(false);
     locked.current = false;
     if (result.state.status === "won") {
@@ -278,16 +257,30 @@ export default function App() {
     }
   }
   function undo() {
-    if (locked.current) return;
-    const result = undoPendingBottle(gameRef.current, undoTrail.current);
-    if (!result) return;
-    stopVoice();
-    setSelectedGlass(null);
-    setWrongBin(false);
-    setPenaltyNotice(null);
-    undoTrail.current = result.trail;
-    display(result.state);
-    setUndoAvailable(canUndoBottle(result.state, result.trail));
+    if (locked.current || !canUndo(gameRef.current)) return;
+    if (clock.read() <= 0) { expire(); return; }
+    stopVoice(); setSelectedGlass(null); setWrongBin(false); setPenaltyNotice(null);
+    const result = undoBottle(gameRef.current);
+    display(result); setUndoAvailable(canUndo(result));
+  }
+  async function takeReserve(index: number) {
+    if (locked.current || modal || tutorial || gameRef.current.status !== "playing") return;
+    if (clock.read() <= 0) { expire(); return; }
+    await animate(returnReserve(gameRef.current, index));
+  }
+  function liftThree() {
+    if (locked.current || clock.read() <= 0) return;
+    const result = moveOut(gameRef.current);
+    display(result); setUndoAvailable(canUndo(result)); setSelectedGlass(null); setWrongBin(false);
+  }
+  async function shuffle() {
+    if (locked.current || gameRef.current.status !== "playing" || gameRef.current.shuffleUsed) return;
+    locked.current = true; setBusy(true); setShuffling(true); const ticket = epoch.current;
+    await pause(30);
+    if (ticket !== epoch.current) return;
+    const result = shuffleBoard(gameRef.current);
+    display(result); setSelectedGlass(null); setWrongBin(false);
+    locked.current = false; setBusy(false); setShuffling(false);
   }
   function navigate(next: Screen) {
     if (!locked.current) {
@@ -591,15 +584,7 @@ export default function App() {
                 </span>
                 {hasGlass && <small> · {game.mistakes}/{MAX_GLASS_MISTAKES} {t.mistakes}</small>}
               </span>
-              <button
-                className="order-count-button"
-                onClick={() => setModal("orders")}
-                disabled={busy}
-              >
-                <Icon name="receipt" size={13} />
-                {game.orders.length - game.nextOrder} {t.queued}
-                <Icon name="chevron" size={12} />
-              </button>
+              <span className="live-refund">{formatDeposit(returnStats(game.returnedIds.map(id => game.tiles[id].bottle)).cents)}</span>
               <div key={level.id} className="progress-track">
                 <i style={{ width: `${(packed / total) * 100}%` }} />
               </div>
@@ -614,13 +599,14 @@ export default function App() {
                 className="text-button"
                 onClick={() => start(levelIndex)}
                 disabled={busy}
+                aria-label={t.restart}
               >
                 <Icon name="restart" size={17} />
-                {t.restart}
+                <span className="restart-label">{t.restart}</span>
               </button>
-              <span>
-                {game.moves} {t.moves}
-              </span>
+              <button className="text-button tool-shuffle" onClick={() => void shuffle()} disabled={busy || game.shuffleUsed || game.status !== "playing"} aria-label={t.shuffle} title={t.shuffleNote}><Icon name="shuffle" size={18} /><span>{t.shuffle}</span></button>
+              <button className="text-button tool-lift" onClick={liftThree} disabled={busy || game.moveOutUsed || game.buffer.length < 3 || game.reserveIds.length > 0 || game.status !== "playing"} aria-label={t.moveOut} title={t.moveOutNote}><Icon name="lift" size={18} /><span>{t.moveOut}</span></button>
+              <span className="sr-only">{game.moves} {t.moves}</span>
               <button
                 className="secondary undo-button"
                 onClick={undo}
@@ -633,224 +619,8 @@ export default function App() {
             </div>
             <p className="buffer-reminder">{t.bufferReminder}</p>
             <FitBoard grow>
-              <div className={`game-layout ${hasGlass ? "has-glass" : ""}`}>
-                <div className="play-area">
-                  <div className="counter">
-                    <div className="section-label">
-                      <span>{t.counter}</span>
-                      <span className="counter-count">
-                        {remaining} <Icon name="leaf" size={12} />
-                      </span>
-                    </div>
-                    <div
-                      className={`stacks ${busy ? "is-busy" : ""}`}
-                      style={
-                        {
-                          "--columns": game.columns.length,
-                          "--depth": Math.max(
-                            2,
-                            ...level.columns.map((c) => c.length),
-                          ),
-                        } as CSSProperties
-                      }
-                    >
-                      {game.columns.map((column, index) => (
-                        <div
-                          className="stack"
-                          key={index}
-                          style={
-                            { "--stack-height": column.length } as CSSProperties
-                          }
-                        >
-                          <span className="stack-number">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          {column.length ? (
-                            column.map((type, depth) =>
-                              depth === 0 ? (
-                                <button
-                                  key={`${game.moves}-${depth}`}
-                                  data-column={index}
-                                  data-place={`column-${index}`}
-                                  className={`bottle-pick ${selectedGlass === index ? "glass-selected" : ""} ${flight?.source === `column-${index}` ? "moving-source" : ""} `}
-                                  aria-pressed={isGlass(type) ? selectedGlass === index : undefined}
-                                  disabled={busy || game.status !== "playing"}
-                                  style={
-                                    {
-                                      "--depth-index": depth,
-                                      zIndex: column.length - depth,
-                                    } as CSSProperties
-                                  }
-                                  onClick={() => void pick(index)}
-                                  aria-label={`${t.pick} ${t.bottleNames[type]} · ${isGlass(type) ? t.noDeposit : formatDeposit(bottleDeposits[type])} · ${t.column} ${index + 1}`}
-                                >
-                                  <Bottle type={type} />
-                                  <span className="bottle-deposit-tag">{isGlass(type) ? t.noDeposit : formatDeposit(bottleDeposits[type])}</span>
-                                  <span className="pick-dot" />
-                                </button>
-                              ) : (
-                                <div
-                                  key={`${game.moves}-${depth}`}
-                                  className="buried-bottle"
-                                  style={
-                                    {
-                                      "--depth-index": depth,
-                                      zIndex: column.length - depth,
-                                    } as CSSProperties
-                                  }
-                                >
-                                  <Bottle type={type} />
-                                  <span className="sr-only">
-                                    {t.bottleNames[type]}
-                                  </span>
-                                </div>
-                              ),
-                            )
-                          ) : (
-                            <div className="empty-stack">
-                              <Icon name="check" size={17} />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="counter-edge" />
-                    <p className="counter-caption">
-                      <span className="tiny-spark">✧</span>
-                      {t.counterHint}
-                    </p>
-                  </div>
-                  <div
-                    className={`buffer-section ${game.buffer.length === 2 ? "buffer-caution" : ""}`}
-                  >
-                    <div className="buffer-copy">
-                      <h2>{t.spare}</h2>
-                      <p>{t.spareHint}</p>
-                      <span className="buffer-count">
-                        {game.buffer.length} / 3
-                      </span>
-                    </div>
-                    <div className="buffer-slots" aria-label={t.buffer}>
-                      {[0, 1, 2].map((i) => (
-                        <div
-                          className={`buffer-slot ${flight?.source === `buffer-${i}` ? "moving-source" : ""} ${game.buffer[i] ? "occupied" : ""}`}
-                          key={i}
-                          data-place={`buffer-${i}`}
-                          aria-label={
-                            game.buffer[i]
-                              ? `${t.buffer} ${i + 1}: ${t.bottleNames[game.buffer[i]]}`
-                              : t.emptySpot
-                          }
-                        >
-                          {game.buffer[i] ? (
-                            <Bottle type={game.buffer[i]} />
-                          ) : (
-                            <span>+</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="crates-section">
-                    <div className="section-label">
-                      <span>{t.crates}</span>
-                      <span>{t.crateHint}</span>
-                    </div>
-                    <div className="crates machine-trays">
-                      {game.crates.map((crate, i) => {
-                        const waiting = !crate && game.nextOrder < game.orders.length;
-                        return (
-                          <div
-                            data-place={`crate-${i}`}
-                            key={i}
-                            className={`crate-wrap ${fullCrate === i ? "crate-full" : ""} ${!crate ? "crate-finished" : ""}`}
-                            style={
-                              {
-                                "--crate-color": crate
-                                  ? bottles[crate.type].color
-                                  : "#768778",
-                                "--crate-light": crate
-                                  ? bottles[crate.type].light
-                                  : "#e6ecdf",
-                              } as CSSProperties
-                            }
-                            aria-label={
-                              crate
-                                ? `${t.crate} ${i + 1}: ${t.bottleNames[crate.type]}, ${crate.count}/3`
-                                : waiting ? t.crateWaiting : t.crateDone
-                            }
-                          >
-                            <div className="crate-heading">
-                              {crate ? (
-                                <>
-                                  <span className="type-dot" />
-                                  <span className="crate-name">
-                                    {t.bottleNames[crate.type]}
-                                    <small className="machine-deposit">{formatDeposit(bottleDeposits[crate.type])}</small>
-                                  </span>
-                                  <span className="crate-amount">
-                                    {crate.count}
-                                    <small> / 3</small>
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <Icon name={waiting ? "clock" : "check"} size={17} />
-                                  {waiting ? t.crateWaiting : t.crateDone}
-                                </>
-                              )}
-                            </div>
-                            <div className="crate-body machine-body">
-                              <div className="crate-slots">
-                                {[0, 1, 2].map((j) => (
-                                  <div
-                                    className={`crate-slot ${crate && j < crate.count ? "has-bottle" : ""}`}
-                                    key={j}
-                                  >
-                                    {crate ? (
-                                      <Bottle type={crate.type} />
-                                    ) : (
-                                      <Icon name={waiting ? "clock" : "check"} size={18} />
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="crate-front">
-                                <span className="crate-handle" />
-                                {[0, 1, 2].map((j) => (
-                                  <i
-                                    className={
-                                      crate && j < crate.count ? "filled" : ""
-                                    }
-                                    key={j}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  {hasGlass && (
-                    <section className="glass-section">
-                      <div className="section-label"><span>{t.glassBins}</span><span>{game.recycled.length}</span></div>
-                      <p className={`glass-coach ${wrongBin ? "wrong-bin" : ""}`} role="status">
-                        {wrongBin ? t.wrongBin : selectedGlass !== null ? t.glassSelected : t.glassHint}
-                      </p>
-                      <div className="glass-bins">
-                        {glassTypes.map((type, index) => (
-                          <button key={type} data-bin={type} data-place={`bin-${index}`}
-                            className={`glass-bin ${type}`} disabled={busy || selectedGlass === null || game.status !== "playing"}
-                            onClick={() => selectedGlass !== null && void pick(selectedGlass, type)}>
-                            <span className="bin-opening" aria-hidden="true" /><strong>{t.binNames[type]}</strong><small>{t.noDeposit} · 0 €</small>
-                          </button>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-                </div>
-              </div>
+              <TripleBoard state={game} busy={busy} selectedGlass={selectedGlass} wrongBin={wrongBin} fullGroup={fullCrate} flightSource={flight?.source}
+                t={t} formatMoney={formatDeposit} onPick={(id, bin) => void pick(id, bin)} onReserve={index => void takeReserve(index)} />
             </FitBoard>
           </section>
         )}
@@ -876,20 +646,6 @@ export default function App() {
         />
       )}
       {modal === "settings" && settings}
-      {modal === "orders" && (
-        <Dialog
-          title={t.orders}
-          closeLabel={t.close}
-          onClose={() => setModal(null)}
-        >
-          <p className="muted">
-            {game.orders.length - game.nextOrder} {t.queued} ·{" "}
-            {game.crates.filter(Boolean).length} {t.active}
-          </p>
-          <p className="order-intro">{t.orderIntro}</p>
-          {orderList}
-        </Dialog>
-      )}
       {modal === "help" && (
         <Dialog
           title={t.helpTitle}
@@ -936,7 +692,7 @@ export default function App() {
                 ? levelIndex === levels.length - 1 && allComplete
                   ? t.allDone
                   : t.receiptReady
-                : game.endReason === "time" ? t.timeOver : t.tooManyMistakes.replace("{count}", String(game.mistakes))
+                : game.endReason === "time" ? t.timeOver : game.endReason === "full" ? t.trayFull : t.tooManyMistakes.replace("{count}", String(game.mistakes))
             }
             closeLabel={t.close}
             onClose={() => navigate("levels")}
@@ -958,7 +714,7 @@ export default function App() {
                     </i>
                   </div>
                   <p>
-                    {game.endReason === "time" ? t.timeOverBody : t.fineNotice}
+                    {game.endReason === "time" ? t.timeOverBody : game.endReason === "full" ? t.trayFullBody : t.fineNotice}
                   </p>
                   <div className="result-stats">
                     <span>
@@ -994,13 +750,8 @@ export default function App() {
               </>
             ) : (
               <>
-                <button
-                  className="primary"
-                  onClick={() => start(levelIndex)}
-                >
-                  <Icon name="restart" />
-                  {t.tryAgain}
-                </button>
+                {game.endReason === "full" && <button className="primary" onClick={game.moveOutUsed || game.reserveIds.length ? undo : liftThree}><Icon name={game.moveOutUsed || game.reserveIds.length ? "undo" : "lift"} />{game.moveOutUsed || game.reserveIds.length ? t.undo : t.moveOut}</button>}
+                <button className={game.endReason === "full" ? "text-button" : "primary"} onClick={() => start(levelIndex)}><Icon name="restart" />{t.tryAgain}</button>
                 <button
                   className="text-button"
                   onClick={() => navigate("start")}

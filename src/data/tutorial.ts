@@ -1,6 +1,6 @@
 import type { Level } from "../game/types";
 
-export const TUTORIAL_VERSION = 2;
+export const TUTORIAL_VERSION = 3;
 // A separate balanced board; practice never unlocks or changes a real level.
 export const tutorialLevel: Level = {
   id: 1,

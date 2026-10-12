@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { levels } from '../src/data/levels';
 import { bottleTypes, isGlass, type BottleType } from '../src/game/types';
-import { createGame, takeBottle, returnReserve, availableTiles, undoBottle, canUndo, moveOut, shuffleBoard, solveState, bottleInventory, type TripleState } from '../src/game/triple';
+import { createPuzzle, createGame, takeBottle, returnReserve, availableTiles, undoBottle, canUndo, moveOut, shuffleBoard, solveState, bottleInventory, type TripleState } from '../src/game/triple';
 function flat(types: BottleType[]): TripleState {
  const s=createGame(levels[9]);s.tiles=types.map((bottle,id)=>({id,bottle,x:id,y:0,layer:0,blockedBy:[]}));s.columns=types.map(t=>[t]);return s;
 }
@@ -41,10 +41,10 @@ test('covered bottles are unpickable and become available after blockers leave',
 });
 test('three wrong glass choices lose; wrong colour preserves bottle',()=>{
  let s=flat(['glassClear']);for(let i=0;i<3;i++)s=takeBottle(s,0,'glassBrown').state;
- assert.equal(s.status,'lost');assert.equal(s.endReason,'mistakes');assert.equal(s.penalties,30);assert.deepEqual(s.columns[0],['glassClear']);
+ assert.equal(s.status,'lost');assert.equal(s.endReason,'mistakes');assert.equal(s.penalties,0);assert.deepEqual(s.columns[0],['glassClear']);
 });
 for(const level of levels)test(`level ${level.id}: solvable, balanced, immutable, conserves inventory in every animation frame`,()=>{
- let s=createGame(level);const original=structuredClone(s), inventory=bottleInventory(s);const solution=solveState(s);
+ let s=createGame(level);const original=structuredClone(s), inventory=bottleInventory(s);const solution={path:createPuzzle(level).solution};
  assert.ok(solution.path);assert.deepEqual(s,original);
  for(const id of solution.path){ const type=s.tiles[id].bottle;const before=structuredClone(s);const result=takeBottle(s,id,isGlass(type)?type:undefined);assert.deepEqual(s,before);
  for(const frame of result.frames)assert.deepEqual(bottleInventory(frame.state),inventory);

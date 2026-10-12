@@ -6,12 +6,12 @@ import { levels as campaign } from '../src/data/levels';
 import { isGlass } from '../src/game/types';
 import { bottleDeposits } from '../src/data/bottles';
 
-test('nine deposit rounds then five glass rounds, with ten distinct returnable designs', () => {
-  assert.equal(campaign.length,14);
-  assert.ok(campaign.slice(0,9).every(level=>level.columns.flat().every(type=>!isGlass(type) && bottleDeposits[type]>0)));
-  assert.equal(new Set(campaign.slice(0,9).flatMap(level=>level.columns.flat())).size,10);
-  assert.deepEqual([...new Set(campaign.slice(0,9).flatMap(level=>level.columns.flat().map(type=>bottleDeposits[type])))].sort((a,b)=>a-b),[8,15,25]);
-  assert.deepEqual(campaign.slice(9,12).map(level=>[...new Set(level.columns.flat().filter(isGlass))].length),[1,2,3]);
+test('ten deposit rounds then ten glass rounds, with ten distinct returnable designs', () => {
+  assert.equal(campaign.length,20);
+  assert.ok(campaign.slice(0,10).every(level=>level.columns.flat().every(type=>!isGlass(type) && bottleDeposits[type]>0)));
+  assert.equal(new Set(campaign.slice(0,10).flatMap(level=>level.columns.flat())).size,10);
+  assert.deepEqual([...new Set(campaign.slice(0,10).flatMap(level=>level.columns.flat().map(type=>bottleDeposits[type])))].sort((a,b)=>a-b),[8,15,25]);
+  assert.deepEqual(campaign.slice(10,13).map(level=>[...new Set(level.columns.flat().filter(isGlass))].length),[1,3,3]);
 });
 test('glass requires a colour choice; wrong bins and machine returns preserve the board', () => {
   const initial=createGame(levels[10]);

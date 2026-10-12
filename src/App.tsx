@@ -7,8 +7,7 @@ import RecyclingPractice from "./components/RecyclingPractice";
 import FitBoard from "./components/FitBoard";
 import { returnStats } from "./game/returns";
 import ReturnReceipt from "./components/ReturnReceipt";
-import { useRoundClock } from "./components/useRoundClock";
-import { timeLimit, MAX_GLASS_MISTAKES, FINAL_COUNTDOWN_SECONDS } from "./game/time";
+import { MAX_GLASS_MISTAKES } from "./game/rules";
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
 import { bottles } from "./data/bottles";
@@ -62,10 +61,6 @@ export default function App() {
   const [penaltyNotice, setPenaltyNotice] = useState<"buffer" | "bin" | null>(null);
   const t = translations[preferences.language];
   const level = levels[levelIndex];
-  const clock = useRoundClock(screen === "play" && game.status === "playing" && !modal && !tutorial, timeLimit(level));
-  const seconds = Math.ceil(clock.milliseconds / 1000);
-  const countdownSecond = screen === "play" && game.status === "playing" && !modal && !tutorial && seconds > 0 && seconds <= FINAL_COUNTDOWN_SECONDS ? seconds : null;
-  const lastCountdownSound = useRef<number | null>(null);
   const total = level.columns.flat().length;
   const hasGlass = level.columns.flat().some(isGlass);
   const formatDeposit = (cents: number) => new Intl.NumberFormat(
@@ -100,30 +95,11 @@ export default function App() {
     stopVoice();
   }, [preferences.sound, preferences.language]);
   useEffect(() => {
-    if (countdownSecond === null || countdownSecond === lastCountdownSound.current) return;
-    lastCountdownSound.current = countdownSecond;
-    playSound("tick", preferences.sound);
-  }, [countdownSecond, preferences.sound]);
-  useEffect(() => {
     if (!penaltyNotice) return;
     if (screen !== "play") { setPenaltyNotice(null); return; }
     const timer = window.setTimeout(() => setPenaltyNotice(null), 1600);
     return () => window.clearTimeout(timer);
-  }, [penaltyNotice, game.penalties, screen]);
-  useEffect(() => {
-    if (clock.milliseconds <= 0 && screen === "play" && game.status === "playing") expire();
-  }, [clock.milliseconds, screen, game.status]);
-
-  function expire() {
-    epoch.current++;
-    input.clear();
-    locked.current = false;
-    setBusy(false);
-    setFlight(null);
-    setFullCrate(null);
-    display({ ...gameRef.current, status:"lost", endReason:"time" });
-  }
-
+  }, [penaltyNotice, game.mistakes, screen]);
   function display(state: GameState) {
     gameRef.current = state;
     setGame(state);
@@ -139,8 +115,6 @@ export default function App() {
     setSelectedGlass(null);
     setWrongBin(false);
     setPenaltyNotice(null);
-    lastCountdownSound.current = null;
-    clock.reset(timeLimit(levels[index]));
     setLevelIndex(index);
     display(createGame(levels[index]));
     setScreen("play");
@@ -170,7 +144,6 @@ export default function App() {
     )
       return;
     const previous = gameRef.current;
-    if (clock.read() <= 0) { expire(); return; }
     const type = previous.columns[column]?.[0];
     if (type && isGlass(type) && bin === undefined) {
       setSelectedGlass(column);
@@ -181,11 +154,9 @@ export default function App() {
     if (!result.frames.length) return;
     const penalty = result.frames.find(frame => frame.event.kind === "penalty");
     if (penalty?.event.kind === "penalty") {
-      clock.deduct(penalty.event.seconds);
       setWrongBin(penalty.event.reason === "bin");
       setPenaltyNotice(penalty.event.reason);
       display(result.state);
-      if (clock.read() <= 0 && result.state.status === "playing") expire();
       return;
     }
     setSelectedGlass(null);
@@ -244,7 +215,6 @@ export default function App() {
       }
     }
     if (ticket !== epoch.current) return;
-    if (clock.read() <= 0) { expire(); return; }
     display(result.state);
     setBusy(false);
     locked.current = false;
@@ -551,24 +521,14 @@ export default function App() {
               <span>
                 <b>{packed}</b> / {total} {t.packed}
               </span>
-              <span className={`round-clock ${seconds <= 15 ? "clock-urgent" : ""}`} aria-label={`${t.timeLeft}: ${seconds}`}>
-                <span className={`clock-time ${countdownSecond !== null ? "is-counting-down" : ""}`}>
-                  <span className="clock-value">⏱ {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2,"0")}</span>
-                  {countdownSecond !== null && (
-                    <span key={`countdown-${countdownSecond}`} className="final-countdown" role="timer" aria-label={t.finalCountdown.replace("{seconds}", String(countdownSecond))}>
-                      {countdownSecond}
-                    </span>
-                  )}
-                </span>
-                {hasGlass && <small> · {game.mistakes}/{MAX_GLASS_MISTAKES} {t.mistakes}</small>}
-              </span>
+              <span className="round-status">{hasGlass ? `${game.mistakes}/${MAX_GLASS_MISTAKES} ${t.mistakes}` : t.tripleRule}</span>
               <span className="live-refund">{formatDeposit(returnStats(game.returnedIds.map(id => game.tiles[id].bottle)).cents)}</span>
               <div key={level.id} className="progress-track">
                 <i style={{ width: `${(packed / total) * 100}%` }} />
               </div>
               {penaltyNotice && (
-                <span key={game.penalties} className="penalty-flash" role="status">
-                  {penaltyNotice === "buffer" ? t.bufferPenalty : t.binPenalty}
+                <span key={game.mistakes} className="penalty-flash" role="status">
+                  {t.binPenalty}
                 </span>
               )}
             </div>
@@ -663,7 +623,7 @@ export default function App() {
                 ? levelIndex === levels.length - 1 && allComplete
                   ? t.allDone
                   : t.receiptReady
-                : game.endReason === "time" ? t.timeOver : game.endReason === "full" ? t.trayFull : t.tooManyMistakes.replace("{count}", String(game.mistakes))
+                : game.endReason === "full" ? t.trayFull : t.tooManyMistakes.replace("{count}", String(game.mistakes))
             }
             closeLabel={t.close}
             onClose={() => navigate("levels")}
@@ -688,7 +648,7 @@ export default function App() {
                     </i>
                   </div>
                   <p>
-                    {game.endReason === "time" ? t.timeOverBody : t.fineNotice}
+                    {t.fineNotice}
                   </p>
                   <div className="result-stats">
                     <span>

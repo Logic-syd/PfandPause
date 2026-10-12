@@ -2,7 +2,7 @@ import { chromium, type Page } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
 import { levels } from '../src/data/levels';
-import { createGame, takeBottle, availableTiles, solveState, type TripleState } from '../src/game/triple';
+import { createPuzzle, createGame, takeBottle, availableTiles, type TripleState } from '../src/game/triple';
 import { isGlass } from '../src/game/types';
 import { returnStats } from '../src/game/returns';
 const base=process.env.BASE_URL ?? 'http://localhost:4173';
@@ -29,14 +29,14 @@ try{
  await page.getByRole('button',{name:'Start again',exact:true}).click();assert.equal(await page.locator('.tray-slot.occupied').count(),0);
  for(const level of levels){
   await page.getByRole('button',{name:'Choose a level',exact:true}).click();await page.locator('.level-card').nth(level.id-1).click();
-  const state=createGame(level), route=solveState(state).path!;assert.ok(route);
+  const state=createGame(level), route=createPuzzle(level).solution;assert.ok(route);
   if(level.id===9){await page.screenshot({path:'artifacts/triple-desktop.png'});assert.ok(await page.locator('.tile-card.is-covered:disabled').count()>0);}
   await play(page,state,route);await page.locator('dialog.won').waitFor();
   const expected=returnStats(level.columns.flat()), values=await page.locator('.result-stats b').allTextContents();assert.equal(values[0],String(expected.bottles));
   assert.match(values[1],new RegExp((expected.cents/100).toFixed(2).replace('.', '[.,]')));assert.ok((await page.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.includes(level.id));
   await page.locator('.result-dialog .dialog-close').click();await page.locator('.brand').click();await page.locator('.home-actions .primary').first().click();
  }
- console.log('PASS all 14 rounds: real clicks, triples, blocked cards, per-bottle credit, glass colour banks, receipts and saved progress');
+ console.log('PASS all 20 rounds: real clicks, triples, blocked cards, per-bottle credit, glass colour banks, receipts and saved progress');
  await page.getByRole('button',{name:'Choose a level',exact:true}).click();await page.locator('.level-card').nth(9).click();
  let s=createGame(levels[9]);const path=lossPath(s);assert.ok(path);s=await play(page,s,path);
  await page.locator('dialog.lost').waitFor();assert.equal(await page.locator('dialog.lost h2').innerText(),'No room left!');
@@ -50,6 +50,6 @@ try{
  await page.locator('.brand').click();await page.locator('.pause-dialog').waitFor();
  await page.mouse.click(3,600);assert.ok(await page.locator('.pause-dialog').isVisible());
  await page.getByRole('button',{name:'Keep playing',exact:true}).click();assert.ok(await page.locator('.game-screen').isVisible());
- await page.reload();assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,14);assert.deepEqual(errors,[]);
+ await page.reload();assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,20);assert.deepEqual(errors,[]);
  console.log('PASS mobile toolbar, reload and no runtime errors');await context.close();
 }finally{await browser.close();}

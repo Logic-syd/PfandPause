@@ -23,7 +23,7 @@ export default function TripleBoard({ state, busy, pendingIds, selectedGlass, wr
           const pending = pendingIds?.includes(tile.id) ?? false;
           return <button key={tile.id} data-column={tile.id} data-place={`column-${tile.id}`} data-covered={covered}
             className={`tile-card ${covered ? "is-covered" : ""} ${pending ? "is-pending" : ""} ${selectedGlass === tile.id ? "glass-selected" : ""} ${flightSource === `column-${tile.id}` ? "moving-source" : ""}`}
-            style={{ left: `${tile.x / state.boardWidth * 100}%`, top: `${tile.y / state.boardHeight * 100}%`, width: `${1 / state.boardWidth * 100}%`, height: `${1 / state.boardHeight * 100}%`, zIndex: tile.layer * 100 + tile.id } as CSSProperties}
+            style={{ left: `${tile.x / state.boardWidth * 100}%`, top: `${tile.y / state.boardHeight * 100}%`, width: `${1 / state.boardWidth * 100}%`, height: `${1 / state.boardHeight * 100}%`, zIndex: tile.layer * 1000 + tile.id } as CSSProperties}
             disabled={covered || (pendingIds ? pending : busy) || state.status !== "playing"} onClick={() => onPick(tile.id)}
             aria-label={`${t.pick} ${t.bottleNames[tile.bottle]} · ${isGlass(tile.bottle) ? t.noDeposit : formatMoney(bottleDeposits[tile.bottle])}`}
             title={covered ? t.coveredTile : t.bottleNames[tile.bottle]}>

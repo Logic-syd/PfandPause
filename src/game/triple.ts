@@ -1,5 +1,7 @@
 import { glassTypes, isGlass, type BottleType, type GameState, type Level, type GameEvent } from "./types";
-import { GLASS_PENALTY_SECONDS, MAX_GLASS_MISTAKES } from "./time";
+import { MAX_GLASS_MISTAKES } from "./rules";
+
+import { layeredTiles } from "./layout";
 
 export const TRAY_CAPACITY = 7;
 export interface Tile { id: number; bottle: BottleType; x: number; y: number; layer: number; blockedBy: number[]; }
@@ -35,13 +37,13 @@ function peelOrder(tiles: Tile[], random?: () => number): number[] {
   }
   return result;
 }
-export function createGame(level: Level): TripleState {
+export function createPuzzle(level: Level): { state: TripleState; solution: number[] } {
   const inventory = level.columns.flat();
   const random = rng((level.layout?.seed ?? level.id) * 19237);
   const layers = level.layout?.layers ?? (level.id <= 2 ? 1 : level.id <= 7 ? 2 : 3);
   const cols = level.layout?.columns ?? (level.id === 1 ? 3 : level.id === 2 ? 4 : 5);
   const rows = Math.ceil(inventory.length / (cols * layers));
-  const tiles: Tile[] = inventory.map((bottle, id) => {
+  const tiles: Tile[] = level.layout?.pattern ? layeredTiles(inventory, level.layout) : inventory.map((bottle, id) => {
     const layer = Math.floor(id / (cols * rows)), cell = id % (cols * rows);
     return { id, bottle, x: cell % cols + layer * .26, y: Math.floor(cell / cols) + layer * .28, layer, blockedBy: [] };
   });
@@ -84,13 +86,15 @@ export function createGame(level: Level): TripleState {
   }
   const solutionOrder = peelOrder(tiles, level.layout?.complexity ? random : undefined);
   solutionOrder.forEach((id, index) => { tiles[id].bottle = sequence[index]; });
-  return {
-    tiles, boardWidth: cols + (layers - 1) * .26, boardHeight: rows + (layers - 1) * .28,
+  const state: TripleState = {
+    tiles, boardWidth: Math.max(...tiles.map(t => t.x + 1)), boardHeight: Math.max(...tiles.map(t => t.y + 1)),
     columns: tiles.map(tile => [tile.bottle]), buffer: [], bufferIds: [], reserveIds: [], returnedIds: [], recycledIds: [], pickedOrder: [],
     crates: [], orders: [...groups], nextOrder: 0, completed: 0, recycled: [], penalties: 0, mistakes: 0, moves: 0,
     shuffleUsed: false, moveOutUsed: false, status: "playing",
   };
+  return { state, solution: solutionOrder };
 }
+export function createGame(level: Level): TripleState { return createPuzzle(level).state; }
 function settle(state: TripleState, record: (event: GameEvent) => void) {
   const type = state.buffer.find(type => state.buffer.filter(t => t === type).length === 3);
   if (type) {
@@ -121,9 +125,9 @@ export function takeBottle(previous: TripleState, id: number, bin?: BottleType):
   const state = structuredClone(previous), frames: TripleTransition["frames"] = [];
   const record = (event: GameEvent) => frames.push({ state: structuredClone(state), event });
   if (isGlass(bottle) && bin !== bottle) {
-    state.penalties += GLASS_PENALTY_SECONDS; state.mistakes++;
+    state.mistakes++;
     if (state.mistakes >= MAX_GLASS_MISTAKES) { state.status = "lost"; state.endReason = "mistakes"; }
-    record({ kind: "penalty", reason: "bin", seconds: GLASS_PENALTY_SECONDS });
+    record({ kind: "penalty", reason: "bin", seconds: 0 });
     return { state, frames };
   }
   state.columns[id] = []; state.moves++; state.pickedOrder.push(id);

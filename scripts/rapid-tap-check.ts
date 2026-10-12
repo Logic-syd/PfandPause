@@ -24,7 +24,7 @@ try {
       deviceScaleFactor: 3, permissions: ['local-network-access'] });
     await context.addInitScript(() => localStorage.setItem('pfand-pause:v1', JSON.stringify({
       language:'zh', sound:false, reducedMotion:false, campaignVersion:2,
-      completed:Array.from({length:14},(_,i)=>i+1),
+      completed:Array.from({length:20},(_,i)=>i+1),
     })));
     const page = await context.newPage(), errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -80,12 +80,10 @@ try {
     assert.match(await frame.locator('.game-toolbar').innerText(), /0 步/, 'Retry must discard all old queued taps');
 
     await burst(page, frame, fullIds.slice(0,5));
-    await page.clock.fastForward(120000);
-    await frame.locator('.result-dialog.lost').waitFor();
-    assert.equal(await frame.locator('.result-dialog h2').innerText(), t.timeOver);
-    await frame.getByRole('button',{name:t.tryAgain,exact:true}).tap();
-    await page.waitForTimeout(650);
-    assert.match(await frame.locator('.game-toolbar').innerText(), /0 步/, 'Timeout must cancel the backlog before a new round');
+    await page.clock.fastForward(3600000);
+    await settled(frame);
+    assert.equal(await frame.locator('.result-dialog.lost').count(),0, 'No timeout after an hour');
+    assert.match(await frame.locator('.game-toolbar').innerText(), /5 步/);
 
     await select(13);
     const mixed = createGame(levels[13]), free = availableTiles(mixed);

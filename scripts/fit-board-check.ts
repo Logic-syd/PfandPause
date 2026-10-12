@@ -60,7 +60,7 @@ try {
     const context = await browser.newContext({ viewport: { width,height },
       hasTouch: true, isMobile: true, locale: { zh:"zh-CN",en:"en-US",de:"de-DE" }[language] });
     await context.addInitScript(language => localStorage.setItem("pfand-pause:v1", JSON.stringify({
-      language, sound:false, reducedMotion:false, completed:[1,2,3,4,5,6,7,8,9,10,11,12,13,14], campaignVersion:2,
+      language, sound:false, reducedMotion:false, completed:Array.from({length:20},(_,i)=>i+1), campaignVersion:2,
     })), language);
     const page = await context.newPage();
     page.on("pageerror", error => errors.push(error.message));
@@ -105,7 +105,7 @@ try {
       await page.screenshot({ path:"artifacts/compact-mobile-level1.png" });
     }
     if (width === 1280 && height === 431) await page.screenshot({ path:"artifacts/compact-short-desktop.png" });
-    console.log(`PASS ${width}×${height}: ${language}, home → play, tap/restart, all 14 complete boards fit, no page scrolling or scrollbars`);
+    console.log(`PASS ${width}×${height}: ${language}, home → play, tap/restart, all 20 complete boards fit, no page scrolling or scrollbars`);
     await context.close();
   }
   assert.deepEqual(errors, []);

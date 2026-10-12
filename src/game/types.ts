@@ -23,7 +23,7 @@ export interface Level {
   id: number;
   columns: BottleType[][];
   orders: BottleType[];
-  layout?: { layers: number; columns: number; seed: number; complexity: number };
+  layout?: { layers: number; columns: number; seed: number; complexity: number; pattern?: "pyramid" | "twins" | "cross" | "ring"; sideDepth?: number };
 }
 export interface Crate {
   type: BottleType;
@@ -40,7 +40,7 @@ export interface GameState {
   recycled: GlassType[];
   penalties: number;
   mistakes: number;
-  endReason?: "time" | "mistakes" | "full";
+  endReason?: "mistakes" | "full";
   moves: number;
   status: "playing" | "won" | "lost";
 }

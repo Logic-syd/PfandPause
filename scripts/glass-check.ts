@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
 import { levels } from '../src/data/levels';
 import { translations } from '../src/i18n';
-import { solveState, createGame } from '../src/game/triple';
+import { createPuzzle, createGame } from '../src/game/triple';
 import { returnStats } from '../src/game/returns';
 
 const url=process.env.BASE_URL ?? 'http://localhost:4173';
@@ -24,19 +24,19 @@ try {
   for(const [width,height] of [[320,320],[390,844],[1280,431]]) for(const language of ['zh','en','de'] as const) {
     const t=translations[language];
     const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:width<900});
-    await context.addInitScript(language=>!localStorage.getItem('pfand-pause:v1') && localStorage.setItem('pfand-pause:v1',JSON.stringify({language,sound:false,reducedMotion:true,completed:[1,2,3,4,5,6,7,8,9,10]})),language);
+    await context.addInitScript(language=>!localStorage.getItem('pfand-pause:v1') && localStorage.setItem('pfand-pause:v1',JSON.stringify({language,sound:false,reducedMotion:true,completed:[1,2,3,4,5,6,7,8,9,10],campaignVersion:2})),language);
     const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
     await page.route('**/glass-portal',route=>route.fulfill({contentType:'text/html',body:`<meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:calc(100% - 56px);border:0}</style><header style="height:56px">Portal</header><iframe scrolling="no" src="${url}/?glass-check"></iframe>`}));
     await page.goto(`${url}/glass-portal`);await page.frameLocator('iframe').locator('.home-screen').waitFor();
     let frame=page.frames().find(f=>f.url().includes('?glass-check'))!;
     assert.equal(await frame.locator('.home-actions .primary').first().innerText(),`${t.continue}\n` .trim());
-    await frame.locator('.home-actions .primary').first().tap();assert.match(await frame.locator('.level-link').innerText(),/10/);
-    for(const level of levels.slice(9)) {
+    await frame.locator('.home-actions .primary').first().tap();assert.match(await frame.locator('.level-link').innerText(),/11/);
+    for(const level of levels.slice(10)) {
       await frame.getByRole('button',{name:t.chooseLevel,exact:true}).tap();
       await fits(frame,'.levels-screen h1,.level-card');
       await frame.locator('.level-card').nth(level.id-1).tap();
       let wrongChecked=false;
-      for(const column of solveState(createGame(level)).path!) {
+      for(const column of createPuzzle(level).solution) {
         const type=await frame.locator(`[data-column="${column}"] .bottle`).getAttribute('data-bottle-type');
         await frame.locator(`[data-column="${column}"]`).tap();
         if(type?.startsWith('glass')) {
@@ -62,7 +62,7 @@ try {
       if(width===390 && language==='zh' && level.id===14) await page.screenshot({path:'artifacts/return-glass-result-mobile.png'});
       if(level.id===12) {
         await frame.getByRole('button',{name:t.replay,exact:true}).tap();
-        const original=createGame(level);const route=solveState(original).path!;const glassAt=route.findIndex(id=>original.tiles[id].bottle.startsWith('glass'));const glassId=route[glassAt];
+        const original=createGame(level);const route=createPuzzle(level).solution;const glassAt=route.findIndex(id=>original.tiles[id].bottle.startsWith('glass'));const glassId=route[glassAt];
         for(const id of route.slice(0,glassAt)){await frame.locator(`[data-column="${id}"]`).tap();await frame.waitForFunction(()=>!document.querySelector('.tile-field.is-busy'));}
         const glassType=original.tiles[glassId].bottle;
         await frame.locator(`[data-column="${glassId}"]`).tap();await frame.locator(`[data-bin="${glassType}"]`).tap();
@@ -81,8 +81,8 @@ try {
     }
     await page.reload();await page.frameLocator('iframe').locator('.home-screen').waitFor();
     frame=page.frames().find(f=>f.url().includes('?glass-check'))!;
-    assert.equal((await frame.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,14);
-    console.log(`PASS ${width}×${height} ${language}: legacy save → level 10, all five glass levels, wrong choices, permanent glass returns, refund excludes glass, progress persists, fitted choices and feedback`);
+    assert.equal((await frame.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,20);
+    console.log(`PASS ${width}×${height} ${language}: save → level 11, all ten glass levels, wrong choices, permanent glass returns, refund excludes glass, progress persists, fitted choices and feedback`);
     await context.close();
   }
   assert.deepEqual(errors,[]);

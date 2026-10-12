@@ -26,7 +26,7 @@ try {
   assert.ok(blanks>=20);assert.equal(await page.locator('.home-screen').count(),0);
   const bottles=await page.locator('.tile-card').count();
   await page.locator('.brand').click();await page.locator('.pause-dialog').waitFor();
-  const clock=await page.locator('.round-clock').innerText();await page.waitForTimeout(1100);assert.equal(await page.locator('.round-clock').innerText(),clock);
+  assert.equal(await page.locator('.round-clock').count(),0);
   await page.mouse.click(2,height/2);assert.ok(await page.locator('.pause-dialog').isVisible());
   await page.getByRole('button',{name:'继续退瓶',exact:true}).click();assert.equal(await page.locator('.tile-card').count(),bottles);
   await page.locator('.brand').click();await page.getByRole('button',{name:'返回首页',exact:true}).click();assert.ok(await page.locator('.home-screen').isVisible());

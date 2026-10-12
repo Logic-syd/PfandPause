@@ -15,7 +15,7 @@ try {
       permissions: ["local-network-access"] });
     await context.addInitScript(language => localStorage.setItem("pfand-pause:v1", JSON.stringify({
       language, sound: false, reducedMotion: true, campaignVersion: 2,
-      completed: Array.from({ length: 14 }, (_, i) => i + 1),
+      completed: Array.from({ length: 20 }, (_, i) => i + 1),
     })), language);
     const page = await context.newPage();
     const errors: string[] = [];
@@ -38,7 +38,7 @@ try {
       }, [width, height, outerScale]);
       await frame.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
       assert.deepEqual(await frame.evaluate(() => [innerWidth, innerHeight]), [width, height]);
-      for (const level of [2,4,13]) {
+      for (const level of [2,9,19]) {
         await frame.locator(".level-link").tap();
         await frame.locator(".level-card").nth(level).tap();
         const geometry = await frame.evaluate(() => {

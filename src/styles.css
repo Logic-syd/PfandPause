@@ -2974,6 +2974,12 @@ main {
 .round-clock { position: relative; font-size: 14px; color: var(--ink); font-weight: 750; white-space: nowrap; }
 .round-clock small { font-size: 10px; }
 .round-clock.clock-urgent { color: #a34f38; }
+.clock-time { position: relative; }
+.clock-time.is-counting-down .clock-value { opacity: 0; }
+.final-countdown { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); min-width: 52px; text-align: center; z-index: 25; pointer-events: none; font-size: 30px; line-height: 1.1; font-weight: 850; font-variant-numeric: tabular-nums; color: #b52f21; background: #fff3ed; border: 2px solid #b84435; border-radius: 10px; padding: 2px 8px; box-shadow: 0 3px 10px #b8443520; animation: countdown-beat 280ms ease-out both; }
+@keyframes countdown-beat { from { transform: translateX(-50%) scale(1.12); } to { transform: translateX(-50%) scale(1); } }
+.reduce-motion .final-countdown { animation: none; }
+@media (prefers-reduced-motion: reduce) { .final-countdown { animation: none; } }
 .buffer-reminder { flex-shrink: 0; font-size: 12px; line-height: 1.4; color: #75816d; margin: 0 0 7px; text-align: center; }
 .penalty-flash { position: absolute; left: 50%; top: 4px; transform: translateX(-50%); z-index: 30; pointer-events: none; padding: 4px 10px; border: 2px solid #b84435; border-radius: 8px; background: #fff3ed; color: #b52f21; font-size: 22px; line-height: 1.2; font-weight: 800; white-space: nowrap; box-shadow: 0 3px 10px #b8443530; animation: penalty-pop 1600ms ease-out both; }
 @keyframes penalty-pop {

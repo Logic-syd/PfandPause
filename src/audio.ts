@@ -31,7 +31,7 @@ export function unlockAudio(): void {
   }
 }
 export function playSound(
-  kind: "pick" | "full" | "win",
+  kind: "pick" | "full" | "win" | "tick",
   enabled: boolean,
 ): void {
   if (!enabled || !context || context.state !== "running") return;
@@ -40,24 +40,24 @@ export function playSound(
       ? [523, 659, 784, 1047]
       : kind === "full"
         ? [659, 880]
-        : [540];
+        : kind === "tick" ? [880] : [540];
   try {
     notes.forEach((frequency, i) => {
       const oscillator = context!.createOscillator();
       const gain = context!.createGain();
       const start = context!.currentTime + i * 0.085;
-      oscillator.type = "sine";
+      oscillator.type = kind === "tick" ? "triangle" : "sine";
       oscillator.frequency.setValueAtTime(frequency, start);
       gain.gain.setValueAtTime(0, start);
       gain.gain.linearRampToValueAtTime(
         victoryVoice.active ? 0.012 : 0.045,
         start + 0.012,
       );
-      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.16);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + (kind === "tick" ? 0.07 : 0.16));
       oscillator.connect(gain);
       gain.connect(context!.destination);
       oscillator.start(start);
-      oscillator.stop(start + 0.18);
+      oscillator.stop(start + (kind === "tick" ? 0.09 : 0.18));
     });
   } catch {
     // Audio output can fail after a context resumes or the output device changes.

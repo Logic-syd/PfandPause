@@ -46,9 +46,21 @@ try {
   const deducted=await seconds();await page.getByRole('button',{name:'Undo',exact:true}).click();assert.ok((await seconds())<=deducted);
   assert.equal(await page.locator('.penalty-flash').count(),0);
   assert.deepEqual(await boardGeometry(),geometryBeforeNotice,'Clearing the penalty must not move or rescale the board');
-  await page.clock.fastForward(180000);await page.locator('.lost').waitFor();assert.equal(await page.locator('.lost h2').innerText(),'Time is up');
+  await page.clock.fastForward(((await seconds())-11)*1000);
+  assert.equal(await page.locator('.final-countdown').count(),0,'The large countdown starts only in the final ten seconds');
+  await page.clock.fastForward(1000);assert.equal(await page.locator('.final-countdown').innerText(),'10');
+  assert.deepEqual(await boardGeometry(),geometryBeforeNotice,'The countdown must not move or rescale the board');
+  await page.locator('.help-button').click();const pausedCountdown=await seconds();
+  await page.clock.fastForward(20000);assert.equal(await seconds(),pausedCountdown);
+  assert.equal(await page.locator('.final-countdown').count(),0,'The countdown pauses while help is open');
+  await page.getByRole('button',{name:'Close',exact:true}).click();assert.equal(await page.locator('.final-countdown').innerText(),'10');
+  await page.clock.fastForward(1000);assert.equal(await page.locator('.final-countdown').innerText(),'9');
+  await page.clock.fastForward(8000);assert.equal(await page.locator('.final-countdown').innerText(),'1');
+  await page.clock.fastForward(1000);await page.locator('.lost').waitFor();assert.equal(await page.locator('.lost h2').innerText(),'Time is up');
+  assert.equal(await page.locator('.final-countdown').count(),0,'Expired rounds never retain the countdown overlay');
   assert.equal(await page.locator('.lost button').filter({hasText:'Undo'}).count(),0);
   await page.getByRole('button',{name:'Try again',exact:true}).click();assert.ok((await seconds())>=initial-1);
+  assert.equal(await page.locator('.final-countdown').count(),0,'Restart clears the countdown');
   await page.locator('.brand').click();await page.getByRole('button',{name:'Choose a level',exact:true}).click();
   // Seed an existing ten-level save through a reload to test the first glass level.
   await page.evaluate(()=>localStorage.setItem('pfand-pause:v1',JSON.stringify({language:'en',sound:false,reducedMotion:true,completed:[1,2,3,4,5,6,7,8,9,10]})));
@@ -62,6 +74,6 @@ try {
   await page.locator('[data-column="0"]').click();await page.locator('[data-bin="glassBrown"]').click();await page.locator('.lost').waitFor();
   assert.equal(await page.locator('.lost h2').innerText(),'Wrong choices this round: 3');
   await page.getByRole('button',{name:'Try again',exact:true}).click();assert.match(await page.locator('.round-clock').innerText(),/0\/3/);
-  assert.deepEqual(errors,[]);console.log('PASS timer counts elapsed time, help pauses, buffer costs 5s without moving or rescaling the board on notice/undo, glass costs 10s, undo cannot refund penalties, timeout and third mistake end rounds, restart resets timer and mistakes');
+  assert.deepEqual(errors,[]);console.log('PASS final countdown runs 10→1 without layout shifts, help pauses, timer counts elapsed time, buffer costs 5s without moving or rescaling the board on notice/undo, glass costs 10s, undo cannot refund penalties, timeout and third mistake end rounds, restart resets timer and mistakes');
   await context.close();
 } finally {await browser.close();}

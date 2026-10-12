@@ -7,7 +7,7 @@ import RecyclingPractice from "./components/RecyclingPractice";
 import FitBoard from "./components/FitBoard";
 import ReturnReceipt from "./components/ReturnReceipt";
 import { useRoundClock } from "./components/useRoundClock";
-import { timeLimit, MAX_GLASS_MISTAKES } from "./game/time";
+import { timeLimit, MAX_GLASS_MISTAKES, FINAL_COUNTDOWN_SECONDS } from "./game/time";
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
 import { bottles, bottleDeposits } from "./data/bottles";
@@ -61,6 +61,8 @@ export default function App() {
   const level = levels[levelIndex];
   const clock = useRoundClock(screen === "play" && game.status === "playing" && !modal && !tutorial, timeLimit(level));
   const seconds = Math.ceil(clock.milliseconds / 1000);
+  const countdownSecond = screen === "play" && game.status === "playing" && !modal && !tutorial && seconds > 0 && seconds <= FINAL_COUNTDOWN_SECONDS ? seconds : null;
+  const lastCountdownSound = useRef<number | null>(null);
   const total = level.columns.flat().length;
   const hasGlass = level.columns.flat().some(isGlass);
   const formatDeposit = (cents: number) => new Intl.NumberFormat(
@@ -118,6 +120,11 @@ export default function App() {
     stopVoice();
   }, [preferences.sound, preferences.language]);
   useEffect(() => {
+    if (countdownSecond === null || countdownSecond === lastCountdownSound.current) return;
+    lastCountdownSound.current = countdownSecond;
+    playSound("tick", preferences.sound);
+  }, [countdownSecond, preferences.sound]);
+  useEffect(() => {
     if (!penaltyNotice) return;
     if (screen !== "play") { setPenaltyNotice(null); return; }
     const timer = window.setTimeout(() => setPenaltyNotice(null), 1600);
@@ -150,6 +157,7 @@ export default function App() {
     setSelectedGlass(null);
     setWrongBin(false);
     setPenaltyNotice(null);
+    lastCountdownSound.current = null;
     clock.reset(timeLimit(levels[index]));
     setLevelIndex(index);
     display(createGame(levels[index]));
@@ -566,7 +574,14 @@ export default function App() {
                 <b>{packed}</b> / {total} {t.packed}
               </span>
               <span className={`round-clock ${seconds <= 15 ? "clock-urgent" : ""}`} aria-label={`${t.timeLeft}: ${seconds}`}>
-                ⏱ {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2,"0")}
+                <span className={`clock-time ${countdownSecond !== null ? "is-counting-down" : ""}`}>
+                  <span className="clock-value">⏱ {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2,"0")}</span>
+                  {countdownSecond !== null && (
+                    <span key={`countdown-${countdownSecond}`} className="final-countdown" role="timer" aria-label={t.finalCountdown.replace("{seconds}", String(countdownSecond))}>
+                      {countdownSecond}
+                    </span>
+                  )}
+                </span>
                 {hasGlass && <small> · {game.mistakes}/{MAX_GLASS_MISTAKES} {t.mistakes}</small>}
               </span>
               <button

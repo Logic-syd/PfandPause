@@ -4,8 +4,12 @@ import { createGame, takeBottle, cloneState, bottleInventory } from '../src/game
 import { timeLimit } from '../src/game/time';
 import { levels } from '../src/data/levels';
 
-test('the first levels get one minute; larger levels have a proportional limit',()=>{
+test('opening rounds stay relaxed, rounds 6–10 tighten progressively, glass rounds retain their time',()=>{
   assert.equal(timeLimit(levels[0]),60);assert.equal(timeLimit(levels[1]),60);
+  assert.ok(timeLimit(levels[5]) < timeLimit(levels[4]));
+  for(let i=6;i<10;i++) assert.ok(timeLimit(levels[i])<timeLimit(levels[i-1]));
+  assert.ok(timeLimit(levels[9])/levels[9].columns.flat().length < timeLimit(levels[5])/levels[5].columns.flat().length);
+  assert.equal(timeLimit(levels[10]),60);
   assert.equal(timeLimit(levels[14]),120);
 });
 test('full buffer rejects another unmatched bottle, deducts five seconds, but still accepts a matching one',()=>{

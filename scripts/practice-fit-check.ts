@@ -57,11 +57,11 @@ try {
       await frame.getByRole('button',{name:t.gotIt,exact:true}).tap();
       await frame.getByRole('button',{name:t.recyclingEntry,exact:true}).tap();
       for(let question=0;question<8;question++) {
-        assert.equal(await frame.locator('.recycling-choices button').count(),6);
+        assert.equal(await frame.locator('.recycling-choices button').count(),4);
         await fits(frame,'.recycling-item,.recycling-choices button,.recycling-actions');
         if(width===320 && height===568 && language==='de' && question===0) await page.screenshot({path:'artifacts/recycling-all-choices-small-de.png'});
         // Include an incorrect answer to verify the explanatory state too.
-        await frame.locator('.recycling-choices button').nth(question===0?5:[0,1,2,3,4,5,5,0][question]).tap();
+        await frame.locator('.recycling-choices button').nth(question===0?3:[0,0,0,1,2,3,3,0][question]).tap();
         await fits(frame,'.recycling-item,.recycling-feedback,.recycling-actions');
         const feedback=await frame.locator('.recycling-feedback').boundingBox();
         const next=await frame.locator('.recycling-actions .primary').boundingBox();

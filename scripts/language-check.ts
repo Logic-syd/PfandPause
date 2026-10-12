@@ -1,6 +1,7 @@
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { translations, type Language } from '../src/i18n';
+import { getRecyclingItems } from '../src/data/recycling';
 const browser = await chromium.launch({
   headless: true,
   ...(process.env.BROWSER_EXECUTABLE_PATH ? { executablePath: process.env.BROWSER_EXECUTABLE_PATH } : {}),
@@ -19,8 +20,20 @@ try {
     await page.getByRole('button', { name: translations[language].recyclingEntry, exact: true }).click();
     for (let question = 0; question < 8; question++) {
       if (language !== 'zh') assert.ok(!/[\u3400-\u9fff]/u.test(await page.locator('.recycling-practice').innerText()));
-      await page.locator('.recycling-choices button').nth([0, 1, 2, 3, 4, 5, 5, 0][question]).click();
+      const item = getRecyclingItems(language)[question];
+      assert.equal(await page.locator('.recycling-choices button').count(), 4);
+      assert.equal(await page.locator('.recycling-choices [data-destination="shop"]').count(), 1,
+        'There is one shop destination, regardless of refund amount');
+      assert.ok(!/€|0[.,](08|15|25)/.test(await page.locator('.recycling-content').innerText()),
+        'The question and choices must not disclose the deposit amount');
+      assert.equal(await page.locator('.recycling-label strong').innerText(), item.mark);
+      assert.equal(await page.locator('.recycling-feedback').count(), 0);
+      if (language === 'zh' && question === 2) await page.screenshot({ path: 'artifacts/quiz-beer-before-answer.png' });
+      await page.locator('.recycling-choices button').nth([0, 0, 0, 1, 2, 3, 3, 0][question]).click();
       await page.locator('.recycling-feedback').waitFor();
+      assert.equal(await page.locator('.recycling-feedback').getAttribute('data-correct'), 'true');
+      assert.equal(await page.locator('.packaging-clue').innerText(), item.label,
+        'Full packaging details are revealed only after answering');
       assert.equal(await page.locator('.recycling-choices button:enabled').count(), 0);
       if (question === 0) {
         // Switching a live lesson keeps its answer, score and current question.

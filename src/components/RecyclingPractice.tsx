@@ -53,11 +53,11 @@ export default function RecyclingPractice({ language, sound, onClose }: { langua
               <path d="M29 9h22v35l12 19v77q0 10-10 10H27q-10 0-10-10V63l12-19Z" fill={item.color} stroke="#304c3e" strokeWidth="3" />
               <path d="M34 20v23M25 69v62" stroke="white" strokeWidth="4" opacity=".5" />
               <rect x="20" y="80" width="40" height="40" rx="4" fill="#fffbed" />
-              <text x="40" y="104" textAnchor="middle" fontSize="11" fill="#304c3e">{item.cents ? 'PFAND' : 'GLAS'}</text>
+              <text x="40" y="104" textAnchor="middle" fontSize="8" fill="#304c3e">{item.mark.split(' · ')[0]}</text>
             </svg>
-            <div><h2>{item.name}</h2><p>{item.material}</p><p className="recycling-label">{t.packaging}<strong className={answer !== null ? 'packaging-clue' : ''}>{item.label}</strong></p></div>
+            <div><h2>{item.name}</h2><p>{item.material}</p><p className="recycling-label">{t.packaging}<strong className={answer !== null ? 'packaging-clue' : ''}>{answer === null ? item.mark : item.label}</strong></p></div>
           </article>
-          {answer === null ? <div className="recycling-choices">{destinations.map(d => <button key={d.id} onClick={() => choose(d.id)}><strong>{recyclingChoiceLabels[language][d.id].label}</strong><span>{recyclingChoiceLabels[language][d.id].detail}</span></button>)}</div>
+          {answer === null ? <div className="recycling-choices">{destinations.map(d => <button key={d.id} data-destination={d.id} onClick={() => choose(d.id)}><strong>{d.label}</strong>{d.detail && <span>{d.detail}</span>}</button>)}</div>
             : <div className={`recycling-feedback ${correct ? 'is-correct' : 'is-incorrect'}`} data-correct={correct} role="status" aria-atomic="true">
               <div className="feedback-verdict"><span className="feedback-mark"><Icon name={correct ? 'check' : 'close'} size={40} /></span><h2>{correct ? t.correct : t.incorrect}</h2></div>
               {!correct && <div className="answer-comparison chosen-answer"><Icon name="close" size={20} /><div><span>{t.yourChoice}</span><strong>{recyclingChoiceLabels[language][answer].label}</strong></div></div>}

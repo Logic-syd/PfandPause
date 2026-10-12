@@ -12,7 +12,9 @@ export const LANGUAGE_OPTIONS: readonly {
 ];
 
 const en = {
-  trayFullBody: "All seven slots are full. Move three bottles aside, or undo your last pick.",
+  fullRecallOnly: "Move out 3 has been used. Undo a bottle to continue.",
+  practiceFull: "Seven slots filled. Undo a bottle or move out three to continue.",
+  trayFullBody: "Seven unmatched bottles filled the band. You can still undo or move out three.",
   trayFull: "The conveyor is full",
   moveOutNote: "Once per round. Move three bottles aside; tap them to put them back.",
   moveOut: "Move out 3",
@@ -96,7 +98,7 @@ const en = {
   buffer: "Spare spot",
   learn: "Show me how",
   practiceTitle: "Let’s try it together",
-  practiceNote: "Match three on the seven-slot conveyor. No timer here; your progress stays unchanged.",
+  practiceNote: "12 bottles, 4 types. Pick uncovered bottles; match three to return them. No timer here.",
   practiceTitles: [
     "Match a bottle",
     "No matching tray?",
@@ -174,7 +176,9 @@ const en = {
   } as Record<BottleType, string>,
 };
 const de: typeof en = {
-  trayFullBody: "Alle sieben Plätze sind voll. Lagere drei Flaschen aus oder nimm die letzte zurück.",
+  fullRecallOnly: "Auslagern ist schon genutzt. Nimm eine Flasche zurück, um weiterzuspielen.",
+  practiceFull: "Sieben Plätze voll. Eine Flasche zurücknehmen oder drei auslagern.",
+  trayFullBody: "Sieben nicht aufgelöste Flaschen füllen das Band. Zurücknehmen oder drei auslagern ist noch möglich.",
   trayFull: "Das Band ist voll",
   moveOutNote: "Einmal pro Runde: drei Flaschen auslagern. Antippen legt sie zurück.",
   moveOut: "3 auslagern",
@@ -257,7 +261,7 @@ const de: typeof en = {
   buffer: "Warteplatz",
   learn: "Zeig mir, wie’s geht",
   practiceTitle: "Probieren wir’s gemeinsam",
-  practiceNote: "Sieben Plätze, drei gleiche Flaschen zurückgeben. Ohne Uhr und ohne Änderung deines Fortschritts.",
+  practiceNote: "12 Flaschen, 4 Sorten. Freie Flaschen antippen, drei gleiche abgeben. Ohne Uhr.",
   practiceTitles: [
     "Eine passende Flasche",
     "Keine passende Annahme?",
@@ -336,7 +340,9 @@ const de: typeof en = {
   },
 };
 const zh: typeof en = {
-  trayFullBody: "七格都满了。移出三瓶，或撤回最后一瓶再试。",
+  fullRecallOnly: "移出三瓶已经用过了，还能撤回一瓶继续。",
+  practiceFull: "七格满了。撤回一瓶，或移出三瓶继续。",
+  trayFullBody: "七格被未消除的瓶子占满了。还能撤回一瓶，或移出三瓶继续。",
   trayFull: "传送带满了",
   moveOutNote: "每关一次，移出三瓶腾出位置；点暂存瓶可以放回。",
   moveOut: "移出三瓶",
@@ -417,7 +423,7 @@ const zh: typeof en = {
   buffer: "暂存位",
   learn: "带我试一试",
   practiceTitle: "一起试试看",
-  practiceNote: "七格传送带，三个同款一起退走。这里不计时，也不改变关卡进度。",
+  practiceNote: "12瓶，4种。点露出的瓶子，三个同款一起退走。试玩不计时。",
   practiceTitles: [
     "找到对应的接收位",
     "没有对应的接收位？",

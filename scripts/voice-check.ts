@@ -1,5 +1,7 @@
 import { chromium, type Page } from "@playwright/test";
 import assert from "node:assert/strict";
+import { triplePracticeLevel } from "../src/data/tutorial";
+import { createGame, solveState } from "../src/game/triple";
 import { mkdirSync, writeFileSync } from "node:fs";
 const browser = await chromium.launch({
   headless: true,
@@ -122,7 +124,7 @@ try {
   await practice
     .getByRole("button", { name: "Show me how", exact: true })
     .click();
-  for (const id of [0,1,2,3,4,5]) {
+  for (const id of solveState(createGame(triplePracticeLevel)).path!) {
     await practice.locator(`dialog [data-column="${id}"]`).tap();
     await practice.waitForFunction(()=>!document.querySelector('dialog .tile-field.is-busy'));
   }

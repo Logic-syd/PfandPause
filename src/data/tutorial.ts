@@ -1,7 +1,7 @@
 import type { Level } from "../game/types";
 
-export const TUTORIAL_VERSION = 3;
-// A separate balanced board; practice never unlocks or changes a real level.
+export const TUTORIAL_VERSION = 4;
+// Previous guided-practice fixture, retained for historical regression tests.
 export const tutorialLevel: Level = {
   id: 1,
   columns: [
@@ -25,3 +25,15 @@ export const tutorialSteps: { column: number | null; lesson: number }[] = [
   { column: 1, lesson: 5 },
   { column: 1, lesson: 5 },
 ];
+
+// Current free-play demo: four bottle types, twelve bottles and two overlapping layers.
+export const triplePracticeLevel: Level = {
+  id: 3,
+  columns: [
+    ["water", "water", "water"],
+    ["lemon", "lemon", "lemon"],
+    ["currant", "currant", "currant"],
+    ["apple", "apple", "apple"],
+  ],
+  orders: ["water", "lemon", "currant", "apple"],
+};

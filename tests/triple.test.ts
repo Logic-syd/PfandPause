@@ -87,3 +87,14 @@ test('a six-type blocked tray still allows the once-only shuffle; recall can res
  const shuffled=shuffleBoard(s);assert.equal(shuffled.shuffleUsed,true);assert.deepEqual(shuffled.bufferIds,s.bufferIds);assert.deepEqual(bottleInventory(shuffled),bottleInventory(s));
  assert.ok(solveState(undoBottle(shuffled)).path,'Recall opens enough space to match triples');
 });
+test('twelve-bottle free practice has four balanced types, real overlap, a full-slot route and both recovery actions',async()=>{
+ const {triplePracticeLevel}=await import('../src/data/tutorial');const initial=createGame(triplePracticeLevel);
+ assert.equal(initial.tiles.length,12);assert.equal(new Set(initial.tiles.map(tile=>tile.bottle)).size,4);
+ for(const count of Object.values(bottleInventory(initial)))assert.equal(count,3);
+ assert.ok(initial.tiles.some(tile=>tile.blockedBy.length));assert.ok(solveState(initial).path);
+ let full=initial;for(const id of [3,4,9,10,5,11,2])full=pick(full,id);
+ assert.equal(full.endReason,'full');assert.equal(full.buffer.length,7);assert.equal(undoBottle(full).status,'playing');
+ const recovered=shuffleBoard(moveOut(full));const path=solveState(recovered).path;assert.ok(path);
+ let end=recovered;for(const id of path)end=id<0?returnReserve(end,-id-1).state:pick(end,id);
+ assert.equal(end.status,'won');assert.equal(end.returnedIds.length,12);
+});

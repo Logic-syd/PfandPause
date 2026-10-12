@@ -686,7 +686,7 @@ export default function App() {
         !modal &&
         !tutorial && (
           <Dialog
-            className={`result-dialog ${game.status}`}
+            className={`result-dialog ${game.status} ${game.endReason === "full" ? "tray-full-dialog" : ""}`}
             title={
               game.status === "won"
                 ? levelIndex === levels.length - 1 && allComplete
@@ -694,10 +694,13 @@ export default function App() {
                   : t.receiptReady
                 : game.endReason === "time" ? t.timeOver : game.endReason === "full" ? t.trayFull : t.tooManyMistakes.replace("{count}", String(game.mistakes))
             }
-            closeLabel={t.close}
-            onClose={() => navigate("levels")}
+            closeLabel={game.endReason === "full" ? `${t.undo} · ${t.continue}` : t.close}
+            onClose={() => game.endReason === "full" ? undo() : navigate("levels")}
           >
-            <FitBoard>
+            {game.endReason === "full" ? <FitBoard><div className="full-tray-content">
+              <p>{game.moveOutUsed ? t.fullRecallOnly : t.trayFullBody}</p>
+              <div className="full-tray-bottles">{game.buffer.map((type, index) => <Bottle key={index} type={type} />)}</div>
+            </div></FitBoard> : <FitBoard>
               {game.status === "won" ? (
                 <ReturnReceipt items={level.columns.flat()} level={level.id} t={t} formatMoney={formatDeposit} cheer={t.winCheers[levelIndex]} />
               ) : (
@@ -714,7 +717,7 @@ export default function App() {
                     </i>
                   </div>
                   <p>
-                    {game.endReason === "time" ? t.timeOverBody : game.endReason === "full" ? t.trayFullBody : t.fineNotice}
+                    {game.endReason === "time" ? t.timeOverBody : t.fineNotice}
                   </p>
                   <div className="result-stats">
                     <span>
@@ -726,7 +729,7 @@ export default function App() {
                   </div>
                 </div>
               )}
-            </FitBoard>
+            </FitBoard>}
             {game.status === "won" ? (
               <>
                 <button
@@ -750,15 +753,18 @@ export default function App() {
               </>
             ) : (
               <>
-                {game.endReason === "full" && <button className="primary" onClick={game.moveOutUsed || game.reserveIds.length ? undo : liftThree}><Icon name={game.moveOutUsed || game.reserveIds.length ? "undo" : "lift"} />{game.moveOutUsed || game.reserveIds.length ? t.undo : t.moveOut}</button>}
+                {game.endReason === "full" && <div className="full-tray-actions">
+                  {!game.moveOutUsed && !game.reserveIds.length && <button className="primary" onClick={liftThree}><Icon name="lift" size={18} /><span>{t.moveOut}</span></button>}
+                  <button className={game.moveOutUsed || game.reserveIds.length ? "primary" : "secondary"} onClick={undo}><Icon name="undo" size={18} /><span>{t.undo}</span></button>
+                </div>}
                 <button className={game.endReason === "full" ? "text-button" : "primary"} onClick={() => start(levelIndex)}><Icon name="restart" />{t.tryAgain}</button>
-                <button
+                {game.endReason !== "full" && <button
                   className="text-button"
                   onClick={() => navigate("start")}
                 >
                   {t.home}
                   <Icon name="back" size={16} />
-                </button>
+                </button>}
               </>
             )}
           </Dialog>
@@ -782,7 +788,7 @@ export default function App() {
       )}
       <div className="sr-only" role="status" aria-live="polite">
         {!busy && screen === "play"
-          ? `${packed} ${t.packed}. ${game.buffer.length}/3 ${t.buffer}. ${game.status === "won" ? t.nice : game.status === "lost" ? t.spareFull : ""}`
+          ? `${packed} ${t.packed}. ${game.buffer.length}/7 ${t.sharedTray}. ${game.status === "won" ? t.nice : game.status === "lost" ? t.spareFull : ""}`
           : ""}
       </div>
     </div>

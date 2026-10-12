@@ -4,6 +4,7 @@ import { mkdirSync } from 'node:fs';
 import { translations } from '../src/i18n';
 import { recyclingTranslations } from '../src/data/recyclingTranslations';
 import { levels } from '../src/data/levels';
+import { triplePracticeLevel } from '../src/data/tutorial';
 import { solveState, createGame } from '../src/game/triple';
 
 const url = process.env.BASE_URL ?? 'http://localhost:4173';
@@ -41,13 +42,17 @@ try {
       if (width===390 && language==='zh') await page.screenshot({path:'artifacts/restored-home-mobile.png'});
       if (width===1707 && language==='zh') await page.screenshot({path:'artifacts/restored-home-desktop.png'});
       await frame.locator('.home-actions .learn-button').tap();
-      for (const id of solveState(createGame(levels[0])).path!) {
-        await fits(frame,'.tile-card,.tray-slot,.practice-actions button,.dialog-close');
+      assert.equal(await frame.locator('dialog .tile-card').count(),12);
+      assert.equal(await frame.locator('dialog .tray-slot').count(),7);
+      assert.ok(await frame.locator('dialog .tile-card.is-covered').count()>0);
+      await fits(frame,'.practice-tools button');
+      for (const id of solveState(createGame(triplePracticeLevel)).path!) {
+        await fits(frame,'.tile-card,.tray-slot,.practice-tools button,.practice-actions button,.dialog-close');
         await frame.locator(`dialog [data-column="${id}"]`).tap();
         await frame.waitForFunction(()=>!document.querySelector('dialog .tile-field.is-busy'));
       }
       await frame.locator('.practice-finished').waitFor();
-      await fits(frame,'.practice-summary,.practice-actions button,.dialog-close');
+      await fits(frame,'.practice-summary,.practice-tools button,.practice-actions button,.dialog-close');
       assert.equal((await frame.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,10,'Practice never changes progress');
       await frame.getByRole('button',{name:t.gotIt,exact:true}).tap();
       await frame.getByRole('button',{name:t.recyclingEntry,exact:true}).tap();

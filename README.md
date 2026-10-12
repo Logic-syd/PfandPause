@@ -21,7 +21,7 @@ npm run preview
 - 所有押金瓶共用七格传送带，没有指定瓶型的接收队列。三个同款会自动消除并累计模拟退回押金；不同包装即使押金相同也不算同款。
 - 七格被未消除的瓶子占满，本轮失败。如果第七瓶正好组成三个同款，会先消除再判定满槽。
 - 「撤销」在操作栏右边，收回最后一瓶尚未退走的瓶子。已经消除的三瓶保持已退状态。
-- 「移出三瓶」每关一次，将传送带最前面三瓶放到旁边；点暂存瓶可以放回。「洗牌」每关一次，只重新排列棋盘上剩下的瓶子。满槽结果页允许移出三瓶救场，已使用时允许撤回。
+- 「移出三瓶」每关一次，将传送带最前面三瓶放到旁边；点暂存瓶可以放回。「洗牌」每关一次，只重新排列棋盘上剩下的瓶子。满槽时的小面板提供撤回和可用的移出三瓶选项。
 - 前五关宽松；第六至第十关分别为 42／40／38／35／32 秒。最后十秒显示醒目倒数，开启声音时有短促提示音。帮助、独立练习、离开棋盘和洗牌计算期间暂停计时；撤销不返还时间或投错次数。
 - 第 11 关起，无押金玻璃先点选再选择白／棕／绿回收箱，不占传送带。投错扣 10 秒，三次投错结束本轮。结束时显示本轮投错次数和现实投错可能被处罚的友情提醒，不显示罚款金额。
 - 时间耗尽显示「超市打烊了，明天再来」，可以立即重开。通关小票显示押金瓶数量、模拟押金合计和玻璃回收数量。
@@ -36,7 +36,7 @@ npm run preview
 
 主玩法采用常见的七格配对消除机制。设计研究参考 [yulegeyu](https://github.com/liyupi/yulegeyu) 中的槽位、遮挡与消除规则；当前引擎和关卡生成代码为本项目实现，未复制其他游戏的图片、角色、音效或品牌。
 
-首页仍有独立的「德国回收练习」，包含八个包装示例、解释和模拟押金统计。规则参考 [DPG](https://dpg-pfandsystem.de/) 和 [德国消费者中心](https://www.verbraucherzentrale.de/wissen/umwelt-haushalt/abfall)。另有六瓶自由试玩，不计时，不强制操作顺序，不改变关卡进度。
+首页仍有独立的「德国回收练习」，包含八个包装示例、解释和模拟押金统计。规则参考 [DPG](https://dpg-pfandsystem.de/) 和 [德国消费者中心](https://www.verbraucherzentrale.de/wissen/umwelt-haushalt/abfall)。另有十二瓶自由试玩，包含四种瓶型和遮挡，不计时，不强制操作顺序，不改变关卡进度。试玩也可撤回、移出三瓶、洗牌；满槽时棋盘仍显示，使用道具后能继续。
 
 ## 实现
 
@@ -45,7 +45,7 @@ npm run preview
 | `src/game/triple.ts` | 当前七格引擎、遮挡、匹配、撤回、移出、洗牌和求解器 |
 | `src/components/TripleBoard.tsx` | 错层棋盘、七格传送带、暂存瓶及玻璃箱 |
 | `src/data/levels.ts` | 十五关瓶子库存，保留原始 columns / orders 数据格式 |
-| `src/components/Tutorial.tsx` | 独立六瓶自由试玩 |
+| `src/components/Tutorial.tsx` | 独立十二瓶自由试玩 |
 | `src/components/useRoundClock.ts` | 实际经过时间、暂停和扣时 |
 | `src/components/FitBoard.tsx` | 根据实际容器缩放，处理嵌套框和窗口调整 |
 | `src/components/ReturnReceipt.tsx` | 按包装押金计算的小票 |
@@ -76,6 +76,7 @@ BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:fit-board
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:responsive
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:embedded-scroll
+BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:demo
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:practice-fit
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:glass
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:timer

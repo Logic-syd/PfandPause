@@ -30,8 +30,8 @@ try {
     await page.goto(`${url}/glass-portal`);await page.frameLocator('iframe').locator('.home-screen').waitFor();
     let frame=page.frames().find(f=>f.url().includes('?glass-check'))!;
     assert.equal(await frame.locator('.home-actions .primary').first().innerText(),`${t.continue}\n` .trim());
-    await frame.locator('.home-actions .primary').first().tap();assert.match(await frame.locator('.level-link').innerText(),/11/);
-    for(const level of levels.slice(10)) {
+    await frame.locator('.home-actions .primary').first().tap();assert.match(await frame.locator('.level-link').innerText(),/10/);
+    for(const level of levels.slice(9)) {
       await frame.getByRole('button',{name:t.chooseLevel,exact:true}).tap();
       await fits(frame,'.levels-screen h1,.level-card');
       await frame.locator('.level-card').nth(level.id-1).tap();
@@ -59,7 +59,7 @@ try {
       const values=await frame.locator('.result-stats b').allTextContents();
       const expected=returnStats(level.columns.flat());assert.equal(values[0],String(expected.bottles));
       assert.equal(values[2],String(level.columns.flat().length-expected.bottles));
-      if(width===390 && language==='zh' && level.id===15) await page.screenshot({path:'artifacts/return-glass-result-mobile.png'});
+      if(width===390 && language==='zh' && level.id===14) await page.screenshot({path:'artifacts/return-glass-result-mobile.png'});
       if(level.id===12) {
         await frame.getByRole('button',{name:t.replay,exact:true}).tap();
         const original=createGame(level);const route=solveState(original).path!;const glassAt=route.findIndex(id=>original.tiles[id].bottle.startsWith('glass'));const glassId=route[glassAt];
@@ -67,10 +67,11 @@ try {
         const glassType=original.tiles[glassId].bottle;
         await frame.locator(`[data-column="${glassId}"]`).tap();await frame.locator(`[data-bin="${glassType}"]`).tap();
         await frame.waitForFunction(()=>!document.querySelector('.tile-field.is-busy'));
-        await frame.getByRole('button',{name:t.undo,exact:true}).tap();
-        assert.equal(await frame.locator(`[data-column="${glassId}"] .bottle`).getAttribute('data-bottle-type'),glassType);
+        assert.equal(await frame.getByRole('button',{name:t.undo,exact:true}).count(),0);
+        assert.equal(await frame.locator(`[data-column="${glassId}"]`).count(),0);
         if(width===390 && language==='zh') await page.screenshot({path:'artifacts/return-machine-glass-mobile.png'});
-        await frame.getByRole('button',{name:t.home,exact:false}).first().tap();
+        await frame.locator('.brand').tap();
+        await frame.locator('.pause-dialog').getByRole('button',{name:t.exitRound,exact:true}).tap();
       } else {
         await frame.locator('.result-dialog .dialog-close').tap();
         // Closing returns to the level chooser; return home before the next loop.
@@ -80,8 +81,8 @@ try {
     }
     await page.reload();await page.frameLocator('iframe').locator('.home-screen').waitFor();
     frame=page.frames().find(f=>f.url().includes('?glass-check'))!;
-    assert.equal((await frame.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,15);
-    console.log(`PASS ${width}×${height} ${language}: legacy save → level 11, all five glass levels, wrong choices, undo, refund excludes glass, progress persists, fitted choices and feedback`);
+    assert.equal((await frame.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,14);
+    console.log(`PASS ${width}×${height} ${language}: legacy save → level 10, all five glass levels, wrong choices, permanent glass returns, refund excludes glass, progress persists, fitted choices and feedback`);
     await context.close();
   }
   assert.deepEqual(errors,[]);

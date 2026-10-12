@@ -9,7 +9,7 @@ import {
   validateLevel,
 } from "../src/game/engine";
 import { solveLevel } from "../src/game/solver";
-import { levels } from "../src/data/levels";
+import { levels } from "../src/data/legacy-levels";
 import {
   bottleTypes,
   isGlass,

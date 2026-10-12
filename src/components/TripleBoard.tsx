@@ -42,6 +42,7 @@ export default function TripleBoard({ state, busy, selectedGlass, wrongBin, full
           </div>)}
         </div>
         <p className="tray-caption">{t.tripleRule}</p>
+        <p className="tray-danger"><Icon name="close" size={14} />{t.trayDanger}</p>
       </section>
       {state.reserveIds.length > 0 && <section className="reserve-row">
         <span>{t.reserveReturn}</span>

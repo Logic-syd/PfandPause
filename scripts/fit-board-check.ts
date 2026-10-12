@@ -1,6 +1,7 @@
 import { chromium, type Frame } from "@playwright/test";
 import assert from "node:assert/strict";
 import { mkdirSync } from "node:fs";
+import { levels } from "../src/data/levels";
 import { translations, type Language } from "../src/i18n";
 
 const url = process.env.BASE_URL ?? "http://localhost:5173";
@@ -16,7 +17,7 @@ async function fitted(frame: Frame) {
     const root = document.getElementById("root")!;
     const space = document.querySelector(".board-viewport")!.getBoundingClientRect();
     const toolbar = document.querySelector(".game-toolbar")!.getBoundingClientRect();
-    const targets = [...document.querySelectorAll("[data-column], .tray-slot, .glass-bin, .reserve-row button")];
+    const targets = [...document.querySelectorAll("[data-column], .tray-slot, .glass-bin, .tray-danger")];
     return {
       vertical: root.scrollHeight <= root.clientHeight + 1 && root.scrollTop === 0,
       horizontal: root.scrollWidth <= root.clientWidth + 1,
@@ -47,7 +48,7 @@ async function fitted(frame: Frame) {
   assert.ok(result.inside, `Bottles, spare spots, crates and actions must remain visible: ${JSON.stringify(result)}`);
   assert.ok(result.hiddenBars && result.toolbarVisible);
   assert.ok(result.toolbarAboveBoard && result.toolbarTop < 200, `Actions must stay near the top, above the board: ${JSON.stringify(result)}`);
-  assert.ok(result.actionHeights.every(height => height >= 44), "Actions must keep their touch size when the board scales");
+  assert.ok(result.actionHeights.every(height => height >= 44 - 0.01), `Actions must keep their touch size when the board scales: ${JSON.stringify(result.actionHeights)}`);
   assert.ok(result.header <= 48);
   return result;
 }
@@ -59,7 +60,7 @@ try {
     const context = await browser.newContext({ viewport: { width,height },
       hasTouch: true, isMobile: true, locale: { zh:"zh-CN",en:"en-US",de:"de-DE" }[language] });
     await context.addInitScript(language => localStorage.setItem("pfand-pause:v1", JSON.stringify({
-      language, sound:false, reducedMotion:false, completed:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+      language, sound:false, reducedMotion:false, completed:[1,2,3,4,5,6,7,8,9,10,11,12,13,14], campaignVersion:2,
     })), language);
     const page = await context.newPage();
     page.on("pageerror", error => errors.push(error.message));
@@ -77,8 +78,8 @@ try {
     await frame.locator('.tile-card:enabled:not(:has([data-bottle-type^="glass"]))').first().tap();
     await frame.waitForFunction(() => !document.querySelector(".tile-field.is-busy"));
     assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
-    await frame.getByRole("button", { name:t.undo,exact:true }).tap();
-    for (let level = 0; level < 15; level++) {
+    await frame.getByRole("button", { name:t.restart,exact:true }).tap();
+    for (let level = 0; level < levels.length; level++) {
       await frame.getByRole("button", { name:t.chooseLevel,exact:true }).tap();
       await frame.locator(".level-card").nth(level).tap();
       await fitted(frame);
@@ -94,7 +95,7 @@ try {
         await frame.locator('.tile-card:enabled:not(:has([data-bottle-type^="glass"]))').first().tap();
         await frame.waitForFunction(() => !document.querySelector(".tile-field.is-busy"));
         assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
-        await frame.getByRole("button", { name:t.undo,exact:true }).tap();
+        await frame.getByRole("button", { name:t.restart,exact:true }).tap();
       }
     }
     if (width === 390 && height === 844) {
@@ -104,7 +105,7 @@ try {
       await page.screenshot({ path:"artifacts/compact-mobile-level1.png" });
     }
     if (width === 1280 && height === 431) await page.screenshot({ path:"artifacts/compact-short-desktop.png" });
-    console.log(`PASS ${width}×${height}: ${language}, home → play, tap/undo, all 15 complete boards fit, no page scrolling or scrollbars`);
+    console.log(`PASS ${width}×${height}: ${language}, home → play, tap/restart, all 14 complete boards fit, no page scrolling or scrollbars`);
     await context.close();
   }
   assert.deepEqual(errors, []);

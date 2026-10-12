@@ -12,7 +12,7 @@ import { timeLimit, MAX_GLASS_MISTAKES, FINAL_COUNTDOWN_SECONDS } from "./game/t
 import { TUTORIAL_VERSION } from "./data/tutorial";
 import { levels } from "./data/levels";
 import { bottles } from "./data/bottles";
-import { createGame, takeBottle, returnReserve, canUndo, undoBottle, moveOut, shuffleBoard, type TripleState as GameState, type TripleTransition } from "./game/triple";
+import { createGame, takeBottle, type TripleState as GameState, type TripleTransition } from "./game/triple";
 import TripleBoard from "./components/TripleBoard";
 import { isGlass, type GlassType, type BottleType, type Place } from "./game/types";
 import { LANGUAGE_OPTIONS, translations } from "./i18n";
@@ -46,14 +46,12 @@ export default function App() {
   ));
   const [game, setGame] = useState(() => createGame(levels[levelIndex]));
   const gameRef = useRef(game);
-  const [undoAvailable, setUndoAvailable] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [shuffling, setShuffling] = useState(false);
   const locked = useRef(false);
   const epoch = useRef(0);
   const [flight, setFlight] = useState<Flight | null>(null);
   const [fullCrate, setFullCrate] = useState<number | null>(null);
-  const [modal, setModal] = useState<"settings" | "help" | null>(
+  const [modal, setModal] = useState<"settings" | "help" | "menu" | null>(
     null,
   );
   const [tutorial, setTutorial] = useState(false);
@@ -62,7 +60,7 @@ export default function App() {
   const [penaltyNotice, setPenaltyNotice] = useState<"buffer" | "bin" | null>(null);
   const t = translations[preferences.language];
   const level = levels[levelIndex];
-  const clock = useRoundClock(screen === "play" && game.status === "playing" && !modal && !tutorial && !shuffling, timeLimit(level));
+  const clock = useRoundClock(screen === "play" && game.status === "playing" && !modal && !tutorial, timeLimit(level));
   const seconds = Math.ceil(clock.milliseconds / 1000);
   const countdownSecond = screen === "play" && game.status === "playing" && !modal && !tutorial && seconds > 0 && seconds <= FINAL_COUNTDOWN_SECONDS ? seconds : null;
   const lastCountdownSound = useRef<number | null>(null);
@@ -141,8 +139,6 @@ export default function App() {
     clock.reset(timeLimit(levels[index]));
     setLevelIndex(index);
     display(createGame(levels[index]));
-    setShuffling(false);
-    setUndoAvailable(false);
     setScreen("play");
     setModal(null);
     setTutorial(false);
@@ -242,7 +238,6 @@ export default function App() {
     if (ticket !== epoch.current) return;
     if (clock.read() <= 0) { expire(); return; }
     display(result.state);
-    setUndoAvailable(canUndo(result.state));
     setBusy(false);
     locked.current = false;
     if (result.state.status === "won") {
@@ -255,32 +250,6 @@ export default function App() {
         completed: [...new Set([...p.completed, level.id])],
       }));
     }
-  }
-  function undo() {
-    if (locked.current || !canUndo(gameRef.current)) return;
-    if (clock.read() <= 0) { expire(); return; }
-    stopVoice(); setSelectedGlass(null); setWrongBin(false); setPenaltyNotice(null);
-    const result = undoBottle(gameRef.current);
-    display(result); setUndoAvailable(canUndo(result));
-  }
-  async function takeReserve(index: number) {
-    if (locked.current || modal || tutorial || gameRef.current.status !== "playing") return;
-    if (clock.read() <= 0) { expire(); return; }
-    await animate(returnReserve(gameRef.current, index));
-  }
-  function liftThree() {
-    if (locked.current || clock.read() <= 0) return;
-    const result = moveOut(gameRef.current);
-    display(result); setUndoAvailable(canUndo(result)); setSelectedGlass(null); setWrongBin(false);
-  }
-  async function shuffle() {
-    if (locked.current || gameRef.current.status !== "playing" || gameRef.current.shuffleUsed) return;
-    locked.current = true; setBusy(true); setShuffling(true); const ticket = epoch.current;
-    await pause(30);
-    if (ticket !== epoch.current) return;
-    const result = shuffleBoard(gameRef.current);
-    display(result); setSelectedGlass(null); setWrongBin(false);
-    locked.current = false; setBusy(false); setShuffling(false);
   }
   function navigate(next: Screen) {
     if (!locked.current) {
@@ -344,7 +313,7 @@ export default function App() {
         <div className="header-leading">
           <button
             className="brand"
-            onClick={() => navigate("start")}
+            onClick={() => screen === "play" ? setModal("menu") : navigate("start")}
             disabled={busy}
             aria-label={`${t.brand} · ${t.home}`}
           >
@@ -605,23 +574,11 @@ export default function App() {
                 <Icon name="restart" size={17} />
                 <span className="restart-label">{t.restart}</span>
               </button>
-              <button className="text-button tool-shuffle" onClick={() => void shuffle()} disabled={busy || game.shuffleUsed || game.status !== "playing"} aria-label={t.shuffle} title={t.shuffleNote}><Icon name="shuffle" size={18} /><span>{t.shuffle}</span></button>
-              <button className="text-button tool-lift" onClick={liftThree} disabled={busy || game.moveOutUsed || game.buffer.length < 3 || game.reserveIds.length > 0 || game.status !== "playing"} aria-label={t.moveOut} title={t.moveOutNote}><Icon name="lift" size={18} /><span>{t.moveOut}</span></button>
               <span className="sr-only">{game.moves} {t.moves}</span>
-              <button
-                className="secondary undo-button"
-                onClick={undo}
-                disabled={!undoAvailable || busy || game.status === "lost"}
-                title={t.undoHint}
-              >
-                <Icon name="undo" size={18} />
-                {t.undo}
-              </button>
             </div>
-            <p className="buffer-reminder">{t.bufferReminder}</p>
             <FitBoard grow>
               <TripleBoard state={game} busy={busy} selectedGlass={selectedGlass} wrongBin={wrongBin} fullGroup={fullCrate} flightSource={flight?.source}
-                t={t} formatMoney={formatDeposit} onPick={(id, bin) => void pick(id, bin)} onReserve={index => void takeReserve(index)} />
+                t={t} formatMoney={formatDeposit} onPick={(id, bin) => void pick(id, bin)} onReserve={() => {}} />
             </FitBoard>
           </section>
         )}
@@ -638,6 +595,11 @@ export default function App() {
           <Icon name="help" size={14} />
         </button>
       </footer>
+      {modal === "menu" && <Dialog className="pause-dialog" title={t.menuTitle} closeLabel={t.close} onClose={() => setModal(null)}>
+        <button className="primary" onClick={() => setModal(null)}>{t.resume}<Icon name="arrow" /></button>
+        <button className="text-button" onClick={() => { setModal(null); navigate("levels"); }}>{t.chooseLevel}</button>
+        <button className="text-button" onClick={() => { setModal(null); navigate("start"); }}>{t.exitRound}</button>
+      </Dialog>}
       {tutorial && (
         <Tutorial
           language={preferences.language}
@@ -695,11 +657,11 @@ export default function App() {
                   : t.receiptReady
                 : game.endReason === "time" ? t.timeOver : game.endReason === "full" ? t.trayFull : t.tooManyMistakes.replace("{count}", String(game.mistakes))
             }
-            closeLabel={game.endReason === "full" ? `${t.undo} · ${t.continue}` : t.close}
-            onClose={() => game.endReason === "full" ? undo() : navigate("levels")}
+            closeLabel={t.close}
+            onClose={() => navigate("levels")}
           >
             {game.endReason === "full" ? <FitBoard><div className="full-tray-content">
-              <p>{game.moveOutUsed ? t.fullRecallOnly : t.trayFullBody}</p>
+              <p>{t.trayFullBody}</p>
               <div className="full-tray-bottles">{game.buffer.map((type, index) => <Bottle key={index} type={type} />)}</div>
             </div></FitBoard> : <FitBoard>
               {game.status === "won" ? (
@@ -754,11 +716,7 @@ export default function App() {
               </>
             ) : (
               <>
-                {game.endReason === "full" && <div className="full-tray-actions">
-                  {!game.moveOutUsed && !game.reserveIds.length && <button className="primary" onClick={liftThree}><Icon name="lift" size={18} /><span>{t.moveOut}</span></button>}
-                  <button className={game.moveOutUsed || game.reserveIds.length ? "primary" : "secondary"} onClick={undo}><Icon name="undo" size={18} /><span>{t.undo}</span></button>
-                </div>}
-                <button className={game.endReason === "full" ? "text-button" : "primary"} onClick={() => start(levelIndex)}><Icon name="restart" />{t.tryAgain}</button>
+                <button className="primary" onClick={() => start(levelIndex)}><Icon name="restart" />{t.tryAgain}</button>
                 {game.endReason !== "full" && <button
                   className="text-button"
                   onClick={() => navigate("start")}

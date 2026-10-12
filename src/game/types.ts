@@ -5,6 +5,10 @@ export const bottleTypes = [
   "apple",
   "malt",
   "kola",
+  "orange",
+  "grape",
+  "mint",
+  "cherry",
   "glassClear",
   "glassBrown",
   "glassGreen",
@@ -19,6 +23,7 @@ export interface Level {
   id: number;
   columns: BottleType[][];
   orders: BottleType[];
+  layout?: { layers: number; columns: number; seed: number; complexity: number };
 }
 export interface Crate {
   type: BottleType;

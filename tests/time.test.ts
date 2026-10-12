@@ -2,15 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createGame, takeBottle, cloneState, bottleInventory } from '../src/game/engine';
 import { timeLimit } from '../src/game/time';
-import { levels } from '../src/data/levels';
+import { levels } from '../src/data/legacy-levels';
+import { levels as campaign } from '../src/data/levels';
 
-test('opening rounds stay relaxed, rounds 6–10 tighten progressively, glass rounds retain their time',()=>{
-  assert.equal(timeLimit(levels[0]),60);assert.equal(timeLimit(levels[1]),60);
-  assert.ok(timeLimit(levels[5]) < timeLimit(levels[4]));
-  for(let i=6;i<10;i++) assert.ok(timeLimit(levels[i])<timeLimit(levels[i-1]));
-  assert.ok(timeLimit(levels[9])/levels[9].columns.flat().length < timeLimit(levels[5])/levels[5].columns.flat().length);
-  assert.equal(timeLimit(levels[10]),60);
-  assert.equal(timeLimit(levels[14]),120);
+test('new layered rounds allow observation, then tighten with larger piles',()=>{
+  assert.equal(timeLimit(campaign[0]),60);assert.equal(timeLimit(campaign[1]),75);
+  assert.equal(timeLimit(campaign[2]),90);
+  for(let i=5;i<9;i++) assert.ok(timeLimit(campaign[i])<timeLimit(campaign[i-1]));
+  assert.ok(timeLimit(campaign[8])/campaign[8].columns.flat().length < timeLimit(campaign[4])/campaign[4].columns.flat().length);
+  assert.equal(timeLimit(campaign[9]),100);assert.equal(timeLimit(campaign[13]),110);
 });
 test('full buffer rejects another unmatched bottle, deducts five seconds, but still accepts a matching one',()=>{
   const level={id:1,columns:[['currant','currant','currant','apple'],['water','water','water'],['lemon','lemon','lemon'],['apple','apple']] as const,orders:['water','lemon','currant','apple'] as const};

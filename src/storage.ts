@@ -7,6 +7,7 @@ export interface Preferences {
   completed: number[];
   tutorialSeen: boolean;
   tutorialVersion: number;
+  campaignVersion?: number;
 }
 export const STORAGE_KEY = "pfand-pause:v1";
 export function languageFromLocale(locale: string): Language {
@@ -22,6 +23,7 @@ export function loadPreferences(): Preferences {
     completed: [],
     tutorialSeen: false,
     tutorialVersion: 0,
+    campaignVersion: 2,
   };
   try {
     const parsed: unknown = JSON.parse(
@@ -42,12 +44,13 @@ export function loadPreferences(): Preferences {
       completed: Array.isArray(p.completed)
         ? [
             ...new Set(
-              p.completed.filter(
+              p.completed.filter(Number.isInteger).map(n => p.campaignVersion === 2 ? n : n - 1).filter(
                 (n) => Number.isInteger(n) && n >= 1 && n <= levels.length,
               ),
             ),
           ]
         : [],
+      campaignVersion: 2,
       tutorialSeen: p.tutorialSeen === true,
       tutorialVersion:
         typeof p.tutorialVersion === "number" &&

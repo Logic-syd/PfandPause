@@ -1,0 +1,195 @@
+import type { Level } from "../game/types";
+// Historical fifteen-round inventories for legacy queue-engine regression tests.
+// The current campaign lives in levels.ts; this file is not loaded by the app.
+// Columns/orders remain here as the original inventory format; they do not restrict acceptance.
+export const levels: Level[] = [
+  {
+    id: 1,
+    columns: [
+      ["water", "lemon"],
+      ["water", "lemon"],
+      ["water", "lemon"],
+    ],
+    orders: ["water", "lemon"],
+  },
+  {
+    id: 2,
+    columns: [
+      ["currant", "water", "lemon"],
+      ["water", "currant", "lemon"],
+      ["water", "lemon", "currant"],
+      ["lemon", "lemon", "lemon"],
+    ],
+    orders: ["water", "lemon", "currant", "lemon"],
+  },
+  {
+    id: 3,
+    columns: [
+      ["currant", "water", "lemon", "currant"],
+      ["water", "lemon", "currant", "water"],
+      ["lemon", "water", "water", "currant"],
+      ["water", "currant", "currant", "lemon"],
+      ["lemon", "lemon"],
+    ],
+    orders: ["water", "lemon", "currant", "water", "lemon", "currant"],
+  },
+  {
+    id: 4,
+    columns: [
+      ["currant", "water", "apple", "water"],
+      ["apple", "water", "apple", "currant"],
+      ["lemon", "lemon", "water", "lemon"],
+      ["water", "lemon", "water"],
+      ["currant", "lemon", "lemon"],
+    ],
+    orders: ["lemon", "water", "currant", "water", "apple", "lemon"],
+  },
+  {
+    id: 5,
+    columns: [
+      ["lemon", "water", "currant", "apple", "lemon"],
+      ["apple", "lemon", "lemon", "apple", "lemon"],
+      ["currant", "apple", "currant", "currant", "water"],
+      ["lemon", "water", "water", "water", "apple"],
+      ["apple", "currant", "currant", "water"],
+    ],
+    orders: [
+      "currant",
+      "lemon",
+      "water",
+      "apple",
+      "currant",
+      "lemon",
+      "water",
+      "apple",
+    ],
+  },
+  {
+    id: 6,
+    columns: [
+      ["currant", "apple", "water", "currant", "water", "water"],
+      ["currant", "water", "lemon", "malt", "water", "lemon"],
+      ["malt", "lemon", "apple", "malt", "currant"],
+      ["apple", "apple", "lemon", "water", "lemon"],
+      ["apple", "currant", "currant", "lemon", "apple"],
+    ],
+    orders: [
+      "lemon",
+      "apple",
+      "lemon",
+      "currant",
+      "water",
+      "currant",
+      "malt",
+      "apple",
+      "water",
+    ],
+  },
+  {
+    id: 7,
+    columns: [
+      ["water", "lemon", "currant", "water", "currant", "apple"],
+      ["lemon", "apple", "currant", "malt", "currant", "malt"],
+      ["apple", "lemon", "lemon", "apple", "lemon", "apple"],
+      ["apple", "malt", "water", "currant", "water", "malt"],
+      ["water", "lemon", "currant", "water", "malt", "malt"],
+    ],
+    orders: [
+      "water",
+      "water",
+      "lemon",
+      "malt",
+      "currant",
+      "apple",
+      "lemon",
+      "apple",
+      "currant",
+      "malt",
+    ],
+  },
+  {
+    id: 8,
+    columns: [
+      ["malt", "apple", "water", "currant", "lemon", "kola"],
+      ["water", "malt", "apple", "water", "currant", "apple"],
+      ["apple", "kola", "lemon", "lemon", "currant", "malt"],
+      ["currant", "kola", "lemon", "water", "water", "currant"],
+      ["lemon", "water", "currant", "apple", "lemon", "apple"],
+    ],
+    orders: [
+      "currant",
+      "lemon",
+      "water",
+      "kola",
+      "malt",
+      "apple",
+      "lemon",
+      "currant",
+      "water",
+      "apple",
+    ],
+  },
+  {
+    id: 9,
+    columns: [
+      ["lemon", "currant", "lemon", "apple", "water", "kola", "water"],
+      ["malt", "lemon", "currant", "apple", "lemon", "malt", "water"],
+      ["currant", "water", "apple", "currant", "apple", "malt", "malt"],
+      ["water", "water", "currant", "kola", "malt", "kola"],
+      ["lemon", "malt", "apple", "lemon", "currant", "apple"],
+    ],
+    orders: [
+      "lemon",
+      "lemon",
+      "currant",
+      "water",
+      "malt",
+      "water",
+      "apple",
+      "apple",
+      "kola",
+      "malt",
+      "currant",
+    ],
+  },
+  {
+    id: 10,
+    columns: [
+      ["kola", "malt", "lemon", "currant", "currant", "kola", "lemon", "kola"],
+      ["apple", "malt", "lemon", "apple", "kola", "kola", "apple"],
+      ["water", "currant", "lemon", "currant", "water", "water", "water"],
+      ["kola", "malt", "apple", "malt", "lemon", "apple", "water"],
+      ["currant", "malt", "currant", "lemon", "apple", "malt", "water"],
+    ],
+    orders: [
+      "apple",
+      "kola",
+      "malt",
+      "apple",
+      "currant",
+      "lemon",
+      "water",
+      "kola",
+      "malt",
+      "water",
+      "currant",
+      "lemon",
+    ],
+  },
+];
+
+// A second chapter adds individually sorted, no-deposit glass bottles to
+// solvable return puzzles. Glass never occupies a machine tray or spare spot.
+const recyclingChapter = [
+  { source:0, glass:["glassClear"] },
+  { source:1, glass:["glassClear","glassBrown"] },
+  { source:3, glass:["glassClear","glassBrown","glassGreen"] },
+  { source:6, glass:["glassBrown","glassClear","glassGreen","glassBrown"] },
+  { source:9, glass:["glassClear","glassBrown","glassGreen","glassClear","glassGreen"] },
+] as const;
+for (const [index, chapter] of recyclingChapter.entries()) {
+  const source = levels[chapter.source];
+  const columns = source.columns.map(column => [...column]);
+  chapter.glass.forEach((type,i) => columns[i % columns.length].splice(i % 2,0,type));
+  levels.push({ id:11+index, columns, orders:[...source.orders] });
+}

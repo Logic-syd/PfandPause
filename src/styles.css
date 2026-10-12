@@ -3198,3 +3198,14 @@ main {
 .answer-comparison .destination-white { background: #fcfcf3; border-color: #adbba4; color: #304c3e; }
 .answer-comparison .destination-brown { background: #805536; border-color: #805536; }
 .answer-comparison .destination-green { background: #39794f; border-color: #39794f; }
+
+/* The seven-slot limit stays visible in both practice and real rounds. */
+.tray-danger { display: flex; justify-content: center; align-items: center; gap: 4px; margin: 6px 0 0; padding: 5px; border-radius: 6px; background: #f8ded3; color: #a33325; font-size: 12px; line-height: 1.25; font-weight: 800; text-align: center; }
+.tray-danger svg { flex-shrink: 0; }
+.tray-caution .tray-danger { background: #b53e30; color: white; }
+.tutorial-dialog .practice-progress { min-height: 2.5em; margin: 0 0 8px; font-weight: 700; }
+.tutorial-dialog .practice-full { color: #b53e30; }
+.practice-actions { display: flex; gap: 8px; justify-content: space-between; flex-shrink: 0; }
+.pause-dialog[open] { display: flex; flex-direction: column; gap: 12px; width: min(360px,calc(100vw - 24px)); }
+.pause-dialog > button:not(.dialog-close) { min-height: 44px; }
+.dialog.tray-full-dialog > .primary { min-height: 44px; padding: 8px; margin: 0; flex-shrink: 0; }

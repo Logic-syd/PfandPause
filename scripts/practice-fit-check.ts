@@ -31,7 +31,7 @@ try {
     for (const language of ['zh','en','de'] as const) {
       const t=translations[language], r=recyclingTranslations[language];
       const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:width<900});
-      await context.addInitScript(language => localStorage.setItem('pfand-pause:v1',JSON.stringify({language,sound:false,reducedMotion:true,completed:[1,2,3,4,5,6,7,8,9,10]})),language);
+      await context.addInitScript(language => localStorage.setItem('pfand-pause:v1',JSON.stringify({language,sound:false,reducedMotion:true,completed:[1,2,3,4,5,6,7,8,9,10],campaignVersion:2})),language);
       const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
       await page.route('**/practice-portal',route=>route.fulfill({contentType:'text/html',body:`<meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{height:100%;margin:0;overflow:hidden}iframe{width:100%;height:calc(100% - 56px);border:0}</style><header style="height:56px">Portal</header><iframe scrolling="no" src="${url}/?practice-fit"></iframe>`}));
       await page.goto(`${url}/practice-portal`);
@@ -45,14 +45,14 @@ try {
       assert.equal(await frame.locator('dialog .tile-card').count(),12);
       assert.equal(await frame.locator('dialog .tray-slot').count(),7);
       assert.ok(await frame.locator('dialog .tile-card.is-covered').count()>0);
-      await fits(frame,'.practice-tools button');
+      await fits(frame,'.practice-actions button,.tray-danger');
       for (const id of solveState(createGame(triplePracticeLevel)).path!) {
-        await fits(frame,'.tile-card,.tray-slot,.practice-tools button,.practice-actions button,.dialog-close');
+        await fits(frame,'.tile-card,.tray-slot,.tray-danger,.practice-actions button,.dialog-close');
         await frame.locator(`dialog [data-column="${id}"]`).tap();
         await frame.waitForFunction(()=>!document.querySelector('dialog .tile-field.is-busy'));
       }
       await frame.locator('.practice-finished').waitFor();
-      await fits(frame,'.practice-summary,.practice-tools button,.practice-actions button,.dialog-close');
+      await fits(frame,'.practice-summary,.tray-danger,.practice-actions button,.dialog-close');
       assert.equal((await frame.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,10,'Practice never changes progress');
       await frame.getByRole('button',{name:t.gotIt,exact:true}).tap();
       await frame.getByRole('button',{name:t.recyclingEntry,exact:true}).tap();
@@ -75,8 +75,8 @@ try {
       await fits(frame,'.recycling-result,.recycling-actions');
       await frame.getByRole('button',{name:r.back,exact:true}).tap();
       await frame.getByRole('button',{name:t.chooseLevel,exact:true}).tap();
-      await frame.locator('.level-card').nth(1).tap();
-      for(const column of solveState(createGame(levels[1])).path!) {
+      await frame.locator('.level-card').nth(0).tap();
+      for(const column of solveState(createGame(levels[0])).path!) {
         await frame.locator(`[data-column="${column}"]`).tap();
         await frame.waitForFunction(()=>!document.querySelector('.tile-field.is-busy'));
       }

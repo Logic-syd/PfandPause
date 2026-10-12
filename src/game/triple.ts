@@ -25,10 +25,11 @@ function shuffled<T>(items: readonly T[], random: () => number): T[] {
 export function availableTiles(state: TripleState): number[] {
   return state.tiles.filter(tile => state.columns[tile.id].length && tile.blockedBy.every(id => !state.columns[id].length)).map(tile => tile.id);
 }
-function peelOrder(tiles: Tile[]): number[] {
+function peelOrder(tiles: Tile[], random?: () => number): number[] {
   const left = new Set(tiles.map(tile => tile.id)), result: number[] = [];
   while (left.size) {
-    const tile = tiles.find(tile => left.has(tile.id) && tile.blockedBy.every(id => !left.has(id)));
+    const free = tiles.filter(tile => left.has(tile.id) && tile.blockedBy.every(id => !left.has(id)));
+    const tile = free[random ? Math.floor(random() * free.length) : 0];
     if (!tile) throw new Error("Cyclic tile layout");
     left.delete(tile.id); result.push(tile.id);
   }
@@ -36,9 +37,9 @@ function peelOrder(tiles: Tile[]): number[] {
 }
 export function createGame(level: Level): TripleState {
   const inventory = level.columns.flat();
-  const random = rng(level.id * 19237);
-  const layers = level.id <= 2 ? 1 : level.id <= 7 ? 2 : 3;
-  const cols = level.id === 1 ? 3 : level.id === 2 ? 4 : 5;
+  const random = rng((level.layout?.seed ?? level.id) * 19237);
+  const layers = level.layout?.layers ?? (level.id <= 2 ? 1 : level.id <= 7 ? 2 : 3);
+  const cols = level.layout?.columns ?? (level.id === 1 ? 3 : level.id === 2 ? 4 : 5);
   const rows = Math.ceil(inventory.length / (cols * layers));
   const tiles: Tile[] = inventory.map((bottle, id) => {
     const layer = Math.floor(id / (cols * rows)), cell = id % (cols * rows);
@@ -61,7 +62,28 @@ export function createGame(level: Level): TripleState {
     sequence.push(...(level.id <= 2 ? pair : shuffled(pair, random)));
   }
   for (const type of glass) sequence.splice(Math.floor(random() * (sequence.length + 1)), 0, type);
-  peelOrder(tiles).forEach((id, index) => { tiles[id].bottle = sequence[index]; });
+  if (level.layout?.complexity) {
+    // Build a legal witness with several unfinished types at once, then hide it
+    // across a random topological peel of the layered board. No rescue is needed.
+    sequence.length = 0;
+    const left = [...inventory], held: BottleType[] = [];
+    while (left.length) {
+      const candidates = [...new Set(left)].filter(type => {
+        if (isGlass(type)) return true;
+        const matching = held.filter(t => t === type).length;
+        return matching === 2 || (held.length < 6 && (matching > 0 || new Set(held).size < level.layout!.complexity));
+      });
+      if (!candidates.length) throw new Error(`Cannot construct round ${level.id}`);
+      const type = candidates[Math.floor(random() * candidates.length)];
+      left.splice(left.indexOf(type), 1); sequence.push(type);
+      if (!isGlass(type)) {
+        held.push(type);
+        if (held.filter(t => t === type).length === 3) for (let i = held.length - 1; i >= 0; i--) if (held[i] === type) held.splice(i, 1);
+      }
+    }
+  }
+  const solutionOrder = peelOrder(tiles, level.layout?.complexity ? random : undefined);
+  solutionOrder.forEach((id, index) => { tiles[id].bottle = sequence[index]; });
   return {
     tiles, boardWidth: cols + (layers - 1) * .26, boardHeight: rows + (layers - 1) * .28,
     columns: tiles.map(tile => [tile.bottle]), buffer: [], bufferIds: [], reserveIds: [], returnedIds: [], recycledIds: [], pickedOrder: [],
@@ -122,7 +144,7 @@ export function returnReserve(previous: TripleState, index: number): TripleTrans
   return { state, frames };
 }
 export function canUndo(state: TripleState): boolean {
-  return (state.status === "playing" || state.endReason === "full") && state.pickedOrder.length > 0;
+  return state.status === "playing" && state.pickedOrder.length > 0;
 }
 export function undoBottle(previous: TripleState): TripleState {
   if (!canUndo(previous)) return previous;
@@ -137,7 +159,7 @@ export function undoBottle(previous: TripleState): TripleState {
   return state;
 }
 export function moveOut(previous: TripleState): TripleState {
-  if (previous.moveOutUsed || previous.reserveIds.length || previous.bufferIds.length < 3 || !(previous.status === "playing" || previous.endReason === "full")) return previous;
+  if (previous.moveOutUsed || previous.reserveIds.length || previous.bufferIds.length < 3 || previous.status !== "playing") return previous;
   const state = structuredClone(previous);
   state.reserveIds = state.bufferIds.splice(0, 3);
   state.buffer = state.bufferIds.map(id => state.tiles[id].bottle);

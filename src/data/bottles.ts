@@ -123,6 +123,10 @@ export const bottles: Record<BottleType, BottleDesign> = {
     labelFill: "#c3643b",
     labelInk: "#fff5df",
   },
+  orange: { ...glassBottle, color: "#dc741f", light: "#ffe0b6", glass: "#f2c386", edge: "#9e622c", shade: "#d2934c", label: "round", labelFill: "#dc741f", labelInk: "#fffbed", path: "M27 17H41V35L52 48V105Q52 116 41 116H27Q16 116 16 105V48L27 35Z", capX: 25, capY: 10, capW: 18 },
+  grape: { ...glassBottle, color: "#6454a2", light: "#e9dff8", glass: "#c6bbdc", edge: "#75618e", shade: "#9e8db5", label: "shield", labelFill: "#6454a2", labelInk: "#fffbed", path: "M28 12H40V38Q40 43 48 48L52 56V108Q52 116 44 116H24Q16 116 16 108V56L20 48Q28 43 28 38Z" },
+  mint: { ...glassBottle, color: "#16877f", light: "#c9eee6", glass: "#bce0cf", edge: "#438c7e", shade: "#82b8a3", label: "diagonal", labelFill: "#16877f", labelInk: "#fffbed", path: "M29 12H39V40L47 56V110Q47 116 40 116H28Q21 116 21 110V56L29 40Z" },
+  cherry: { ...glassBottle, color: "#bb354a", light: "#ffd4da", glass: "#e2acb1", edge: "#975568", shade: "#c08494", label: "oval", labelFill: "#bb354a", labelInk: "#fffbed", path: "M26 22H42V39Q55 45 55 59V103Q55 116 43 116H25Q13 116 13 103V59Q13 45 26 39Z", capX: 24, capY: 15, capW: 20 },
   glassClear: { ...glassBottle },
   glassBrown: { ...glassBottle, color:"#87623e", light:"#eee0cc", glass:"#b88955", edge:"#705338", shade:"#98703e" },
   glassGreen: { ...glassBottle, color:"#447454", light:"#dbe8d6", glass:"#88ab7e", edge:"#477150", shade:"#608959" },
@@ -131,6 +135,6 @@ export const bottles: Record<BottleType, BottleDesign> = {
 // Explicit example deposits in cents. Lemon is labelled Einweg PET; other returnables are Mehrweg.
 // Real returns depend on the actual bottle label and the accepting shop.
 export const bottleDeposits: Record<BottleType, number> = {
-  water: 15, lemon: 25, currant: 15, apple: 15, malt: 8, kola: 15,
+  water: 15, lemon: 25, currant: 15, apple: 15, malt: 8, kola: 15, orange: 15, grape: 15, mint: 15, cherry: 15,
   glassClear: 0, glassBrown: 0, glassGreen: 0,
 };

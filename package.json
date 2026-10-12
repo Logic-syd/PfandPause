@@ -20,7 +20,8 @@
     "test:glass": "tsx scripts/glass-check.ts",
     "test:timer": "tsx scripts/timer-check.ts",
     "test:demo": "tsx scripts/demo-check.ts",
-    "test:feedback": "tsx scripts/feedback-check.ts"
+    "test:feedback": "tsx scripts/feedback-check.ts",
+    "test:navigation": "tsx scripts/navigation-check.ts"
   },
   "dependencies": {
     "react": "^19.1.0",

@@ -17,11 +17,11 @@ test('third matching bottle clears before checking seven-slot loss',()=>{
  let s=flat([...sequence.slice(0,6),'water']);for(let id=0;id<7;id++)s=pick(s,id);
  assert.equal(s.status,'playing');assert.equal(s.buffer.length,4);assert.equal(s.completed,1);assert.equal(s.returnedIds.length,3);
 });
-test('seven unmatched bottles lose, Undo and move-out can rescue without refunding penalties',()=>{
+test('seven unmatched bottles lose permanently, with no rescue or further picks',()=>{
  let s=flat(sequence);for(let id=0;id<7;id++)s=pick(s,id);
  assert.equal(s.status,'lost');assert.equal(s.endReason,'full');s.penalties=10;s.mistakes=1;
- const recalled=undoBottle(s);assert.equal(recalled.status,'playing');assert.equal(recalled.buffer.length,6);assert.deepEqual(recalled.columns[6],['apple']);assert.equal(recalled.penalties,10);
- const saved=moveOut(s);assert.equal(saved.buffer.length,4);assert.equal(saved.reserveIds.length,3);assert.equal(saved.status,'playing');assert.equal(saved.mistakes,1);assert.equal(saved.penalties,10);assert.equal(moveOut(saved),saved);
+ assert.equal(canUndo(s),false);assert.equal(undoBottle(s),s);assert.equal(moveOut(s),s);
+ assert.equal(takeBottle(s,7).state,s);assert.equal(shuffleBoard(s),s);assert.equal(returnReserve(s,0).state,s);
 });
 test('completed triples cannot be undone; last pending pick is recalled regardless of grouped order',()=>{
  let s=flat(['water','lemon','water','water']);for(let id=0;id<4;id++)s=pick(s,id);
@@ -35,7 +35,7 @@ test('reserve returns can complete a triple and count as latest pending pick',()
 test('covered bottles are unpickable and become available after blockers leave',()=>{
  const s=createGame(levels[2]);const blocked=s.tiles.find(t=>t.blockedBy.length)!;
  assert.equal(takeBottle(s,blocked.id).state,s);
- let next=s;for(const id of blocked.blockedBy) { if(availableTiles(next).includes(id))next=pick(next,id); }
+ let next=s;for(const id of solveState(s).path!) { if(availableTiles(next).includes(blocked.id))break;next=pick(next,id); }
  for(const id of blocked.blockedBy) assert.equal(next.columns[id].length,0);
  assert.ok(availableTiles(next).includes(blocked.id));
 });
@@ -87,14 +87,27 @@ test('a six-type blocked tray still allows the once-only shuffle; recall can res
  const shuffled=shuffleBoard(s);assert.equal(shuffled.shuffleUsed,true);assert.deepEqual(shuffled.bufferIds,s.bufferIds);assert.deepEqual(bottleInventory(shuffled),bottleInventory(s));
  assert.ok(solveState(undoBottle(shuffled)).path,'Recall opens enough space to match triples');
 });
-test('twelve-bottle free practice has four balanced types, real overlap, a full-slot route and both recovery actions',async()=>{
+test('twelve-bottle practice teaches real overlap, triples and permanent seven-slot loss',async()=>{
  const {triplePracticeLevel}=await import('../src/data/tutorial');const initial=createGame(triplePracticeLevel);
  assert.equal(initial.tiles.length,12);assert.equal(new Set(initial.tiles.map(tile=>tile.bottle)).size,4);
  for(const count of Object.values(bottleInventory(initial)))assert.equal(count,3);
- assert.ok(initial.tiles.some(tile=>tile.blockedBy.length));assert.ok(solveState(initial).path);
+ assert.ok(initial.tiles.some(tile=>tile.blockedBy.length));
  let full=initial;for(const id of [3,4,9,10,5,11,2])full=pick(full,id);
- assert.equal(full.endReason,'full');assert.equal(full.buffer.length,7);assert.equal(undoBottle(full).status,'playing');
- const recovered=shuffleBoard(moveOut(full));const path=solveState(recovered).path;assert.ok(path);
- let end=recovered;for(const id of path)end=id<0?returnReserve(end,-id-1).state:pick(end,id);
- assert.equal(end.status,'won');assert.equal(end.returnedIds.length,12);
+ assert.equal(full.endReason,'full');assert.equal(full.buffer.length,7);assert.equal(canUndo(full),false);
+ assert.equal(undoBottle(full),full);assert.equal(moveOut(full),full);
+ const reset=createGame(triplePracticeLevel),path=solveState(reset).path;assert.ok(path);
+ assert.equal(path.reduce(pick,reset).status,'won');
+});
+test('old second round opens the campaign; third needs planning and fifth contains ten bottle kinds',async()=>{
+ const {levels:old}=await import('../src/data/legacy-levels');
+ assert.deepEqual(levels[0].columns,old[1].columns);
+ assert.deepEqual(createGame(levels[0]).tiles,createGame(old[1]).tiles);
+ assert.equal(new Set(levels[2].columns.flat()).size,6);
+ assert.equal(new Set(levels[4].columns.flat()).size,10);
+ assert.equal(new Set(createGame(levels[2]).tiles.map(tile=>tile.layer)).size,3);
+ let seed=746,wins=0;for(let trial=0;trial<50;trial++){
+   let s=createGame(levels[2]);while(s.status==='playing'){seed=(seed*1664525+1013904223)>>>0;const free=availableTiles(s);s=pick(s,free[seed%free.length]);}
+   if(s.status==='won')wins++;
+ }
+ assert.ok(wins<15,`Random clicking should not reliably win round three: ${wins}/50`);
 });

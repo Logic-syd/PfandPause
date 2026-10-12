@@ -25,7 +25,6 @@ async function swipe(context: BrowserContext, page: Page, x: number, from: numbe
   await session.detach();
 }
 async function select(frame: Frame, index: number) {
-  await frame.locator(".brand").tap();
   await frame.getByRole("button", { name: t.chooseLevel, exact: true }).tap();
   await frame.locator(".level-card").nth(index).tap();
 }
@@ -70,8 +69,8 @@ try {
   await frame.locator('[data-column="0"]').tap();
   await frame.waitForFunction(() => !document.querySelector(".tile-field.is-busy"));
   assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
-  await frame.getByRole("button", { name: t.undo, exact: true }).tap();
-  console.log("PASS reverse swipe, then bottle tap and undo remain usable");
+  await frame.getByRole("button", { name: t.restart, exact: true }).tap();
+  console.log("PASS reverse swipe, then bottle tap and restart remain usable");
 
   await page.setViewportSize({ width: 390, height: 568 });
   await select(frame, 9);

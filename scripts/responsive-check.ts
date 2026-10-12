@@ -78,7 +78,7 @@ try {
     await press(frame.getByRole("button", { name: t.chooseLevel, exact: true }));
     await press(frame.locator(".level-card").nth(9));
     await noOverflow(frame);
-    const pick = frame.locator('.tile-card:enabled').first();
+    const pick = frame.locator('.tile-card:enabled:not(:has([data-bottle-type^="glass"]))').first();
     const box = await pick.boundingBox();
     assert.ok(box && box.width >= 44 && box.height >= 44, `Bottles need usable tap targets: ${JSON.stringify({size,box})}`);
     await press(pick);
@@ -89,7 +89,7 @@ try {
     await settled(frame);
     await noOverflow(frame);
     assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`1 ${t.moves}`));
-    await press(frame.getByRole("button", { name: t.undo, exact: true }));
+    await press(frame.getByRole("button", { name: t.restart, exact: true }));
     await settled(frame);
     assert.match(await frame.locator(".game-toolbar").innerText(), new RegExp(`0 ${t.moves}`));
     if (size.width === 1280) {
@@ -129,6 +129,7 @@ try {
     await press(frame.getByRole("button", { name: t.close, exact: true }));
 
     await press(frame.locator(".brand"));
+    await press(frame.locator(".pause-dialog").getByRole("button", { name:t.exitRound, exact:true }));
     await press(frame.getByRole("button", { name: t.recyclingEntry, exact: true }));
     await noOverflow(frame);
     await press(frame.locator(".recycling-choices button").first());
@@ -154,7 +155,7 @@ try {
       await settled(frame);
     }
     await frame.locator(".result-dialog.won").waitFor();
-    console.log(`PASS nested iframe ${size.width}×${size.height} @${size.scale}: ${language}, ${size.touch ? "touch" : "mouse"}, fitted board, undo, restart, dialogs, recycling, tutorial, animated win`);
+    console.log(`PASS nested iframe ${size.width}×${size.height} @${size.scale}: ${language}, ${size.touch ? "touch" : "mouse"}, fitted board, restart, dialogs, recycling, tutorial, animated win`);
     await context.close();
   }
   const faultContext = await browser.newContext({ viewport: { width: 1280, height: 720 } });
@@ -181,9 +182,9 @@ try {
   await faultPage.getByRole("button", { name: "Play again", exact: true }).click();
   await faultPage.locator('[data-column="0"]').click();
   await settled(faultFrame);
-  await faultPage.getByRole("button", { name: "Undo", exact: true }).click();
+  await faultPage.getByRole("button", { name: "Start again", exact: true }).click();
   assert.match(await faultPage.locator(".game-toolbar").innerText(), /0 moves/);
-  console.log("PASS unavailable audio output cannot lock the board: animated win, replay and undo remain usable");
+  console.log("PASS unavailable audio output cannot lock the board: animated win, replay and restart remain usable");
   await faultContext.close();
   assert.deepEqual(errors, []);
 } finally {

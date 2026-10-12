@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { levels } from "../src/data/levels";
+import { levels } from "../src/data/legacy-levels";
 import { createGame, takeBottle, bottleInventory } from "../src/game/engine";
 import { createUndoTrail, advanceUndoTrail, undoPendingBottle } from "../src/game/undo";
 import { isGlass, type GameState, type Level } from "../src/game/types";

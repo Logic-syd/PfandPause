@@ -1,6 +1,6 @@
 import type { Level } from "../game/types";
 
-export const TUTORIAL_VERSION = 4;
+export const TUTORIAL_VERSION = 5;
 // Previous guided-practice fixture, retained for historical regression tests.
 export const tutorialLevel: Level = {
   id: 1,

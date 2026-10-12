@@ -31,18 +31,6 @@ export default function Dialog({
         e.preventDefault();
         onClose();
       }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          const r = e.currentTarget.getBoundingClientRect();
-          if (
-            e.clientX < r.left ||
-            e.clientX > r.right ||
-            e.clientY < r.top ||
-            e.clientY > r.bottom
-          )
-            onClose();
-        }
-      }}
       aria-labelledby="dialog-title"
     >
       <button

@@ -3,7 +3,7 @@ import { bottles, bottleDeposits } from "../data/bottles";
 import { bottlePackaging, packagingText } from "../i18n";
 import { isGlass, type BottleType } from "../game/types";
 
-/** Large, different pictograms keep the six types readable without color. */
+/** Large, different pictograms keep the ten deposit types readable without color. */
 export function Pattern({ type }: { type: BottleType }) {
   switch (type) {
     case "water":
@@ -51,6 +51,14 @@ export function Pattern({ type }: { type: BottleType }) {
           <path d="m24 81-3-4m5 10-4-4m22-2 3-4m-5 10 4-4" />
         </g>
       );
+    case "orange":
+      return <g stroke="currentColor" strokeWidth="1.6"><circle cx="34" cy="83" r="10" /><path d="M34 73v20M24 83h20m-17-7 14 14m0-14-14 14" /><path d="M35 72q1-6 8-4q-2 5-8 4" fill="currentColor" /></g>;
+    case "grape":
+      return <g fill="currentColor"><path d="M33 76q-3-6 2-8h3q-4 3-2 8" /><circle cx="29" cy="78" r="3.6" /><circle cx="38" cy="78" r="3.6" /><circle cx="26" cy="85" r="3.6" /><circle cx="34" cy="85" r="3.6" /><circle cx="42" cy="85" r="3.6" /><circle cx="30" cy="92" r="3.6" /><circle cx="38" cy="92" r="3.6" /></g>;
+    case "mint":
+      return <g stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"><path d="M24 91Q18 73 41 73Q47 91 24 91Z" /><path d="m23 94 17-19m-10 12-1-7m5 3 6 1" /></g>;
+    case "cherry":
+      return <g stroke="currentColor" strokeWidth="1.6"><path d="M27 84Q37 79 36 69Q35 81 42 87" /><path d="M36 70q6-3 9 2q-6 4-9-2" fill="currentColor" /><circle cx="26" cy="88" r="5.5" fill="currentColor" /><circle cx="42" cy="90" r="5.5" fill="currentColor" /></g>;
     case "glassClear":
     case "glassBrown":
     case "glassGreen":

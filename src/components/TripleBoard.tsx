@@ -18,6 +18,12 @@ export default function TripleBoard({ state, busy, pendingIds, showQueue = false
   const available = new Set(availableTiles(state));
   const hasGlass = state.tiles.some(tile => isGlass(tile.bottle));
   const remaining = state.columns.flat().length;
+  // A seventh bottle that completes a triple is collected before loss is checked.
+  const matching = state.buffer.some(type => state.buffer.filter(bottle => bottle === type).length >= 3);
+  const capacityState = matching ? "clearing" : state.buffer.length >= 7 ? "full"
+    : state.buffer.length === 6 ? "last" : state.buffer.length === 5 ? "nearly" : "normal";
+  const capacityText = capacityState === "clearing" ? t.trayClearing : capacityState === "full" ? t.trayStopped
+    : capacityState === "last" ? t.trayLastSlot : capacityState === "nearly" ? t.trayNearlyFull : t.trayDanger;
   const queueLines = idleLevel >= 2 ? t.queueLongIdle : idleLevel === 1 ? t.queueIdle : state.buffer.length >= 5 ? t.queueCrowded
     : remaining <= Math.min(6, state.tiles.length / 3) ? t.queueLate
     : state.completed > 0 ? t.queueMatch : t.queueStart;
@@ -47,17 +53,20 @@ export default function TripleBoard({ state, busy, pendingIds, showQueue = false
       </div>
     </section>
     <div className="triple-dock">
-      <section className={`shared-tray ${state.buffer.length >= 5 ? "tray-caution" : ""}`} aria-label={t.sharedTray}>
+      <section className={`shared-tray ${capacityState === "nearly" ? "tray-caution" : capacityState === "last" || capacityState === "full" ? "tray-urgent" : ""}`} aria-label={t.sharedTray}>
         <div className="section-label"><span>{t.sharedTray}</span><b>{state.buffer.length}/{TRAY_CAPACITY}</b></div>
         <div className="seven-slots">
           {Array.from({ length: TRAY_CAPACITY }, (_, index) => <div key={index} data-place={`buffer-${index}`}
-            className={`tray-slot ${state.buffer[index] ? "occupied" : ""} ${fullGroup !== null && index >= fullGroup && index < fullGroup + 3 ? "is-matching" : ""}`}
+            className={`tray-slot ${state.buffer[index] ? "occupied" : ""} ${capacityState === "last" && index === 6 ? "last-free-slot" : ""} ${fullGroup !== null && index >= fullGroup && index < fullGroup + 3 ? "is-matching" : ""}`}
             aria-label={state.buffer[index] ? `${t.sharedTray} ${index + 1}: ${t.bottleNames[state.buffer[index]]}` : t.emptySpot}>
             {state.buffer[index] ? <Bottle type={state.buffer[index]} /> : <span className="slot-number">{index + 1}</span>}
           </div>)}
         </div>
         <p className="tray-caption">{t.tripleRule}</p>
-        <p className="tray-danger"><Icon name="close" size={14} />{t.trayDanger}</p>
+        <p className="tray-danger" data-state={capacityState} role="status">
+          {["nearly", "last", "full"].includes(capacityState) && <span className="capacity-alert" aria-hidden="true">!</span>}
+          {capacityText}
+        </p>
         {showQueue && <p className={`queue-comment idle-${idleLevel}`}>
           <span className="queue-speaker">{t.queueSpeaker}：</span>
           <span className="sr-only">{queueLine}</span>

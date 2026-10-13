@@ -15,6 +15,7 @@
     "test:languages": "tsx scripts/language-check.ts",
     "test:responsive": "tsx scripts/responsive-check.ts",
     "test:mobile-frame": "tsx scripts/mobile-frame-check.ts",
+    "test:capacity": "tsx scripts/capacity-check.ts",
     "test:queue": "tsx scripts/queue-check.ts",
     "test:rapid-taps": "tsx scripts/rapid-tap-check.ts",
     "test:embedded-scroll": "tsx scripts/embedded-scroll-check.ts",

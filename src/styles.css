@@ -3058,7 +3058,8 @@ main {
 .tray-slot .bottle { width: 32px; max-width: 92%; height: 62px; }
 .slot-number { color: #b8c1ac; font-size: 12px; }
 .tray-caption { margin: 8px 0 0; font-size: 11px; text-align: center; color: #65745c; }
-.tray-caution { border-color: #b57967; }
+.tray-caution { border-color: #beaa6b; }
+.tray-urgent { border-color: #ba7153; }
 .tray-slot.is-matching { animation: crate-celebrate .24s ease-in-out; background: #f0cecf; }
 .reserve-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; color: #75816d; }
 .reserve-row > div { display: flex; gap: 6px; }
@@ -3191,9 +3192,14 @@ main {
 .answer-comparison .destination-green { background: #39794f; border-color: #39794f; }
 
 /* The seven-slot limit stays visible in both practice and real rounds. */
-.tray-danger { display: flex; justify-content: center; align-items: center; gap: 4px; margin: 6px 0 0; padding: 5px; border-radius: 6px; background: #f8ded3; color: #a33325; font-size: 12px; line-height: 1.25; font-weight: 800; text-align: center; }
+.tray-danger { display: flex; justify-content: center; align-items: center; gap: 5px; height: 32px; margin: 6px 0 0; padding: 2px 5px; border-radius: 6px; background: transparent; color: #65745d; font-size: 11px; line-height: 1.2; font-weight: 500; text-align: center; }
 .tray-danger svg { flex-shrink: 0; }
-.tray-caution .tray-danger { background: #b53e30; color: white; }
+ .tray-danger[data-state="nearly"] { background: #f1e7bc; color: #80602a; font-weight: 650; }
+.tray-danger[data-state="last"], .tray-danger[data-state="full"] { background: #f8ded3; color: #a33325; font-weight: 800; }
+.tray-danger[data-state="clearing"] { color: #39714b; }
+.capacity-alert { flex-shrink: 0; display: grid; place-items: center; width: 14px; height: 14px; border: 1px solid currentColor; border-radius: 50%; font-size: 11px; }
+.tray-slot.last-free-slot { border: 2px dashed #b67b3c; background: #fff0c9; }
+.tray-slot.last-free-slot .slot-number { color: #9c6128; font-weight: 800; }
 .tutorial-dialog .practice-progress { min-height: 2.5em; margin: 0 0 8px; font-weight: 700; }
 .tutorial-dialog .practice-full { color: #b53e30; }
 .practice-actions { display: flex; gap: 8px; justify-content: space-between; flex-shrink: 0; }
@@ -3226,7 +3232,7 @@ main {
   .tray-slot { height: 40px; }
   .tray-slot .bottle { height: 36px; width: 21px; }
   .tray-caption { margin-top: 3px; }
-  .tray-danger { margin-top: 3px; padding: 3px; }
+  .tray-danger { height: 26px; margin-top: 3px; padding: 1px 4px; font-size: 10px; }
   .triple-dock { gap: 8px; }
   .triple-dock .glass-section { margin-top: 0; }
   .triple-dock .glass-coach { font-size: 11px; line-height: 1.25; margin: 3px 0 5px; }

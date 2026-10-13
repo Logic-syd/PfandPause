@@ -122,7 +122,7 @@ try {
   const practice = await setup();
   await practice.locator(".help-button").click();
   await practice
-    .getByRole("button", { name: "Try a round", exact: true })
+    .getByRole("button", { name: "Try a small bag", exact: true })
     .click();
   for (const id of solveState(createGame(triplePracticeLevel)).path!) {
     await practice.locator(`dialog [data-column="${id}"]`).tap();

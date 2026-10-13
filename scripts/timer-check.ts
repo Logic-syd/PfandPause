@@ -38,14 +38,14 @@ try {
   const wrong=type==='glassBrown'?'glassGreen':'glassBrown';
   await page.locator(`[data-column="${glassId}"]`).click();
   for(let i=0;i<2;i++) await page.locator(`[data-bin="${wrong}"]`).click();
-  assert.equal(await page.locator('.penalty-flash').innerText(),'Wrong bin!');
+  assert.equal(await page.locator('.penalty-flash').innerText(),'Wrong bank!');
   assert.match(await page.locator('.round-status').innerText(),/2\/3/);
   await page.clock.fastForward(3600000);
   assert.equal(await page.locator('.lost').count(),0); await assertNoClock();
   await page.locator(`[data-bin="${wrong}"]`).click();
   await page.locator('.lost').waitFor();
-  assert.equal(await page.locator('.lost h2').innerText(),'Wrong choices this round: 3');
-  await page.getByRole('button',{name:'One more go',exact:true}).click();
+  assert.equal(await page.locator('.lost h2').innerText(),'Wrong bins in this bag: 3');
+  await page.getByRole('button',{name:'Try this bag again',exact:true}).click();
   assert.match(await page.locator('.round-status').innerText(),/0\/3/);
   assert.deepEqual(errors,[]);
   console.log('PASS no visible or hidden timer after hours of play, help and restart; glass mistakes count without time penalties and the third ends the round');

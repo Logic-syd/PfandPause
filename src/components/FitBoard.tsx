@@ -53,9 +53,16 @@ export default function FitBoard({ children, grow = false, compact = false }: { 
     const observer = new ResizeObserver(fit);
     if (viewport.current) observer.observe(viewport.current);
     if (compact && viewport.current?.parentElement) observer.observe(viewport.current.parentElement);
+    // A closed dialog has no measurable space. Fit as soon as showModal adds
+    // its open attribute, before the first visible frame, rather than waiting
+    // for a later resize notification.
+    const dialog = viewport.current?.closest("dialog");
+    const dialogObserver = dialog ? new MutationObserver(fit) : null;
+    if (dialog && dialogObserver) dialogObserver.observe(dialog, { attributes: true, attributeFilter: ["open"] });
     window.visualViewport?.addEventListener("resize", fit);
     return () => {
       observer.disconnect();
+      dialogObserver?.disconnect();
       window.visualViewport?.removeEventListener("resize", fit);
     };
   }, [compact]);

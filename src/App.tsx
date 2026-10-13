@@ -545,7 +545,7 @@ export default function App() {
               <span className="sr-only">{game.moves} {t.moves}</span>
             </div>
             <FitBoard grow>
-              <TripleBoard state={game} busy={busy} pendingIds={input.pendingIds} selectedGlass={selectedGlass} wrongBin={wrongBin} fullGroup={fullCrate} flightSource={flight?.source}
+              <TripleBoard state={game} busy={busy} pendingIds={input.pendingIds} showQueue selectedGlass={selectedGlass} wrongBin={wrongBin} fullGroup={fullCrate} flightSource={flight?.source}
                 t={t} formatMoney={formatDeposit} onPick={(id, bin) => void pick(id, bin)} onReserve={() => {}} />
             </FitBoard>
           </section>

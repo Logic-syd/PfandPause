@@ -28,7 +28,7 @@ try{
  await page.evaluate(()=>{const b=document.querySelector<HTMLButtonElement>('[data-column="0"]')!;b.click();b.click();b.click();});await settled(page);assert.equal(await page.locator('.tray-slot.occupied').count(),1,'A burst cannot collect the same card twice');
  await page.getByRole('button',{name:'Start again',exact:true}).click();assert.equal(await page.locator('.tray-slot.occupied').count(),0);
  for(const level of levels){
-  await page.getByRole('button',{name:'Choose a level',exact:true}).click();await page.locator('.level-card').nth(level.id-1).click();
+  await page.getByRole('button',{name:'Choose a bag',exact:true}).click();await page.locator('.level-card').nth(level.id-1).click();
   const state=createGame(level), route=createPuzzle(level).solution;assert.ok(route);
   if(level.id===9){await page.screenshot({path:'artifacts/triple-desktop.png'});assert.ok(await page.locator('.tile-card.is-covered:disabled').count()>0);}
   await play(page,state,route);await page.locator('dialog.won').waitFor();
@@ -37,19 +37,19 @@ try{
   await page.locator('.result-dialog .dialog-close').click();await page.locator('.brand').click();await page.locator('.home-actions .primary').first().click();
  }
  console.log('PASS all 20 rounds: real clicks, triples, blocked cards, per-bottle credit, glass colour banks, receipts and saved progress');
- await page.getByRole('button',{name:'Choose a level',exact:true}).click();await page.locator('.level-card').nth(9).click();
+ await page.getByRole('button',{name:'Choose a bag',exact:true}).click();await page.locator('.level-card').nth(9).click();
  let s=createGame(levels[9]);const path=lossPath(s);assert.ok(path);s=await play(page,s,path);
- await page.locator('dialog.lost').waitFor();assert.equal(await page.locator('dialog.lost h2').innerText(),'No room left!');
+ await page.locator('dialog.lost').waitFor();assert.equal(await page.locator('dialog.lost h2').innerText(),'No room left.');
  assert.equal(await page.getByRole('button',{name:'Undo',exact:true}).count(),0);
  assert.equal(await page.getByRole('button',{name:'Move out 3',exact:true}).count(),0);
  await page.mouse.click(5,350);assert.ok(await page.locator('dialog.lost').isVisible(),'Blank backdrop must not navigate or revive');
- await page.getByRole('button',{name:'One more go',exact:true}).click();
+ await page.getByRole('button',{name:'Try this bag again',exact:true}).click();
  assert.equal(await page.locator('.tray-slot.occupied').count(),0);
  console.log('PASS seven-slot failure is terminal, no rescue controls, backdrop inert and retry creates a new round');
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'artifacts/triple-mobile.png'});
  await page.locator('.brand').click();await page.locator('.pause-dialog').waitFor();
  await page.mouse.click(3,600);assert.ok(await page.locator('.pause-dialog').isVisible());
- await page.getByRole('button',{name:'Keep playing',exact:true}).click();assert.ok(await page.locator('.game-screen').isVisible());
+ await page.getByRole('button',{name:'Keep returning',exact:true}).click();assert.ok(await page.locator('.game-screen').isVisible());
  await page.reload();assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!))).completed.length,20);assert.deepEqual(errors,[]);
  console.log('PASS mobile toolbar, reload and no runtime errors');await context.close();
 }finally{await browser.close();}

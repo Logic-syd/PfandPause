@@ -39,11 +39,11 @@ try{
  console.log('PASS all 20 rounds: real clicks, triples, blocked cards, per-bottle credit, glass colour banks, receipts and saved progress');
  await page.getByRole('button',{name:'Choose a bag',exact:true}).click();await page.locator('.level-card').nth(9).click();
  let s=createGame(levels[9]);const path=lossPath(s);assert.ok(path);s=await play(page,s,path);
- await page.locator('dialog.lost').waitFor();assert.equal(await page.locator('dialog.lost h2').innerText(),'No room left.');
+ await page.locator('dialog.lost').waitFor();assert.equal(await page.locator('dialog.lost h2').innerText(),'Out of order');
  assert.equal(await page.getByRole('button',{name:'Undo',exact:true}).count(),0);
  assert.equal(await page.getByRole('button',{name:'Move out 3',exact:true}).count(),0);
  await page.mouse.click(5,350);assert.ok(await page.locator('dialog.lost').isVisible(),'Blank backdrop must not navigate or revive');
- await page.getByRole('button',{name:'Try this bag again',exact:true}).click();
+ await page.getByRole('button',{name:'Try another machine',exact:true}).click();
  assert.equal(await page.locator('.tray-slot.occupied').count(),0);
  console.log('PASS seven-slot failure is terminal, no rescue controls, backdrop inert and retry creates a new round');
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'artifacts/triple-mobile.png'});

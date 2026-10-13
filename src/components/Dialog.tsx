@@ -6,12 +6,14 @@ export default function Dialog({
   onClose,
   children,
   className = "",
+  hideTitle = false,
 }: {
   title: string;
   closeLabel: string;
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  hideTitle?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useLayoutEffect(() => {
@@ -40,7 +42,7 @@ export default function Dialog({
       >
         <Icon name="close" />
       </button>
-      <h2 id="dialog-title">{title}</h2>
+      <h2 id="dialog-title" className={hideTitle ? "sr-only" : undefined}>{title}</h2>
       {children}
     </dialog>
   );

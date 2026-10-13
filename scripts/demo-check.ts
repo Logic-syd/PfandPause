@@ -60,15 +60,19 @@ try{
   assert.deepEqual(await frame.evaluate(()=>JSON.parse(localStorage.getItem('pfand-pause:v1')!).completed),[1,2]);
   await frame.getByRole('button',{name:t.gotIt,exact:true}).tap();await frame.locator('.home-actions .primary').first().tap();
   for(const id of mainLoss){await frame.locator(`[data-column="${id}"]`).tap();await settle(frame);}
-  await frame.locator('.tray-full-dialog').waitFor();assert.equal(await frame.locator('.full-tray-bottles .bottle').count(),7);
-  assert.ok((await frame.locator('.tray-full-dialog').boundingBox())!.height<=270.1);
+  await frame.locator('.tray-full-dialog').waitFor();assert.equal(await frame.locator('.fault-german-label').innerText(),'AUSSER BETRIEB');
+  assert.equal(await frame.locator('.fault-apology').innerText(),t.machineFaultApology);
+  assert.equal(await frame.locator('.fault-instruction').innerText(),t.trayFullBody);
+  const placement=await frame.locator('.tray-full-dialog').evaluate(el=>{const r=el.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2,width:innerWidth,height:innerHeight};});
+  assert.ok(Math.abs(placement.x-placement.width/2)<=1 && Math.abs(placement.y-placement.height/2)<=1,JSON.stringify(placement));
+  assert.ok((await frame.locator('.tray-full-dialog').boundingBox())!.height<=340.1);
   assert.equal(await frame.locator('.tray-full-dialog').evaluate(e=>getComputedStyle(e,'::backdrop').backdropFilter),'none');
-  await fits(frame,'.full-tray-content p,.full-tray-bottles,.tray-full-dialog > .primary');
+  await fits(frame,'.machine-fault-screen,.fault-apology,.fault-instruction,.tray-full-dialog > .primary');
   if(language==='zh'&&width===390)await page.screenshot({path:'artifacts/compact-full-mobile.png'});
   if(language==='zh'&&width===1707)await page.screenshot({path:'artifacts/compact-full-desktop.png'});
   assert.equal(await frame.getByRole('button',{name:t.undo,exact:true}).count(),0);
   assert.equal(await frame.getByRole('button',{name:t.moveOut,exact:true}).count(),0);
-  await frame.getByRole('button',{name:t.tryAgain,exact:true}).tap();assert.equal(await frame.locator('.tray-slot.occupied').count(),0);
+  await frame.getByRole('button',{name:t.machineFaultRetry,exact:true}).tap();assert.equal(await frame.locator('.tray-slot.occupied').count(),0);
   assert.equal(await frame.locator('.tile-card').count(),levels[2].columns.flat().length);
   console.log(`PASS ${width}×${height} ${language}: visible seven-slot warning, 12-bottle practice, terminal full tray, retry, completion, no rescue or scrolling`);
   await context.close();

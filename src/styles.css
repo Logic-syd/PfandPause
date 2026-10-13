@@ -3138,12 +3138,9 @@ main {
 .practice-progress { font-size: 11px; margin: 0 0 8px; color: var(--ink); }
 .practice-full { padding: 7px; border-radius: 6px; background: #f6e2d9; color: #993d2c; }
 @media (max-width: 480px) { .practice-tools button > span { display: none; } }
-.dialog.result-dialog.tray-full-dialog[open] { height: min(270px,calc(100dvh - 24px)); max-width: 420px; top: auto; bottom: 12px; left: 50%; margin: 0; transform: translateX(-50%); padding: 12px; gap: 6px; }
+.dialog.result-dialog.tray-full-dialog[open] { position: fixed; inset: 0; height: min(340px,calc(100dvh - 24px)); max-height: calc(100dvh - 24px); width: min(420px,calc(100vw - 24px)); max-width: 420px; margin: auto; transform: none; padding: 18px; gap: 10px; border: 2px solid #c0c6b8; border-radius: 20px; background: #e4e8dd; box-shadow: 0 5px 0 #a5afa0, 0 16px 48px #1b362530; animation: none; }
 .tray-full-dialog::backdrop { background: #304c3e20; backdrop-filter: none; }
-.dialog.tray-full-dialog h2 { font-size: 20px; flex-shrink: 0; margin: 0 40px 4px 0; }
-.full-tray-content p { font-size: 12px; line-height: 1.5; margin: 0 0 8px; }
-.full-tray-bottles { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 4px; border-radius: 8px; padding: 6px; background: #e8eddf; }
-.full-tray-bottles .bottle { width: 30px; max-width: 100%; height: 54px; margin: auto; }
+.dialog.tray-full-dialog > h2.sr-only { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; clip: rect(0,0,0,0); }
 .full-tray-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .full-tray-actions > button { flex: 1; font-size: 12px; min-height: 44px; padding: 6px 8px; }
 .dialog.tray-full-dialog > .text-button { min-height: 44px; margin: 0; padding: 6px; font-size: 12px; flex-shrink: 0; }
@@ -3271,3 +3268,19 @@ main {
 .reduce-motion .queue-roll-track, .reduce-motion .queue-figure { animation: none; }
 .reduce-motion .queue-backdrop { transition: none; }
 @media (prefers-reduced-motion: reduce) { .queue-roll-track, .queue-figure { animation: none !important; } .queue-backdrop { transition: none !important; } }
+
+/* A compact fault display centred inside the native modal. */
+.tray-full-dialog .dialog-close { width: 44px; height: 44px; top: 0; right: 0; border-radius: 50%; background: #e4e8dd; color: #63715f; z-index: 2; }
+.machine-fault-screen { min-height: 238px; width: 100%; padding: 14px 16px 12px; border: 5px solid #bcc6b1; border-radius: 10px; background: #203d31; color: #dceba8; font-family: 'Courier New', monospace; box-shadow: inset 0 0 18px #0c251b66; text-align: center; }
+.fault-screen-header, .fault-screen-footer { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; letter-spacing: .5px; line-height: 1.4; }
+.fault-screen-header { padding-right: 24px; padding-bottom: 8px; border-bottom: 1px solid #9fae773d; }
+.fault-status { display: flex; align-items: center; gap: 4px; color: #e9b975; }
+.fault-status i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.fault-screen-message { display: grid; justify-items: center; gap: 9px; padding: 15px 0; }
+.fault-machine-icon { width: 37px; height: 37px; color: #e9b975; }
+.fault-german-label { font-size: 20px; line-height: 1.2; letter-spacing: 1px; }
+.fault-screen-message p { margin: 0; }
+.fault-apology { font-family: 'Avenir Next', 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.5; font-weight: 650; }
+.fault-instruction { font-family: 'Avenir Next', 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.5; color: #bdcc9b; }
+.fault-screen-footer { border-top: 1px solid #9fae773d; padding-top: 8px; font-size: 8px; color: #95a57f; }
+@media (max-height: 360px) { .dialog.result-dialog.tray-full-dialog[open] { padding: 10px; gap: 6px; } }

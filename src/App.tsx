@@ -14,6 +14,7 @@ import { bottles } from "./data/bottles";
 import { availableTiles, createGame, takeBottle, type TripleState as GameState, type TripleTransition } from "./game/triple";
 import TripleBoard from "./components/TripleBoard";
 import QueueBackdrop from "./components/QueueBackdrop";
+import MachineFault from "./components/MachineFault";
 import { useQueuePressure } from "./components/useQueuePressure";
 import { useBottleInput } from "./components/useBottleInput";
 import { isGlass, type GlassType, type BottleType, type Place } from "./game/types";
@@ -624,6 +625,7 @@ export default function App() {
         !tutorial && (
           <Dialog
             className={`result-dialog ${game.status} ${game.endReason === "full" ? "tray-full-dialog" : ""}`}
+            hideTitle={game.endReason === "full"}
             title={
               game.status === "won"
                 ? levelIndex === levels.length - 1 && allComplete
@@ -634,10 +636,7 @@ export default function App() {
             closeLabel={t.close}
             onClose={() => navigate("levels")}
           >
-            {game.endReason === "full" ? <FitBoard><div className="full-tray-content">
-              <p>{t.trayFullBody}</p>
-              <div className="full-tray-bottles">{game.buffer.map((type, index) => <Bottle key={index} type={type} />)}</div>
-            </div></FitBoard> : <FitBoard>
+            {game.endReason === "full" ? <FitBoard><MachineFault t={t} /></FitBoard> : <FitBoard>
               {game.status === "won" ? (
                 <ReturnReceipt items={level.columns.flat()} level={level.id} t={t} formatMoney={formatDeposit} cheer={t.winCheers[levelIndex]} />
               ) : (
@@ -690,7 +689,7 @@ export default function App() {
               </>
             ) : (
               <>
-                <button className="primary" onClick={() => start(levelIndex)}><Icon name="restart" />{t.tryAgain}</button>
+                <button className="primary" onClick={() => start(levelIndex)}><Icon name="restart" />{game.endReason === "full" ? t.machineFaultRetry : t.tryAgain}</button>
                 {game.endReason !== "full" && <button
                   className="text-button"
                   onClick={() => navigate("start")}

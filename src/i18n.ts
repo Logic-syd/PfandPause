@@ -36,10 +36,10 @@ const en = {
   brand: "Pfand Pause",
   metaDescription:
     "Return deposit bottles and learn glass recycling in Germany. A relaxed game in Chinese, English and German.",
-  shop: "AT THE BOTTLE RETURN MACHINE",
-  tagline: "Return your bottles.\nGet your deposit back.",
+  shop: "JUST A FEW BOTTLES",
+  tagline: "Seven slots.\nHow far can you get?",
   intro:
-    "Match three. Get your deposit. Don’t fill all seven slots.",
+    "Looks easy? Try getting past level three.",
   play: "Let’s play",
   continue: "Keep playing",
   chooseLevel: "Choose a level",
@@ -206,10 +206,10 @@ const de: typeof en = {
   brand: "Pfand Pause",
   metaDescription:
     "Pfandflaschen zurückgeben und Altglas richtig trennen. Ein entspanntes Spiel auf Chinesisch, Englisch und Deutsch.",
-  shop: "AM PFANDAUTOMATEN",
-  tagline: "Flaschen zurück.\nPfand zurück.",
+  shop: "NUR EIN PAAR FLASCHEN",
+  tagline: "Sieben Plätze.\nWie weit kommst du?",
   intro:
-    "Drei gleiche sammeln, Pfand kassieren. Lass die sieben Plätze nicht volllaufen.",
+    "Sieht einfach aus? Schaff erst mal Level drei.",
   play: "Los geht’s",
   continue: "Weiterspielen",
   chooseLevel: "Level wählen",
@@ -376,9 +376,9 @@ const zh: typeof en = {
   brand: "Pfand Pause",
   metaDescription:
     "去退瓶机退瓶子，学会德国押金瓶与玻璃回收分类。支持中文、英语和德语。",
-  shop: "来到超市退瓶机",
-  tagline: "瓶子退回去，\n押金拿回来。",
-  intro: "凑三瓶，拿押金。别把七格塞满。",
+  shop: "退个瓶而已",
+  tagline: "就七个格，\n你能退几瓶？",
+  intro: "看着挺简单？先过第三关再说。",
   play: "开一局",
   continue: "接着玩",
   chooseLevel: "选择关卡",

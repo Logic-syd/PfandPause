@@ -6,9 +6,11 @@ import { translations } from "../i18n";
 import Bottle from "./Bottle";
 import Icon from "./Icon";
 
-export default function TripleBoard({ state, busy, pendingIds, showQueue = false, selectedGlass, wrongBin, fullGroup, flightSource, t, formatMoney, onPick, onReserve }: {
+export default function TripleBoard({ state, busy, pendingIds, showQueue = false, quoteTick = 0, idleLevel = 0, selectedGlass, wrongBin, fullGroup, flightSource, t, formatMoney, onPick, onReserve }: {
   pendingIds?: readonly number[];
   showQueue?: boolean;
+  quoteTick?: number;
+  idleLevel?: number;
   state: TripleState; busy: boolean; selectedGlass: number | null; wrongBin: boolean; fullGroup: number | null; flightSource?: string;
   t: typeof translations.en; formatMoney: (cents: number) => string;
   onPick: (id: number, bin?: GlassType) => void; onReserve: (index: number) => void;
@@ -16,12 +18,14 @@ export default function TripleBoard({ state, busy, pendingIds, showQueue = false
   const available = new Set(availableTiles(state));
   const hasGlass = state.tiles.some(tile => isGlass(tile.bottle));
   const remaining = state.columns.flat().length;
-  const queueLines = state.buffer.length >= 5 ? t.queueCrowded
+  const queueLines = idleLevel >= 2 ? t.queueLongIdle : idleLevel === 1 ? t.queueIdle : state.buffer.length >= 5 ? t.queueCrowded
     : remaining <= Math.min(6, state.tiles.length / 3) ? t.queueLate
     : state.completed > 0 ? t.queueMatch : t.queueStart;
   const queueIndex = state.buffer.length >= 5 ? state.buffer.length - 5
     : state.completed > 0 ? state.completed - 1 : Math.floor(state.moves / 2);
-  const queueLine = queueLines[queueIndex % queueLines.length];
+  const index = (queueIndex + quoteTick) % queueLines.length;
+  const queueLine = queueLines[index];
+  const previousLine = queueLines[(index + queueLines.length - 1) % queueLines.length];
   return <div className={`triple-layout ${hasGlass ? "with-glass" : ""}`}>
     <section className="tile-counter">
       <div className="section-label"><span>{t.counter}</span><span>{state.columns.flat().length} <Icon name="leaf" size={12} /></span></div>
@@ -54,7 +58,13 @@ export default function TripleBoard({ state, busy, pendingIds, showQueue = false
         </div>
         <p className="tray-caption">{t.tripleRule}</p>
         <p className="tray-danger"><Icon name="close" size={14} />{t.trayDanger}</p>
-        {showQueue && <p className="queue-comment"><span>{t.queueSpeaker}：</span>{queueLine}</p>}
+        {showQueue && <p className={`queue-comment idle-${idleLevel}`}>
+          <span className="queue-speaker">{t.queueSpeaker}：</span>
+          <span className="sr-only">{queueLine}</span>
+          <span className="queue-roll" aria-hidden="true"><span key={`${quoteTick}:${idleLevel}:${queueLine}`} className={`queue-roll-track ${quoteTick === 0 ? "queue-first" : ""}`}>
+            <span className="queue-previous">{previousLine}</span><span className="queue-current">{queueLine}</span>
+          </span></span>
+        </p>}
       </section>
       {state.reserveIds.length > 0 && <section className="reserve-row">
         <span>{t.reserveReturn}</span>

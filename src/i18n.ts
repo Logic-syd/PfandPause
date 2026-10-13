@@ -166,6 +166,8 @@ const en = {
   queueCrowded: ["“That counter’s nearly full.”", "“Still squeezing them in?”"],
   queueMatch: ["“At least it took those.”", "“Three more. Keep going.”", "“Can you empty it in one go?”"],
   queueLate: ["“Nearly my turn, right?”", "“Don’t forget the slip.”"],
+  queueIdle: ["“Hurry up, mate.”", "“Still not done?”", "“Go on, pick a bottle.”", "“There’s a queue, you know.”"],
+  queueLongIdle: ["“Can’t return them? Go home.”", "“Are we here until tomorrow?”", "“Some of us are waiting.”", "“This isn’t a rest stop.”"],
   bottleNames: {
     orange: "Orange soda",
     grape: "Grape spritzer",
@@ -338,6 +340,8 @@ const de: typeof en = {
   queueCrowded: ["„Die Ablage wird voll.“", "„Noch mehr dazustellen?“"],
   queueMatch: ["„Die nimmt er immerhin.“", "„Wieder drei. Weiter.“", "„Geht die ganze Tüte auf einmal?“"],
   queueLate: ["„Gleich bin ich dran, oder?“", "„Bon nicht vergessen.“"],
+  queueIdle: ["„Mach mal schneller.“", "„Immer noch nicht fertig?“", "„Nimm doch eine Flasche.“", "„Hier warten noch Leute.“"],
+  queueLongIdle: ["„Geht nicht? Dann ab nach Hause.“", "„Stehen wir morgen noch hier?“", "„Wir warten auch noch.“", "„Das ist kein Pausenraum.“"],
   bottleNames: {
     orange: "Orangenlimo",
     grape: "Traubenschorle",
@@ -507,6 +511,8 @@ const zh: typeof en = {
   queueCrowded: ["“台面快摆满了。”", "“你还往里塞啊？”"],
   queueMatch: ["“行，机器肯收了。”", "“又三个，接着退。”", "“能不能一口气退完？”"],
   queueLate: ["“快了吧？快到我了吧？”", "“小票别忘了拿。”"],
+  queueIdle: ["“快一点啊。”", "“怎么还没完？”", "“前面那位，动一下啊。”", "“后面还排着队呢。”"],
+  queueLongIdle: ["“不能退就回家吧。”", "“这袋瓶子退到明天吗？”", "“你歇着，我们还等着呢。”", "“机器前面不是休息区啊。”"],
   bottleNames: {
     orange: "香橙汽水",
     grape: "葡萄气泡果汁",

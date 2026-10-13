@@ -2,7 +2,7 @@
 
 德国球赛散场，你拎着一袋空瓶去超市退押金，偏偏退瓶机闹毛病，只肯收三个同款，后面的人还在催。支持中文、英语和德语的不限时七格三消，共二十袋瓶子逐步加深遮挡。第十一袋开始混入无押金玻璃分类。使用原创瓶子 SVG、店铺插画和品牌。
 
-首页、试玩、机器说明、关名和结算围绕同一个场景。排队吐槽放在七格台面下方，按开局、三瓶收走、台面将满、快退完四种状态切换；不计时、不扣秒、不拦截点击。小票保留瓶数和模拟押金，现实退瓶规则在帮助及回收问答中说明。
+首页、试玩、机器说明、关名和结算围绕同一个场景。排队吐槽放在七格台面下方，每四秒纵向滚动换句，结合开局、三瓶收走、台面将满、快退完四种状态。十二秒没有操作开始轻催，二十五秒后加强催促，并出现背景人影、轻微晃动、低声嘟囔感与脚步音；没有倒计时失败或扣秒。操作立即解除催促，暂停、离开页面、切出浏览器均停止，静音与减少动画设置有效。文字区域固定高度，背景不拦截点击。小票保留瓶数和模拟押金，现实退瓶规则在帮助及回收问答中说明。
 
 ## 启动
 
@@ -84,6 +84,7 @@ BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:responsive
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:mobile-frame
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:rapid-taps
+BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:queue
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:embedded-scroll
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:demo
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:practice-fit

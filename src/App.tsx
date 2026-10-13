@@ -13,6 +13,8 @@ import { levels } from "./data/levels";
 import { bottles } from "./data/bottles";
 import { availableTiles, createGame, takeBottle, type TripleState as GameState, type TripleTransition } from "./game/triple";
 import TripleBoard from "./components/TripleBoard";
+import QueueBackdrop from "./components/QueueBackdrop";
+import { useQueuePressure } from "./components/useQueuePressure";
 import { useBottleInput } from "./components/useBottleInput";
 import { isGlass, type GlassType, type BottleType, type Place } from "./game/types";
 import { LANGUAGE_OPTIONS, translations } from "./i18n";
@@ -61,6 +63,7 @@ export default function App() {
   const [penaltyNotice, setPenaltyNotice] = useState<"buffer" | "bin" | null>(null);
   const t = translations[preferences.language];
   const level = levels[levelIndex];
+  const queue = useQueuePressure(screen === "play" && game.status === "playing" && !modal && !tutorial, epoch.current, preferences.sound);
   const total = level.columns.flat().length;
   const hasGlass = level.columns.flat().some(isGlass);
   const formatDeposit = (cents: number) => new Intl.NumberFormat(
@@ -133,6 +136,7 @@ export default function App() {
   }
   function pick(column: number, bin?: GlassType) {
     if (screen !== "play" || modal || tutorial || gameRef.current.status !== "playing" || !availableTiles(gameRef.current).includes(column)) return;
+    queue.markActivity();
     input.enqueue(column, bin);
   }
   async function performPick(column: number, bin?: GlassType) {
@@ -283,10 +287,12 @@ export default function App() {
   return (
     <div
       className={`app ${["start", "play", "recycling", "levels"].includes(screen) ? "is-fitted" : ""} ${screen === "play" ? "is-playing" : ""} ${preferences.reducedMotion ? "reduce-motion" : ""}`}
+      onPointerDownCapture={queue.markActivity}
       onPointerDown={() => {
         if (preferences.sound) unlockAudio();
       }}
     >
+      {screen === "play" && <QueueBackdrop level={queue.idleLevel} />}
       <header className="header">
         <div className="header-leading">
           <button
@@ -545,7 +551,7 @@ export default function App() {
               <span className="sr-only">{game.moves} {t.moves}</span>
             </div>
             <FitBoard grow>
-              <TripleBoard state={game} busy={busy} pendingIds={input.pendingIds} showQueue selectedGlass={selectedGlass} wrongBin={wrongBin} fullGroup={fullCrate} flightSource={flight?.source}
+              <TripleBoard state={game} busy={busy} pendingIds={input.pendingIds} showQueue quoteTick={queue.quoteTick} idleLevel={queue.idleLevel} selectedGlass={selectedGlass} wrongBin={wrongBin} fullGroup={fullCrate} flightSource={flight?.source}
                 t={t} formatMoney={formatDeposit} onPick={(id, bin) => void pick(id, bin)} onReserve={() => {}} />
             </FitBoard>
           </section>

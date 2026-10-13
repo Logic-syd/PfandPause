@@ -20,7 +20,7 @@ import { useBottleInput } from "./components/useBottleInput";
 import { isGlass, type GlassType, type BottleType, type Place } from "./game/types";
 import { LANGUAGE_OPTIONS, translations } from "./i18n";
 import { loadPreferences, savePreferences } from "./storage";
-import { playSound, playWinVoice, stopVoice, unlockAudio } from "./audio";
+import { playSound, unlockAudio } from "./audio";
 
 type Screen = "start" | "play" | "levels" | "recycling";
 type Flight = {
@@ -91,13 +91,9 @@ export default function App() {
   useEffect(
     () => () => {
       epoch.current++;
-      stopVoice();
     },
     [],
   );
-  useEffect(() => {
-    stopVoice();
-  }, [preferences.sound, preferences.language]);
   useEffect(() => {
     if (!penaltyNotice) return;
     if (screen !== "play") { setPenaltyNotice(null); return; }
@@ -109,7 +105,6 @@ export default function App() {
     setGame(state);
   }
   function start(index: number) {
-    stopVoice();
     epoch.current++;
     input.clear();
     locked.current = false;
@@ -127,7 +122,6 @@ export default function App() {
     scrollToStart();
   }
   function dismissTutorial() {
-    stopVoice();
     setTutorial(false);
     setPreferences((p) => ({
       ...p,
@@ -225,7 +219,6 @@ export default function App() {
     locked.current = false;
     if (result.state.status === "won") {
       playSound("win", preferences.sound);
-      void playWinVoice(preferences.language, preferences.sound);
       setTutorial(false);
       setPreferences((p) => ({
         ...p,
@@ -236,7 +229,6 @@ export default function App() {
   }
   function navigate(next: Screen) {
     if (!locked.current) {
-      stopVoice();
       setScreen(next);
       setSelectedGlass(null);
       setWrongBin(false);

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { availableTiles, createGame, takeBottle, type TripleTransition } from "../game/triple";
 import { triplePracticeLevel } from "../data/tutorial";
 import { translations, LANGUAGE_OPTIONS, type Language } from "../i18n";
-import { playSound, playWinVoice, stopVoice, unlockAudio } from "../audio";
+import { playSound, unlockAudio } from "../audio";
 import Dialog from "./Dialog";
 import Icon from "./Icon";
 import FitBoard from "./FitBoard";
@@ -23,8 +23,7 @@ export default function Tutorial({ language, reducedMotion, sound, onClose }: {
   const finished = game.status === "won";
   const full = game.endReason === "full";
   const formatMoney = (cents: number) => new Intl.NumberFormat(LANGUAGE_OPTIONS.find(option => option.code === language)!.locale, { style: "currency", currency: "EUR" }).format(cents / 100);
-  useEffect(() => () => { epoch.current++; stopVoice(); }, []);
-  useEffect(() => { stopVoice(); }, [sound, language]);
+  useEffect(() => () => { epoch.current++; }, []);
   async function animate(result: TripleTransition) {
     if (lock.current || !result.frames.length) return;
     lock.current = true; setBusy(true); unlockAudio(); const ticket = epoch.current;
@@ -39,9 +38,9 @@ export default function Tutorial({ language, reducedMotion, sound, onClose }: {
     if (ticket !== epoch.current) return;
     gameRef.current = result.state;
     setGame(result.state); setFullGroup(null); setBusy(false); lock.current = false;
-    if (result.state.status === "won") { playSound("win", sound); void playWinVoice(language, sound); }
+    if (result.state.status === "won") { playSound("win", sound); }
   }
-  function reset() { epoch.current++; input.clear(); lock.current = false; stopVoice(); setBusy(false); setFullGroup(null); gameRef.current = createGame(triplePracticeLevel); setGame(gameRef.current); }
+  function reset() { epoch.current++; input.clear(); lock.current = false; setBusy(false); setFullGroup(null); gameRef.current = createGame(triplePracticeLevel); setGame(gameRef.current); }
   return <Dialog className={`tutorial-dialog ${finished ? "practice-finished" : ""}`} title={finished ? t.practiceComplete : full ? t.trayFull : t.practiceTitle} closeLabel={t.close} onClose={onClose}>
     <p className="practice-note">{t.practiceNote}</p>
     <FitBoard>{finished ? <p className="practice-summary">{t.practiceSummary}</p> : <>

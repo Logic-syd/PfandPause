@@ -11,7 +11,7 @@
     "test": "tsx --test tests/*.test.ts",
     "solve": "tsx scripts/solve.ts",
     "test:browser": "tsx scripts/browser-check.ts",
-    "test:voice": "tsx scripts/voice-check.ts",
+    "test:audio": "tsx scripts/audio-check.ts",
     "test:languages": "tsx scripts/language-check.ts",
     "test:responsive": "tsx scripts/responsive-check.ts",
     "test:mobile-frame": "tsx scripts/mobile-frame-check.ts",

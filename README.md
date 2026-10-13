@@ -94,7 +94,7 @@ BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:glass
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:timer
 BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:languages
-BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:voice
+BASE_URL=http://localhost:4173 BROWSER_EXECUTABLE_PATH=/usr/bin/chromium npm run test:audio
 ```
 
 浏览器检查覆盖手机及 iframe 连点、重复点击去重、重开清空待处理点击、实际点击二十关、七格满槽终局和重开、三语练习及玻璃分类、存档、长时间停留不超时、押金小票、动画、不同像素密度、短窗口和两层 iframe。模拟检查不能代替真实 iPhone Safari 或 Game Jolt 的最终设备测试。
@@ -113,4 +113,4 @@ Game Jolt 版本由账号持有人上传；代码或 Pages 更新不会自动替
 
 ## 声音
 
-用户提供的英语 MP3 保存在 `src/assets/voice/win-en.mp3`，约 40 KB / 2.5 秒，台词为 “All sorted! Time for a little pause.”。正式关卡与自由试玩通关后在英语、声音开启时播放。退出、换语言或静音取消播放，音频失败不阻碍游戏。没有生成额外配音。
+正式关卡与自由试玩不播放通关语音，也不加载录音文件。保留收瓶、三消、通关和排队氛围的合成音效，遵守声音开关。`test:audio` 检查三语通关、试玩、静音和录音请求缺失。
